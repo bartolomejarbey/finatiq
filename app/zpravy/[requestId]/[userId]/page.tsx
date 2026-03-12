@@ -9,6 +9,7 @@ type Message = {
   id: string;
   content: string;
   sender_id: string;
+  receiver_id: string;
   created_at: string;
 };
 
@@ -117,8 +118,8 @@ export default function ChatPage() {
           const newMsg = payload.new as Message;
           // Přidáme zprávu pokud je součástí této konverzace
           if (
-            (newMsg.sender_id === currentUser && otherUserId === otherUserId) ||
-            (newMsg.sender_id === otherUserId)
+            (newMsg.sender_id === currentUser && newMsg.receiver_id === otherUserId) ||
+            (newMsg.sender_id === otherUserId && newMsg.receiver_id === currentUser)
           ) {
             setMessages((prev) => [...prev, newMsg]);
           }

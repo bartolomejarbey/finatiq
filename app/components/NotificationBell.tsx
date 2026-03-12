@@ -20,27 +20,39 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    loadNotifications();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    // Real-time subscription
-    const channel = supabase
-      .channel("notifications")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-        },
-        (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
-        }
-      )
-      .subscribe();
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await loadNotifications();
+
+      // Real-time subscription s filtrem na aktuálního uživatele
+      channel = supabase
+        .channel("notifications")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            setNotifications((prev) => [payload.new as Notification, ...prev]);
+            setUnreadCount((prev) => prev + 1);
+          }
+        )
+        .subscribe();
+    }
+
+    init();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, []);
 

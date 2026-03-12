@@ -21,7 +21,7 @@ type Request = {
   status: string;
   created_at: string;
   expires_at: string;
-  user_id: string;
+  customer_id: string;
   categories: { name: string; icon: string } | null;
   profiles: { full_name: string } | null;
 };
@@ -172,7 +172,7 @@ export default function PoptavkaDetail() {
     }
 
     await supabase.from("notifications").insert({
-      user_id: request?.user_id,
+      user_id: request?.customer_id,
       type: "new_offer",
       title: "Nová nabídka",
       message: `Na vaši poptávku "${request?.title}" přišla nová nabídka za ${parseInt(offerPrice).toLocaleString()} Kč.`,
@@ -258,7 +258,7 @@ export default function PoptavkaDetail() {
     );
   }
 
-  const isOwner = currentUser === request.user_id;
+  const isOwner = currentUser === request.customer_id;
   const isProvider = userProfile?.role === "provider";
   const isVerified = userProfile?.is_verified || false;
   const canOffer = isProvider && isVerified && !isOwner && request.status === "active";
