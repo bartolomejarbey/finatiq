@@ -118,7 +118,7 @@ export default function NovaPoptavka() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="max-w-2xl mx-auto px-4 pt-28 pb-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Nová poptávka</h1>
           <p className="text-gray-600">Popište co potřebujete a získejte nabídky od ověřených fachmanů</p>
