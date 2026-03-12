@@ -108,11 +108,7 @@ export default function Login() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 text-cyan-600 rounded border-gray-300 focus:ring-cyan-500" />
-                    <span className="text-sm text-gray-600">Zapamatovat si mě</span>
-                  </label>
+                <div className="flex items-center justify-end">
                   <Link href="/auth/forgot-password" className="text-sm text-cyan-600 hover:text-cyan-700">
                     Zapomenuté heslo?
                   </Link>

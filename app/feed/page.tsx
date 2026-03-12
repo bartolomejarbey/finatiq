@@ -66,74 +66,40 @@ export default function FeedPage() {
 
   const loadPosts = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     const { data: postsData } = await supabase
       .from("posts")
       .select(`
         *,
-        profiles:user_id (full_name, role)
+        profiles:user_id (full_name, role),
+        post_likes (user_id),
+        post_comments (id, content, created_at, user_id, profiles:user_id (full_name)),
+        post_reactions (user_id, emoji)
       `)
       .order("created_at", { ascending: false });
 
     if (postsData) {
-      const postsWithDetails = await Promise.all(
-        postsData.map(async (post) => {
-          // Počet lajků
-          const { count: likesCount } = await supabase
-            .from("post_likes")
-            .select("*", { count: "exact", head: true })
-            .eq("post_id", post.id);
+      const postsWithDetails = postsData.map((post: any) => {
+        const likes = post.post_likes || [];
+        const comments = post.post_comments || [];
+        const reactions = post.post_reactions || [];
 
-          // Počet komentářů
-          const { count: commentsCount } = await supabase
-            .from("post_comments")
-            .select("*", { count: "exact", head: true })
-            .eq("post_id", post.id);
-
-          // User liked?
-          let userLiked = false;
-          if (user) {
-            const { data: likeData } = await supabase
-              .from("post_likes")
-              .select("id")
-              .eq("post_id", post.id)
-              .eq("user_id", user.id)
-              .single();
-            userLiked = !!likeData;
-          }
-
-          // User reactions
-          let userReactions: string[] = [];
-          if (user) {
-            const { data: reactionsData } = await supabase
-              .from("post_reactions")
-              .select("emoji")
-              .eq("post_id", post.id)
-              .eq("user_id", user.id);
-            userReactions = reactionsData?.map(r => r.emoji) || [];
-          }
-
-          // Komentáře
-          const { data: commentsData } = await supabase
-            .from("post_comments")
-            .select(`
-              *,
-              profiles:user_id (full_name)
-            `)
-            .eq("post_id", post.id)
-            .order("created_at", { ascending: true })
-            .limit(5);
-
-          return {
-            ...post,
-            likes_count: likesCount || 0,
-            comments_count: commentsCount || 0,
-            user_liked: userLiked,
-            user_reactions: userReactions,
-            comments: commentsData || [],
-          };
-        })
-      );
+        return {
+          ...post,
+          likes_count: likes.length,
+          comments_count: comments.length,
+          user_liked: user ? likes.some((l: any) => l.user_id === user.id) : false,
+          user_reactions: user
+            ? reactions.filter((r: any) => r.user_id === user.id).map((r: any) => r.emoji)
+            : [],
+          comments: comments
+            .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+            .slice(0, 5),
+          post_likes: undefined,
+          post_comments: undefined,
+          post_reactions: undefined,
+        };
+      });
 
       setPosts(postsWithDetails);
     }

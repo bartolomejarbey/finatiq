@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
+import AdminLayout from "../components/AdminLayout";
 import { useRouter } from "next/navigation";
 
 type Category = {
@@ -17,7 +17,7 @@ export default function AdminKategorie() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
-  
+
   // Formulář
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -30,19 +30,19 @@ export default function AdminKategorie() {
   useEffect(() => {
     async function checkAdminAndLoad() {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
-        router.push("/auth/login");
+        router.push("/admin/login");
         return;
       }
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role")
+        .select("admin_role")
         .eq("id", user.id)
         .single();
 
-      if (profile?.role !== "admin") {
+      if (!profile?.admin_role) {
         router.push("/dashboard");
         return;
       }
@@ -143,45 +143,28 @@ export default function AdminKategorie() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p>Načítám...</p>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Navigace */}
-      <nav className="bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-8">
-            <Link href="/admin" className="text-xl font-bold">
-              Fachmani Admin
-            </Link>
-            <div className="flex space-x-4">
-              <Link href="/admin" className="text-gray-300 hover:text-white">
-                Dashboard
-              </Link>
-              <Link href="/admin/uzivatele" className="text-gray-300 hover:text-white">
-                Uživatelé
-              </Link>
-              <Link href="/admin/poptavky" className="text-gray-300 hover:text-white">
-                Poptávky
-              </Link>
-              <Link href="/admin/kategorie" className="text-white font-medium">
-                Kategorie
-              </Link>
-            </div>
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">📂 Kategorie</h1>
+            <p className="text-slate-400">
+              Celkem {categories.length} kategorií
+            </p>
           </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Kategorie</h1>
           <button
             onClick={() => setShowForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-cyan-500 text-white rounded-xl font-medium hover:bg-cyan-600 transition-colors"
           >
             + Přidat kategorii
           </button>
@@ -189,15 +172,15 @@ export default function AdminKategorie() {
 
         {/* Formulář */}
         {showForm && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">
+          <div className="bg-slate-800/50 border border-white/5 rounded-2xl p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">
               {editingId ? "Upravit kategorii" : "Nová kategorie"}
             </h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
                     Název *
                   </label>
                   <input
@@ -206,11 +189,11 @@ export default function AdminKategorie() {
                     onChange={(e) => handleNameChange(e.target.value)}
                     required
                     placeholder="např. Elektrikář"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">
                     Slug *
                   </label>
                   <input
@@ -219,13 +202,13 @@ export default function AdminKategorie() {
                     onChange={(e) => setSlug(e.target.value)}
                     required
                     placeholder="např. elektrikar"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-400 mb-1">
                   Ikona *
                 </label>
                 <div className="flex gap-2 mb-2">
@@ -235,9 +218,9 @@ export default function AdminKategorie() {
                     onChange={(e) => setIcon(e.target.value)}
                     required
                     placeholder="např. ⚡"
-                    className="w-24 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-center text-2xl"
+                    className="w-24 px-3 py-3 bg-slate-800 border border-white/10 rounded-xl text-white text-center text-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   />
-                  <span className="text-gray-500 self-center">nebo vyberte:</span>
+                  <span className="text-slate-500 self-center">nebo vyberte:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {commonIcons.map((emoji) => (
@@ -245,8 +228,8 @@ export default function AdminKategorie() {
                       key={emoji}
                       type="button"
                       onClick={() => setIcon(emoji)}
-                      className={`w-10 h-10 text-xl rounded-lg border hover:bg-gray-100 ${
-                        icon === emoji ? "bg-blue-100 border-blue-500" : ""
+                      className={`w-10 h-10 text-xl rounded-lg border border-white/10 hover:bg-white/10 transition-colors ${
+                        icon === emoji ? "bg-cyan-500/20 border-cyan-500" : ""
                       }`}
                     >
                       {emoji}
@@ -256,7 +239,7 @@ export default function AdminKategorie() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-400 mb-1">
                   Popis
                 </label>
                 <textarea
@@ -264,7 +247,7 @@ export default function AdminKategorie() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
                   placeholder="Krátký popis kategorie..."
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -272,14 +255,14 @@ export default function AdminKategorie() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-6 py-2.5 bg-cyan-500 text-white rounded-xl font-medium hover:bg-cyan-600 disabled:opacity-50 transition-colors"
                 >
                   {saving ? "Ukládám..." : editingId ? "Uložit změny" : "Přidat kategorii"}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="text-gray-600 px-6 py-2 hover:text-gray-900"
+                  className="px-6 py-2.5 text-slate-400 hover:text-white transition-colors"
                 >
                   Zrušit
                 </button>
@@ -289,71 +272,72 @@ export default function AdminKategorie() {
         )}
 
         {/* Seznam kategorií */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Ikona
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Název
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Slug
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Popis
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Akce
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {categories.map((category) => (
-                <tr key={category.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-2xl">
-                    {category.icon}
-                  </td>
-                  <td className="px-6 py-4 font-medium">
-                    {category.name}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {category.slug}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {category.description || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(category)}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        Upravit
-                      </button>
-                      <span className="text-gray-300">|</span>
-                      <button
-                        onClick={() => handleDelete(category.id)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Smazat
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {categories.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+        <div className="bg-slate-800/50 border border-white/5 rounded-2xl overflow-hidden">
+          {categories.length === 0 ? (
+            <div className="text-center py-12 text-slate-500">
               Žádné kategorie. Přidejte první kategorii.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-700/50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Ikona
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Název
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Slug
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Popis
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Akce
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {categories.map((category) => (
+                    <tr key={category.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 text-2xl">
+                        {category.icon}
+                      </td>
+                      <td className="px-6 py-4 text-white font-medium">
+                        {category.name}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-400">
+                        {category.slug}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-400">
+                        {category.description || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleEdit(category)}
+                            className="px-3 py-1.5 bg-cyan-500/20 text-cyan-400 rounded-lg text-sm font-medium hover:bg-cyan-500/30 transition-colors"
+                          >
+                            Upravit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(category.id)}
+                            className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors"
+                          >
+                            Smazat
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

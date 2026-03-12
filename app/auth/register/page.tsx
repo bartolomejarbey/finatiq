@@ -47,7 +47,16 @@ export default function Register() {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        const msg = signUpError.message;
+        if (msg.includes("User already registered")) {
+          setError("Tento email je již zaregistrován");
+        } else if (msg.includes("Password should be at least 6 characters")) {
+          setError("Heslo musí mít alespoň 6 znaků");
+        } else if (msg.includes("Unable to validate email address")) {
+          setError("Neplatná emailová adresa");
+        } else {
+          setError("Při registraci došlo k chybě. Zkuste to prosím znovu.");
+        }
         setLoading(false);
         return;
       }
