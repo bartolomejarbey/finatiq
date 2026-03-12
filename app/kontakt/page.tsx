@@ -5,6 +5,7 @@ import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { Icons } from "@/app/components/Icons";
+import { supabase } from "@/lib/supabase";
 
 export default function Kontakt() {
   const [mounted, setMounted] = useState(false);
@@ -21,10 +22,28 @@ export default function Kontakt() {
     setMounted(true);
   }, []);
 
+  const [error, setError] = useState("");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    setError("");
+
+    const { error: insertError } = await supabase
+      .from("contact_messages")
+      .insert({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      });
+
+    if (insertError) {
+      setError("Zprávu se nepodařilo odeslat. Zkuste to prosím znovu.");
+      setSending(false);
+      return;
+    }
+
     setSent(true);
     setSending(false);
   };
@@ -126,6 +145,11 @@ export default function Kontakt() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-5">
+                    {error && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl">
+                        {error}
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Jméno *

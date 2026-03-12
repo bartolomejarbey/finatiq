@@ -153,7 +153,7 @@ export default function Navbar() {
                       
                       {userRole === "provider" && (
                         <>
-                          <Link href="/dashboard/fachman/profil" className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors">
+                          <Link href="/dashboard/profil" className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors">
                             <span className="text-lg">👤</span>
                             <span className="text-sm font-medium">Můj profil</span>
                           </Link>
@@ -278,7 +278,7 @@ export default function Navbar() {
                   {userRole === "provider" && (
                     <>
                       <Link
-                        href="/dashboard/fachman/profil"
+                        href="/dashboard/profil"
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-3 px-4 py-3.5 text-gray-700 hover:bg-gray-50 rounded-2xl transition-all"
                       >
