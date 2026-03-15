@@ -32,10 +32,9 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/advisor") || pathname.startsWith("/portal") || pathname.startsWith("/superadmin")) {
       // Fall through to normal middleware logic below
     } else {
-      // Root or any other path on custom domain → rewrite to /p/custom?domain=hostname
+      // Root or any other path on custom domain → rewrite to /p/custom/[domain]
       const url = request.nextUrl.clone();
-      url.pathname = "/p/custom";
-      url.searchParams.set("domain", hostname);
+      url.pathname = `/p/custom/${hostname}`;
       return NextResponse.rewrite(url);
     }
   }
