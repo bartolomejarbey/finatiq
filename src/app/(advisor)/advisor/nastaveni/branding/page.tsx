@@ -3,42 +3,41 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { Palette, Sun, Moon, Upload, Link2, X, Loader2 } from "lucide-react";
-
+import {
+  Upload, Link2, X, Loader2, Check,
+  LayoutDashboard, Users, Settings, Kanban, Bell,
+  BarChart3,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-const COLOR_PRESETS = [
-  { value: "#2563EB", label: "modrá" },
-  { value: "#7C3AED", label: "fialová" },
-  { value: "#059669", label: "zelená" },
-  { value: "#DC2626", label: "červená" },
-  { value: "#D97706", label: "oranžová" },
-  { value: "#0891B2", label: "cyan" },
-  { value: "#4F46E5", label: "indigo" },
-  { value: "#BE185D", label: "růžová" },
+/* ── Constants ── */
+
+const COLOR_PALETTES = [
+  { name: "Modrá profesionální", primary: "#2563EB", secondary: "#1E40AF", accent: "#60A5FA" },
+  { name: "Zelená finance", primary: "#059669", secondary: "#047857", accent: "#34D399" },
+  { name: "Zlatá luxusní", primary: "#9E7C4E", secondary: "#B8860B", accent: "#D4A843" },
+  { name: "Červená energická", primary: "#DC2626", secondary: "#B91C1C", accent: "#F87171" },
+  { name: "Fialová moderní", primary: "#7C3AED", secondary: "#6D28D9", accent: "#A78BFA" },
+  { name: "Tyrkysová cool", primary: "#0891B2", secondary: "#0E7490", accent: "#22D3EE" },
+  { name: "Šedá minimalist", primary: "#374151", secondary: "#4B5563", accent: "#9CA3AF" },
+  { name: "Oranžová teplá", primary: "#EA580C", secondary: "#C2410C", accent: "#FB923C" },
 ];
 
-const FONT_OPTIONS = [
-  "Inter",
-  "Roboto",
-  "Open Sans",
-  "Poppins",
-  "Montserrat",
-  "Lato",
-  "Nunito",
-  "Raleway",
-  "Source Sans Pro",
-  "Work Sans",
+const TEMPLATES = [
+  { id: "clean", name: "Clean", desc: "Světlá a čistá", bg: "#F8FAFC", sidebar: "#FFFFFF", text: "#0F172A", border: "#E2E8F0" },
+  { id: "luxe", name: "Luxe", desc: "Elegantní a luxusní", bg: "#FFFBF5", sidebar: "#1C1917", text: "#1C1917", border: "#D6D3D1" },
+  { id: "fintech", name: "Fintech", desc: "Tmavá a technická", bg: "#0F172A", sidebar: "#020617", text: "#F8FAFC", border: "#1E293B" },
+  { id: "corporate", name: "Corporate", desc: "Profesionální a ostré", bg: "#F9FAFB", sidebar: "#111827", text: "#111827", border: "#E5E7EB" },
+];
+
+const FONTS = [
+  { value: "DM Sans", label: "DM Sans" },
+  { value: "Plus Jakarta Sans", label: "Plus Jakarta Sans" },
+  { value: "Inter", label: "Inter" },
+  { value: "Outfit", label: "Outfit" },
+  { value: "Syne", label: "Syne" },
 ];
 
 interface BrandingState {
@@ -54,15 +53,9 @@ interface BrandingState {
   brand_accent_color: string;
   brand_background: string;
   brand_font: string;
-  brand_font_size: string;
-  brand_border_radius: string;
-  brand_mode: string;
-  client_layout: string;
-  advisor_layout: string;
-  custom_welcome_text: string;
+  brand_template: string;
   custom_login_title: string;
   custom_login_subtitle: string;
-  email_footer_text: string;
 }
 
 const DEFAULTS: BrandingState = {
@@ -75,76 +68,26 @@ const DEFAULTS: BrandingState = {
   login_slug: "",
   brand_primary: "#2563EB",
   brand_secondary: "#1E40AF",
-  brand_accent_color: "#F59E0B",
+  brand_accent_color: "#60A5FA",
   brand_background: "#F8FAFC",
   brand_font: "Inter",
-  brand_font_size: "medium",
-  brand_border_radius: "medium",
-  brand_mode: "light",
-  client_layout: "classic",
-  advisor_layout: "classic",
-  custom_welcome_text: "",
+  brand_template: "clean",
   custom_login_title: "",
   custom_login_subtitle: "",
-  email_footer_text: "",
 };
 
-function getBorderRadius(value: string) {
-  return value === "sharp" ? "0px" : value === "rounded" ? "16px" : "8px";
-}
+/* ── Logo Upload ── */
 
-function getFontSize(value: string) {
-  return value === "small" ? "14px" : value === "large" ? "18px" : "16px";
-}
-
-/* ── Layout wireframes ── */
-function ClassicWireframe({ color }: { color: string }) {
-  return (
-    <div className="flex h-16 w-full gap-0.5 rounded overflow-hidden">
-      <div className="w-5 shrink-0" style={{ backgroundColor: color }} />
-      <div className="flex-1 bg-slate-100 p-1">
-        <div className="h-1.5 w-6 bg-slate-300 rounded mb-0.5" />
-        <div className="h-1 w-8 bg-slate-200 rounded mb-0.5" />
-        <div className="h-1 w-7 bg-slate-200 rounded" />
-      </div>
-    </div>
-  );
-}
-
-function ModernWireframe({ color }: { color: string }) {
-  return (
-    <div className="flex flex-col h-16 w-full gap-0.5 rounded overflow-hidden">
-      <div className="h-3 w-full shrink-0" style={{ backgroundColor: color }} />
-      <div className="flex-1 bg-slate-100 p-1">
-        <div className="h-1.5 w-6 bg-slate-300 rounded mb-0.5" />
-        <div className="h-1 w-8 bg-slate-200 rounded" />
-      </div>
-    </div>
-  );
-}
-
-function MinimalistWireframe({ color }: { color: string }) {
-  return (
-    <div className="flex h-16 w-full gap-0.5 rounded overflow-hidden">
-      <div className="w-2.5 shrink-0" style={{ backgroundColor: color }} />
-      <div className="flex-1 bg-slate-100 p-1">
-        <div className="h-1.5 w-6 bg-slate-300 rounded mb-0.5" />
-        <div className="h-1 w-8 bg-slate-200 rounded mb-0.5" />
-        <div className="h-1 w-7 bg-slate-200 rounded" />
-      </div>
-    </div>
-  );
-}
-
-/* ── Logo upload component ── */
 function LogoUpload({
   label,
+  hint,
   currentUrl,
   onUrlChange,
   advisorId,
   fileKey,
 }: {
   label: string;
+  hint: string;
   currentUrl: string;
   onUrlChange: (url: string) => void;
   advisorId: string | null;
@@ -159,130 +102,70 @@ function LogoUpload({
 
   const handleFile = useCallback(
     async (file: File) => {
-      if (!advisorId) {
-        toast.error("Poradce nebyl načten.");
-        return;
-      }
-      if (!file.type.startsWith("image/")) {
-        toast.error("Nahrávejte pouze obrázky.");
-        return;
-      }
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("Maximální velikost je 2 MB.");
-        return;
-      }
+      if (!advisorId) { toast.error("Poradce nebyl načten."); return; }
+      if (!file.type.startsWith("image/")) { toast.error("Nahrávejte pouze obrázky."); return; }
+      if (file.size > 2 * 1024 * 1024) { toast.error("Maximální velikost je 2 MB."); return; }
 
       setUploading(true);
       try {
         const supabase = createClient();
         const ext = file.name.split(".").pop() || "png";
         const path = `${advisorId}/${fileKey}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("branding")
-          .upload(path, file, { upsert: true });
-
-        if (uploadError) {
-          console.error("Upload error:", uploadError);
-          toast.error("Chyba při nahrávání: " + uploadError.message);
-          setUploading(false);
-          return;
-        }
-
+        const { error: uploadError } = await supabase.storage.from("branding").upload(path, file, { upsert: true });
+        if (uploadError) { toast.error("Chyba: " + uploadError.message); setUploading(false); return; }
         const { data: urlData } = supabase.storage.from("branding").getPublicUrl(path);
-        const publicUrl = urlData.publicUrl + "?t=" + Date.now();
-        onUrlChange(publicUrl);
+        onUrlChange(urlData.publicUrl + "?t=" + Date.now());
         toast.success("Logo nahráno.");
-      } catch (err) {
-        console.error("Upload failed:", err);
-        toast.error("Nepodařilo se nahrát soubor.");
-      } finally {
-        setUploading(false);
-      }
+      } catch { toast.error("Nepodařilo se nahrát soubor."); }
+      finally { setUploading(false); }
     },
     [advisorId, fileKey, onUrlChange]
   );
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <Label>{label}</Label>
+        <Label className="text-sm font-medium">{label}</Label>
         <button
           type="button"
           onClick={() => setMode(mode === "upload" ? "url" : "upload")}
-          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+          className="flex items-center gap-1 text-xs text-[var(--brand-primary,#2563EB)] hover:opacity-70 cursor-pointer transition-opacity duration-150"
         >
-          {mode === "upload" ? (
-            <>
-              <Link2 className="h-3 w-3" />
-              Zadat URL
-            </>
-          ) : (
-            <>
-              <Upload className="h-3 w-3" />
-              Nahrát soubor
-            </>
-          )}
+          {mode === "upload" ? <><Link2 className="h-3 w-3" />Zadat URL</> : <><Upload className="h-3 w-3" />Nahrát</>}
         </button>
       </div>
+      <p className="text-xs text-gray-400">{hint}</p>
 
       {mode === "upload" ? (
         <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
-          }}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragOver(false);
-            const f = e.dataTransfer.files[0];
-            if (f) handleFile(f);
-          }}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
           onClick={() => inputRef.current?.click()}
-          className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 cursor-pointer transition-colors ${
-            dragOver
-              ? "border-blue-500 bg-blue-50"
-              : "border-slate-300 hover:border-slate-400 bg-slate-50"
+          className={`flex flex-col items-center justify-center rounded-md border border-dashed p-5 cursor-pointer transition-colors duration-150 ${
+            dragOver ? "border-blue-500 bg-blue-500/5" : "border-gray-200 hover:border-gray-300"
           }`}
         >
           {uploading ? (
-            <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
+            <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
           ) : (
             <>
-              <Upload className="h-5 w-5 text-slate-400 mb-1" />
-              <p className="text-xs text-slate-500">Přetáhněte soubor nebo klikněte</p>
-              <p className="text-[10px] text-slate-400">PNG, JPG, SVG — max 2 MB</p>
+              <Upload className="h-4 w-4 text-gray-300 mb-1" />
+              <p className="text-xs text-gray-400">Přetáhněte nebo klikněte</p>
+              <p className="text-[10px] text-gray-300">PNG, JPG, SVG — max 2 MB</p>
             </>
           )}
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handleFile(f);
-            }}
-          />
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
         </div>
       ) : (
-        <Input
-          value={currentUrl}
-          onChange={(e) => onUrlChange(e.target.value)}
-          placeholder="https://example.com/logo.png"
-        />
+        <Input value={currentUrl} onChange={(e) => onUrlChange(e.target.value)} placeholder="https://..." className="h-9 text-sm" />
       )}
 
       {currentUrl && (
-        <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-          <img src={currentUrl} alt="" className="h-8 max-w-[120px] object-contain" />
-          <button
-            type="button"
-            onClick={() => onUrlChange("")}
-            className="ml-auto text-slate-400 hover:text-red-500"
-          >
-            <X className="h-4 w-4" />
+        <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 border border-gray-100">
+          <img src={currentUrl} alt="" className="h-8 max-w-[100px] object-contain" />
+          <button type="button" onClick={() => onUrlChange("")} className="ml-auto text-gray-300 hover:text-red-500 cursor-pointer transition-colors duration-150">
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
@@ -290,40 +173,132 @@ function LogoUpload({
   );
 }
 
-/* ── Main page ── */
+/* ── Live Preview ── */
+
+function LivePreview({ state }: { state: BrandingState }) {
+  const tpl = TEMPLATES.find((t) => t.id === state.brand_template) || TEMPLATES[0];
+  const isDark = tpl.id === "fintech" || tpl.id === "luxe";
+  const sidebarBg = tpl.sidebar;
+  const sidebarText = isDark || tpl.id === "corporate" ? "#E2E8F0" : "#374151";
+  const mainBg = tpl.bg;
+  const mainText = tpl.text;
+  const cardBg = isDark ? "#1E293B" : "#FFFFFF";
+  const cardBorder = tpl.border;
+
+  const logoShape = state.logo_shape === "circle" ? "50%" : state.logo_shape === "square" ? "4px" : "0";
+
+  return (
+    <div
+      className="w-full h-[420px] rounded-lg border border-gray-200 overflow-hidden flex"
+      style={{ fontFamily: state.brand_font + ", sans-serif", fontSize: "10px" }}
+    >
+      {/* Mini sidebar */}
+      <div className="w-[72px] shrink-0 flex flex-col py-2.5 px-1.5" style={{ backgroundColor: sidebarBg }}>
+        {/* Logo */}
+        <div className="flex items-center justify-center mb-3 px-1">
+          {state.logo_url ? (
+            <img
+              src={state.logo_url}
+              alt=""
+              style={{
+                height: `${Math.min(state.logo_size * 0.45, 24)}px`,
+                objectFit: state.logo_shape !== "original" ? "cover" : "contain",
+                borderRadius: logoShape,
+                aspectRatio: state.logo_shape !== "original" ? "1/1" : "auto",
+              }}
+            />
+          ) : (
+            <span style={{ color: sidebarText, fontSize: "9px", fontWeight: 700 }}>
+              {state.app_name.slice(0, 6)}
+            </span>
+          )}
+        </div>
+
+        {/* Menu items */}
+        {[LayoutDashboard, Kanban, Users, Bell, Settings].map((Icon, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-1.5 px-1.5 py-1 rounded mx-0.5 mb-0.5 transition-colors duration-150"
+            style={{
+              backgroundColor: i === 0 ? state.brand_primary + "20" : "transparent",
+              borderLeft: i === 0 ? `2px solid ${state.brand_primary}` : "2px solid transparent",
+            }}
+          >
+            <Icon style={{ width: 10, height: 10, color: i === 0 ? state.brand_primary : sidebarText, opacity: i === 0 ? 1 : 0.5 }} />
+            <span style={{ color: i === 0 ? state.brand_primary : sidebarText, opacity: i === 0 ? 1 : 0.5, fontSize: "7px", fontWeight: i === 0 ? 600 : 400 }}>
+              {["Přehled", "Pipeline", "Klienti", "Oznámení", "Nastavení"][i]}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Main area */}
+      <div className="flex-1 p-3 overflow-hidden" style={{ backgroundColor: mainBg }}>
+        {/* Header */}
+        <div className="mb-2.5">
+          <div style={{ color: mainText, fontSize: "11px", fontWeight: 700 }}>Přehled</div>
+          <div style={{ color: mainText, fontSize: "7px", opacity: 0.4 }}>Tady je přehled vašeho podnikání</div>
+        </div>
+
+        {/* KPI cards */}
+        <div className="grid grid-cols-3 gap-1.5 mb-2.5">
+          {[
+            { label: "Pipeline", value: "1.2M Kč" },
+            { label: "Leady", value: "24" },
+            { label: "Konverze", value: "68%" },
+          ].map((kpi) => (
+            <div key={kpi.label} className="p-1.5 rounded" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+              <div style={{ fontSize: "6px", color: mainText, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>{kpi.label}</div>
+              <div style={{ fontSize: "10px", color: mainText, fontWeight: 700, marginTop: 2 }}>{kpi.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mini chart placeholder */}
+        <div className="p-2 rounded mb-2" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+          <div style={{ fontSize: "6px", color: mainText, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500, marginBottom: 6 }}>Pipeline</div>
+          <div className="flex items-end gap-1 h-[50px]">
+            {[40, 65, 45, 80, 60, 90, 70].map((h, i) => (
+              <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, backgroundColor: i === 5 ? state.brand_primary : state.brand_primary + "30" }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Mini table */}
+        <div className="rounded overflow-hidden" style={{ border: `1px solid ${cardBorder}` }}>
+          <div className="flex gap-2 px-2 py-1" style={{ borderBottom: `1px solid ${cardBorder}`, backgroundColor: cardBg }}>
+            <span style={{ fontSize: "6px", color: mainText, opacity: 0.4, textTransform: "uppercase", fontWeight: 600, flex: 1 }}>Klient</span>
+            <span style={{ fontSize: "6px", color: mainText, opacity: 0.4, textTransform: "uppercase", fontWeight: 600, width: 40, textAlign: "right" }}>Hodnota</span>
+          </div>
+          {["Novák", "Dvořáková", "Procházka"].map((name) => (
+            <div key={name} className="flex gap-2 px-2 py-1" style={{ backgroundColor: cardBg, borderBottom: `1px solid ${cardBorder}` }}>
+              <span style={{ fontSize: "7px", color: mainText, flex: 1 }}>{name}</span>
+              <span style={{ fontSize: "7px", color: mainText, fontWeight: 600, width: 40, textAlign: "right" }}>250k</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Page ── */
+
 export default function BrandingPage() {
   const [state, setState] = useState<BrandingState>(DEFAULTS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [advisorId, setAdvisorId] = useState<string | null>(null);
-  const [origin, setOrigin] = useState("");
+  const [customColors, setCustomColors] = useState(false);
 
-  useEffect(() => {
-    setOrigin(window.location.origin);
-    loadBranding();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadBranding(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadBranding() {
     try {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      const { data, error } = await supabase
-        .from("advisors")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Branding load error:", error.message, error.code);
-        toast.error("Chyba načítání dat: " + error.message);
-        setLoading(false);
-        return;
-      }
-
+      const { data } = await supabase.from("advisors").select("*").eq("user_id", user.id).single();
       if (data) {
         setAdvisorId(data.id);
         setState((prev) => ({
@@ -340,34 +315,21 @@ export default function BrandingPage() {
           brand_accent_color: data.brand_accent_color || prev.brand_accent_color,
           brand_background: data.brand_background || prev.brand_background,
           brand_font: data.brand_font || prev.brand_font,
-          brand_font_size: data.brand_font_size || prev.brand_font_size,
-          brand_border_radius: data.brand_border_radius || prev.brand_border_radius,
-          brand_mode: data.brand_mode || prev.brand_mode,
-          client_layout: data.client_layout || prev.client_layout,
-          advisor_layout: data.advisor_layout || prev.advisor_layout,
-          custom_welcome_text: data.custom_welcome_text || "",
+          brand_template: data.brand_template || prev.brand_template,
           custom_login_title: data.custom_login_title || "",
           custom_login_subtitle: data.custom_login_subtitle || "",
-          email_footer_text: data.email_footer_text || "",
         }));
       }
-    } catch (err) {
-      console.error("Branding load unexpected error:", err);
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* */ }
+    finally { setLoading(false); }
   }
 
   async function handleSave() {
-    if (!advisorId) {
-      toast.error("Poradce nebyl načten. Obnovte stránku.");
-      return;
-    }
+    if (!advisorId) { toast.error("Poradce nebyl načten."); return; }
     setSaving(true);
     try {
       const supabase = createClient();
-
-      const updateData: Record<string, unknown> = {
+      const { error } = await supabase.from("advisors").update({
         app_name: state.app_name,
         logo_url: state.logo_url || null,
         logo_icon_url: state.logo_icon_url || null,
@@ -382,504 +344,287 @@ export default function BrandingPage() {
         brand_accent_color: state.brand_accent_color,
         brand_background: state.brand_background,
         brand_font: state.brand_font,
-        brand_font_size: state.brand_font_size,
-        brand_border_radius: state.brand_border_radius,
-        brand_mode: "light", // TODO: dark mode bude implementován později
-        client_layout: state.client_layout,
-        advisor_layout: state.advisor_layout,
-        custom_welcome_text: state.custom_welcome_text || null,
+        brand_template: state.brand_template,
         custom_login_title: state.custom_login_title || null,
         custom_login_subtitle: state.custom_login_subtitle || null,
-        email_footer_text: state.email_footer_text || null,
-      };
+      }).eq("id", advisorId);
 
-      const { error } = await supabase.from("advisors").update(updateData).eq("id", advisorId);
-
-      if (error) {
-        console.error("Branding save error:", error.message, error.code, error.details);
-        toast.error("Chyba při ukládání: " + error.message);
-        return;
-      }
+      if (error) { toast.error("Chyba: " + error.message); return; }
 
       const root = document.documentElement;
       root.style.setProperty("--color-primary", state.brand_primary);
       root.style.setProperty("--color-secondary", state.brand_secondary);
       root.style.setProperty("--color-accent", state.brand_accent_color);
-      root.style.setProperty("--color-background", state.brand_background);
       root.style.setProperty("--font-family", state.brand_font + ", sans-serif");
-      root.style.setProperty("--font-size-base", getFontSize(state.brand_font_size));
-      root.style.setProperty("--border-radius", getBorderRadius(state.brand_border_radius));
-
       toast.success("Branding uložen.");
-    } catch (err) {
-      console.error("Branding save unexpected error:", err);
-      toast.error("Nepodařilo se uložit branding.");
-    } finally {
-      setSaving(false);
-    }
+    } catch { toast.error("Nepodařilo se uložit."); }
+    finally { setSaving(false); }
   }
 
   function update<K extends keyof BrandingState>(key: K, value: BrandingState[K]) {
     setState((prev) => ({ ...prev, [key]: value }));
   }
 
+  function applyPalette(palette: typeof COLOR_PALETTES[0]) {
+    setState((prev) => ({
+      ...prev,
+      brand_primary: palette.primary,
+      brand_secondary: palette.secondary,
+      brand_accent_color: palette.accent,
+    }));
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin h-8 w-8 border-4 border-slate-300 border-t-slate-600 rounded-full" />
+        <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
       </div>
     );
   }
 
-  const borderRadius = getBorderRadius(state.brand_border_radius);
-
   return (
-    <div className="mx-auto max-w-6xl p-4 md:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Palette className="h-6 w-6 text-slate-600" />
-        <h1 className="text-2xl font-bold">Branding a personalizace</h1>
+    <div className="mx-auto max-w-7xl p-4 md:p-6">
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold text-gray-900">Branding</h1>
+        <p className="text-sm text-gray-400 mt-0.5">Nastavte jak bude vypadat váš portál pro klienty</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Settings column (70%) */}
-        <div className="flex-1 min-w-0 space-y-6">
-          {/* SEKCE 1: Identita */}
-          <section className="rounded-xl border bg-white p-6">
-            <h2 className="text-lg font-semibold mb-4">Identita</h2>
-            <div className="space-y-4">
+        {/* ── Left: Settings (60%) ── */}
+        <div className="flex-1 min-w-0 space-y-5">
+
+          {/* A) Logo */}
+          <Section title="Logo">
+            <LogoUpload
+              label="Hlavní logo"
+              hint="Zobrazuje se v sidebaru a na login stránce"
+              currentUrl={state.logo_url}
+              onUrlChange={(url) => update("logo_url", url)}
+              advisorId={advisorId}
+              fileKey="logo"
+            />
+
+            <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
-                <Label htmlFor="app_name">Název aplikace</Label>
+                <Label className="text-sm font-medium mb-1.5 block">Velikost</Label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range" min={20} max={80} value={state.logo_size}
+                    onChange={(e) => update("logo_size", parseInt(e.target.value))}
+                    className="flex-1 accent-gray-900 cursor-pointer"
+                  />
+                  <span className="text-xs text-gray-400 font-mono w-8 text-right">{state.logo_size}</span>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium mb-1.5 block">Tvar</Label>
+                <div className="flex gap-1.5">
+                  {(["original", "rounded", "circle"] as const).map((shape) => (
+                    <button
+                      key={shape}
+                      type="button"
+                      onClick={() => update("logo_shape", shape)}
+                      className={`flex-1 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-colors duration-150 ${
+                        state.logo_shape === shape
+                          ? "bg-gray-900 text-white"
+                          : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                      }`}
+                    >
+                      {shape === "original" ? "Original" : shape === "rounded" ? "Rounded" : "Kruh"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <Label className="text-sm font-medium mb-1.5 block">Pozice</Label>
+              <div className="flex gap-1.5">
+                {([
+                  { value: "sidebar_top", label: "Nahoře" },
+                  { value: "sidebar_center", label: "Uprostřed" },
+                  { value: "above_nav", label: "Nad nav" },
+                ] as const).map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => update("logo_position", opt.value)}
+                    className={`flex-1 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-colors duration-150 ${
+                      state.logo_position === opt.value
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </Section>
+
+          {/* B) Barvy */}
+          <Section title="Barvy">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {COLOR_PALETTES.map((palette) => {
+                const isActive =
+                  state.brand_primary === palette.primary &&
+                  state.brand_secondary === palette.secondary;
+                return (
+                  <button
+                    key={palette.name}
+                    type="button"
+                    onClick={() => applyPalette(palette)}
+                    className={`relative flex items-center gap-2 p-2.5 rounded-md border cursor-pointer transition-all duration-150 ${
+                      isActive ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-200"
+                    }`}
+                  >
+                    <div className="flex -space-x-1">
+                      <div className="h-5 w-5 rounded-full border-2 border-white" style={{ backgroundColor: palette.primary }} />
+                      <div className="h-5 w-5 rounded-full border-2 border-white" style={{ backgroundColor: palette.secondary }} />
+                      <div className="h-5 w-5 rounded-full border-2 border-white" style={{ backgroundColor: palette.accent }} />
+                    </div>
+                    <span className="text-[11px] text-gray-600 font-medium truncate">{palette.name}</span>
+                    {isActive && <Check className="h-3 w-3 text-gray-900 absolute top-1 right-1" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCustomColors(!customColors)}
+              className="mt-3 text-xs text-gray-400 hover:text-gray-600 cursor-pointer transition-colors duration-150"
+            >
+              {customColors ? "Skrýt vlastní barvy" : "Vlastní barvy →"}
+            </button>
+
+            {customColors && (
+              <div className="mt-3 grid grid-cols-3 gap-3">
+                <ColorPicker label="Primární" value={state.brand_primary} onChange={(v) => update("brand_primary", v)} />
+                <ColorPicker label="Sekundární" value={state.brand_secondary} onChange={(v) => update("brand_secondary", v)} />
+                <ColorPicker label="Akcentní" value={state.brand_accent_color} onChange={(v) => update("brand_accent_color", v)} />
+              </div>
+            )}
+          </Section>
+
+          {/* C) Šablona */}
+          <Section title="Šablona">
+            <div className="grid grid-cols-2 gap-3">
+              {TEMPLATES.map((tpl) => {
+                const isActive = state.brand_template === tpl.id;
+                return (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => update("brand_template", tpl.id)}
+                    className={`relative rounded-lg border-2 p-3 text-left cursor-pointer transition-all duration-150 ${
+                      isActive ? "border-gray-900" : "border-gray-100 hover:border-gray-200"
+                    }`}
+                  >
+                    {/* Mini preview */}
+                    <div className="flex h-16 rounded overflow-hidden mb-2" style={{ border: `1px solid ${tpl.border}` }}>
+                      <div className="w-4 shrink-0" style={{ backgroundColor: tpl.sidebar }} />
+                      <div className="flex-1 p-1.5" style={{ backgroundColor: tpl.bg }}>
+                        <div className="h-1.5 w-8 rounded-sm mb-1" style={{ backgroundColor: tpl.text, opacity: 0.2 }} />
+                        <div className="h-1 w-6 rounded-sm mb-1" style={{ backgroundColor: tpl.text, opacity: 0.1 }} />
+                        <div className="flex gap-1 mt-1.5">
+                          <div className="h-3 flex-1 rounded-sm" style={{ backgroundColor: tpl.text, opacity: 0.06 }} />
+                          <div className="h-3 flex-1 rounded-sm" style={{ backgroundColor: tpl.text, opacity: 0.06 }} />
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm font-medium text-gray-900">{tpl.name}</p>
+                    <p className="text-xs text-gray-400">{tpl.desc}</p>
+                    {isActive && (
+                      <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-gray-900 flex items-center justify-center">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </Section>
+
+          {/* D) Font */}
+          <Section title="Font">
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-1.5">
+                {FONTS.map((font) => (
+                  <button
+                    key={font.value}
+                    type="button"
+                    onClick={() => update("brand_font", font.value)}
+                    className={`px-3 py-1.5 rounded-md text-sm cursor-pointer transition-colors duration-150 ${
+                      state.brand_font === font.value
+                        ? "bg-gray-900 text-white font-medium"
+                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    }`}
+                    style={{ fontFamily: font.value + ", sans-serif" }}
+                  >
+                    {font.label}
+                  </button>
+                ))}
+              </div>
+              <div className="p-3 rounded-md bg-gray-50 border border-gray-100">
+                <p style={{ fontFamily: state.brand_font + ", sans-serif" }} className="text-lg font-semibold text-gray-900">
+                  Aa Bb Cc 123
+                </p>
+                <p style={{ fontFamily: state.brand_font + ", sans-serif" }} className="text-sm text-gray-500 mt-0.5">
+                  Přehled vašeho podnikání — {state.brand_font}
+                </p>
+              </div>
+            </div>
+          </Section>
+
+          {/* E) Název firmy */}
+          <Section title="Název firmy">
+            <div className="space-y-3">
+              <div>
+                <Label className="text-sm font-medium mb-1.5 block">Název aplikace</Label>
                 <Input
-                  id="app_name"
                   value={state.app_name}
                   onChange={(e) => update("app_name", e.target.value)}
                   placeholder="FinAdvisor"
+                  className="h-9"
                 />
+                <p className="text-xs text-gray-400 mt-1">Tento název uvidí vaši klienti</p>
               </div>
-
-              <LogoUpload
-                label="Hlavní logo"
-                currentUrl={state.logo_url}
-                onUrlChange={(url) => update("logo_url", url)}
-                advisorId={advisorId}
-                fileKey="logo"
-              />
-
-              <LogoUpload
-                label="Ikona / favicon"
-                currentUrl={state.logo_icon_url}
-                onUrlChange={(url) => update("logo_icon_url", url)}
-                advisorId={advisorId}
-                fileKey="icon"
-              />
-
-              {/* Logo size */}
               <div>
-                <Label>Velikost loga</Label>
-                <div className="flex items-center gap-3 mt-2">
-                  <input
-                    type="range"
-                    min={24}
-                    max={120}
-                    value={state.logo_size}
-                    onChange={(e) => setState((prev) => ({ ...prev, logo_size: parseInt(e.target.value) }))}
-                    className="flex-1 accent-blue-600"
-                  />
-                  <span className="text-xs text-slate-500 font-mono w-10 text-right">{state.logo_size}px</span>
-                </div>
-                {state.logo_url && (
-                  <div className="mt-2 flex items-center justify-center rounded-lg bg-slate-50 p-3">
-                    <img
-                      src={state.logo_url}
-                      alt="Náhled"
-                      style={{
-                        height: `${state.logo_size}px`,
-                        borderRadius: state.logo_shape === "circle" ? "50%" : state.logo_shape === "square" ? "4px" : "0",
-                        objectFit: state.logo_shape !== "original" ? "cover" : "contain",
-                        aspectRatio: state.logo_shape !== "original" ? "1/1" : "auto",
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Logo shape */}
-              <div>
-                <Label>Tvar loga</Label>
-                <div className="flex gap-2 mt-2">
-                  {([
-                    { value: "original", label: "Originál", preview: "rounded-none" },
-                    { value: "square", label: "Čtverec", preview: "rounded" },
-                    { value: "circle", label: "Kruh", preview: "rounded-full" },
-                  ] as const).map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => update("logo_shape", opt.value)}
-                      className={`flex-1 flex flex-col items-center gap-1.5 px-3 py-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                        state.logo_shape === opt.value
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className={`h-8 w-8 bg-slate-300 ${opt.preview}`} style={{
-                        borderRadius: opt.value === "original" ? "2px" : opt.value === "square" ? "4px" : "50%",
-                        aspectRatio: "1/1",
-                      }} />
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Logo position */}
-              <div>
-                <Label>Umístění loga</Label>
-                <div className="flex gap-2 mt-2">
-                  {([
-                    { value: "sidebar_top", label: "Sidebar nahoře" },
-                    { value: "sidebar_center", label: "Sidebar uprostřed" },
-                    { value: "above_nav", label: "Nad navigací" },
-                  ] as const).map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => update("logo_position", opt.value)}
-                      className={`flex-1 flex flex-col items-center gap-1.5 px-2 py-3 rounded-lg border-2 text-xs font-medium transition-colors ${
-                        state.logo_position === opt.value
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      {/* Mini wireframe */}
-                      <div className="flex h-12 w-full gap-0.5 rounded overflow-hidden">
-                        <div className="w-5 shrink-0 bg-slate-800 flex flex-col items-center py-0.5 gap-0.5">
-                          {opt.value === "sidebar_top" && <div className="h-1.5 w-3 rounded-sm bg-blue-400" />}
-                          {opt.value === "sidebar_center" && <div className="flex-1" />}
-                          {opt.value === "sidebar_center" && <div className="h-1.5 w-3 rounded-sm bg-blue-400" />}
-                          {opt.value === "sidebar_center" && <div className="flex-1" />}
-                          <div className="h-1 w-3 rounded-sm bg-white/20" />
-                          <div className="h-1 w-3 rounded-sm bg-white/20" />
-                          {opt.value === "above_nav" && <div className="flex-1" />}
-                        </div>
-                        <div className="flex-1 bg-slate-100 p-0.5">
-                          {opt.value === "above_nav" && <div className="h-1.5 w-4 rounded-sm bg-blue-400 mb-0.5" />}
-                          <div className="h-1 w-5 bg-slate-300 rounded-sm mb-0.5" />
-                          <div className="h-1 w-4 bg-slate-200 rounded-sm" />
-                        </div>
-                      </div>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="login_slug">Login slug</Label>
+                <Label className="text-sm font-medium mb-1.5 block">Login slug</Label>
                 <Input
-                  id="login_slug"
                   value={state.login_slug}
                   onChange={(e) => update("login_slug", e.target.value)}
                   placeholder="moje-firma"
+                  className="h-9"
                 />
                 {state.login_slug && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    URL: {origin}/login/{state.login_slug}
+                  <p className="text-xs text-gray-400 mt-1">
+                    URL: finatiq.cz/p/{state.login_slug}
                   </p>
                 )}
               </div>
             </div>
-          </section>
+          </Section>
 
-          {/* SEKCE 2: Barvy */}
-          <section className="rounded-xl border bg-white p-6">
-            <h2 className="text-lg font-semibold mb-4">Barvy</h2>
-            <div className="space-y-4">
-              <div>
-                <Label>Primární barva</Label>
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {COLOR_PRESETS.map((preset) => (
-                    <button
-                      key={preset.value}
-                      type="button"
-                      title={preset.label}
-                      onClick={() => update("brand_primary", preset.value)}
-                      className="h-8 w-8 rounded-full transition-all"
-                      style={{
-                        backgroundColor: preset.value,
-                        boxShadow:
-                          state.brand_primary === preset.value
-                            ? `0 0 0 3px white, 0 0 0 5px ${preset.value}`
-                            : "none",
-                      }}
-                    />
-                  ))}
-                  <input
-                    type="color"
-                    value={state.brand_primary}
-                    onChange={(e) => update("brand_primary", e.target.value)}
-                    className="h-8 w-8 rounded cursor-pointer border-0 p-0"
-                    title="Vlastní barva"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <ColorField
-                  label="Sekundární"
-                  value={state.brand_secondary}
-                  onChange={(v) => update("brand_secondary", v)}
-                />
-                <ColorField
-                  label="Akcentová"
-                  value={state.brand_accent_color}
-                  onChange={(v) => update("brand_accent_color", v)}
-                />
-                <ColorField
-                  label="Pozadí"
-                  value={state.brand_background}
-                  onChange={(v) => update("brand_background", v)}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* SEKCE 3: Typografie */}
-          <section className="rounded-xl border bg-white p-6">
-            <h2 className="text-lg font-semibold mb-4">Typografie</h2>
-            <div className="space-y-4">
-              <div>
-                <Label>Font</Label>
-                <Select value={state.brand_font} onValueChange={(v) => update("brand_font", v)}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FONT_OPTIONS.map((font) => (
-                      <SelectItem key={font} value={font}>
-                        {font}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Velikost písma</Label>
-                <div className="flex gap-2 mt-2">
-                  {(
-                    [
-                      { value: "small", label: "Kompaktní (14px)" },
-                      { value: "medium", label: "Standardní (16px)" },
-                      { value: "large", label: "Velké (18px)" },
-                    ] as const
-                  ).map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => update("brand_font_size", opt.value)}
-                      className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                        state.brand_font_size === opt.value
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label>Zakulacení rohů</Label>
-                <div className="flex gap-2 mt-2">
-                  {(
-                    [
-                      { value: "sharp", label: "Ostré", radius: "0px" },
-                      { value: "medium", label: "Střední", radius: "8px" },
-                      { value: "rounded", label: "Kulaté", radius: "16px" },
-                    ] as const
-                  ).map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => update("brand_border_radius", opt.value)}
-                      className={`flex-1 flex flex-col items-center gap-1.5 px-3 py-3 rounded-lg border text-sm font-medium transition-colors ${
-                        state.brand_border_radius === opt.value
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <div
-                        className="h-8 w-8 border-2 border-current"
-                        style={{ borderRadius: opt.radius }}
-                      />
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* SEKCE 4: Rozložení */}
-          <section className="rounded-xl border bg-white p-6">
-            <h2 className="text-lg font-semibold mb-4">Rozložení</h2>
-            <div className="space-y-5">
-              <LayoutPicker
-                label="Layout klientského portálu"
-                value={state.client_layout}
-                onChange={(v) => update("client_layout", v)}
-                color={state.brand_primary}
-              />
-              <LayoutPicker
-                label="Layout poradcovského panelu"
-                value={state.advisor_layout}
-                onChange={(v) => update("advisor_layout", v)}
-                color={state.brand_primary}
-              />
-              {/* TODO: Dark mode bude implementován později — vyžaduje dark: varianty na všech komponentách */}
-            </div>
-          </section>
-
-          {/* SEKCE 5: Texty */}
-          <section className="rounded-xl border bg-white p-6">
-            <h2 className="text-lg font-semibold mb-4">Texty</h2>
-            <div className="space-y-4">
-              <div>
-                <Label>Uvítací text na dashboardu</Label>
-                <Textarea
-                  value={state.custom_welcome_text}
-                  onChange={(e) => update("custom_welcome_text", e.target.value)}
-                  placeholder="Vítejte v klientském portálu..."
-                  rows={3}
-                />
-              </div>
-              <div>
-                <Label>Titulek přihlašovací stránky</Label>
-                <Input
-                  value={state.custom_login_title}
-                  onChange={(e) => update("custom_login_title", e.target.value)}
-                  placeholder="Přihlášení do portálu"
-                />
-              </div>
-              <div>
-                <Label>Podtitulek přihlašovací stránky</Label>
-                <Input
-                  value={state.custom_login_subtitle}
-                  onChange={(e) => update("custom_login_subtitle", e.target.value)}
-                  placeholder="Zadejte své přihlašovací údaje"
-                />
-              </div>
-              <div>
-                <Label>Text patičky emailů</Label>
-                <Input
-                  value={state.email_footer_text}
-                  onChange={(e) => update("email_footer_text", e.target.value)}
-                  placeholder="© 2026 Vaše firma. Všechna práva vyhrazena."
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Save button — mobile */}
+          {/* Save — mobile */}
           <div className="lg:hidden pb-4">
-            <Button onClick={handleSave} disabled={saving} className="w-full" size="lg">
-              {saving ? "Ukládám..." : "Uložit branding"}
+            <Button onClick={handleSave} disabled={saving} className="w-full h-10 cursor-pointer">
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Ukládám...</> : "Uložit změny"}
             </Button>
           </div>
         </div>
 
-        {/* Preview column (30%) — desktop only */}
-        <div className="hidden lg:block w-[250px] shrink-0">
+        {/* ── Right: Live Preview (40%) ── */}
+        <div className="hidden lg:block w-[380px] shrink-0">
           <div className="sticky top-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Náhled
-              </h3>
-              <Button onClick={handleSave} disabled={saving} size="sm">
-                {saving && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
-                {saving ? "Ukládám..." : "Uložit"}
+              <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Náhled</span>
+              <Button onClick={handleSave} disabled={saving} size="sm" className="h-8 cursor-pointer">
+                {saving ? <><Loader2 className="mr-1.5 h-3 w-3 animate-spin" />Ukládám</> : "Uložit změny"}
               </Button>
             </div>
-            <div
-              className="w-[250px] h-[400px] border rounded-xl overflow-hidden shadow-sm"
-              style={{
-                fontFamily: state.brand_font + ", sans-serif",
-                fontSize: "11px",
-                backgroundColor:
-                  state.brand_mode === "dark" ? "#1E293B" : state.brand_background,
-                color: state.brand_mode === "dark" ? "#F1F5F9" : "#1E293B",
-              }}
-            >
-              {state.client_layout === "modern" ? (
-                <div className="flex flex-col h-full">
-                  <div
-                    className="h-8 flex items-center px-2 gap-1.5 shrink-0"
-                    style={{ backgroundColor: state.brand_primary }}
-                  >
-                    {state.logo_url ? (
-                      <img src={state.logo_url} alt="" style={{
-                        height: `${Math.min(state.logo_size * 0.4, 20)}px`,
-                        objectFit: state.logo_shape !== "original" ? "cover" : "contain",
-                        borderRadius: state.logo_shape === "circle" ? "50%" : state.logo_shape === "square" ? "2px" : "0",
-                        aspectRatio: state.logo_shape !== "original" ? "1/1" : "auto",
-                      }} />
-                    ) : (
-                      <span className="text-white text-[10px] font-bold">
-                        {state.app_name}
-                      </span>
-                    )}
-                    <div className="flex-1" />
-                    <div className="h-3 w-3 rounded-full bg-white/30" />
-                  </div>
-                  <div className="flex-1 p-2.5 space-y-2 overflow-hidden">
-                    <PreviewBody state={state} borderRadius={borderRadius} />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex h-full">
-                  <div
-                    className="flex flex-col items-center py-2 px-0.5 gap-1.5 shrink-0"
-                    style={{
-                      backgroundColor: state.brand_primary,
-                      width: state.client_layout === "minimalist" ? "24px" : "40px",
-                    }}
-                  >
-                    {state.client_layout === "classic" && (
-                      <>
-                        {state.logo_url ? (
-                          <img
-                            src={state.logo_url}
-                            alt=""
-                            style={{
-                              height: `${Math.min(state.logo_size * 0.35, 16)}px`,
-                              width: `${Math.min(state.logo_size * 0.35, 16)}px`,
-                              objectFit: state.logo_shape !== "original" ? "cover" : "contain",
-                              borderRadius: state.logo_shape === "circle" ? "50%" : state.logo_shape === "square" ? "2px" : "0",
-                            }}
-                          />
-                        ) : (
-                          <span className="text-white text-[7px] font-bold">
-                            {state.app_name.substring(0, 2)}
-                          </span>
-                        )}
-                        <div className="h-2 w-5 rounded bg-white/20 mt-1" />
-                        <div className="h-2 w-5 rounded bg-white/20" />
-                        <div className="h-2 w-5 rounded bg-white/30" />
-                      </>
-                    )}
-                    {state.client_layout === "minimalist" && (
-                      <>
-                        <div className="h-1.5 w-1.5 rounded-full bg-white/40" />
-                        <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
-                        <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
-                      </>
-                    )}
-                  </div>
-                  <div className="flex-1 p-2.5 space-y-2 overflow-hidden">
-                    <PreviewBody state={state} borderRadius={borderRadius} />
-                  </div>
-                </div>
-              )}
-            </div>
+            <LivePreview state={state} />
           </div>
         </div>
       </div>
@@ -887,115 +632,25 @@ export default function BrandingPage() {
   );
 }
 
-function ColorField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
+/* ── Helpers ── */
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div>
-      <Label className="text-xs">{label}</Label>
-      <div className="flex items-center gap-2 mt-1">
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-8 w-8 rounded cursor-pointer border-0 p-0"
-        />
-        <span className="text-xs text-slate-900 font-mono">{value}</span>
-      </div>
-    </div>
+    <section className="rounded-lg border border-gray-100 bg-white p-5">
+      <h2 className="text-sm font-semibold text-gray-900 mb-4">{title}</h2>
+      {children}
+    </section>
   );
 }
 
-function LayoutPicker({
-  label,
-  value,
-  onChange,
-  color,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  color: string;
-}) {
-  const options = [
-    { value: "classic", label: "Klasický", Wireframe: ClassicWireframe },
-    { value: "modern", label: "Moderní", Wireframe: ModernWireframe },
-    { value: "minimalist", label: "Minimalistický", Wireframe: MinimalistWireframe },
-  ];
-
+function ColorPicker({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <Label className="mb-2 block">{label}</Label>
-      <div className="grid grid-cols-3 gap-2">
-        {options.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            className={`p-2.5 rounded-lg border-2 transition-colors ${
-              value === opt.value
-                ? "border-blue-500 bg-blue-50"
-                : "border-slate-200 hover:border-slate-300"
-            }`}
-          >
-            <opt.Wireframe color={color} />
-            <p className="text-xs font-medium mt-1.5 text-slate-600">{opt.label}</p>
-          </button>
-        ))}
+      <Label className="text-xs text-gray-500 mb-1 block">{label}</Label>
+      <div className="flex items-center gap-2">
+        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-7 w-7 rounded cursor-pointer border-0 p-0" />
+        <span className="text-xs text-gray-500 font-mono">{value}</span>
       </div>
     </div>
-  );
-}
-
-function PreviewBody({
-  state,
-  borderRadius,
-}: {
-  state: BrandingState;
-  borderRadius: string;
-}) {
-  return (
-    <>
-      <p
-        className="font-semibold text-[11px]"
-        style={{ fontFamily: state.brand_font + ", sans-serif" }}
-      >
-        {state.custom_welcome_text || "Vítejte zpět"}
-      </p>
-      <button
-        className="text-white text-[9px] px-2.5 py-1 font-medium"
-        style={{ backgroundColor: state.brand_primary, borderRadius }}
-      >
-        Akce
-      </button>
-      <div
-        className="p-1.5 border"
-        style={{
-          backgroundColor:
-            state.brand_mode === "dark" ? "#334155" : state.brand_background,
-          borderRadius,
-          borderColor: state.brand_mode === "dark" ? "#475569" : "#E2E8F0",
-        }}
-      >
-        <div className="h-1.5 w-12 bg-slate-300 rounded mb-0.5" />
-        <div className="h-1.5 w-8 bg-slate-200 rounded" />
-      </div>
-      <span
-        className="inline-block text-[8px] text-white px-1.5 py-0.5 font-medium"
-        style={{ backgroundColor: state.brand_accent_color, borderRadius }}
-      >
-        Badge
-      </span>
-      <div
-        className="h-1 w-14 rounded"
-        style={{ backgroundColor: state.brand_secondary }}
-      />
-    </>
   );
 }
