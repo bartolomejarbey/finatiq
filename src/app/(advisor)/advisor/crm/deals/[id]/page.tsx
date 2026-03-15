@@ -234,7 +234,7 @@ export default function DealDetailPage() {
   return (
     <div className="h-full overflow-y-auto">
       {/* Header */}
-      <div className="border-b bg-white px-8 py-5">
+      <div className="border-b bg-[var(--card-bg)] px-8 py-5">
         <button onClick={() => router.push("/advisor/crm/pipeline")} className="mb-3 flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900"><ArrowLeft className="h-4 w-4" />Zpět na pipeline</button>
         <div className="flex items-start justify-between">
           <div>
@@ -278,7 +278,7 @@ export default function DealDetailPage() {
         {/* Left (2/3) */}
         <div className="col-span-2 space-y-6">
           {/* Details */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Detaily dealu</h2>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Název"><Input value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
@@ -301,7 +301,7 @@ export default function DealDetailPage() {
           </div>
 
           {/* Documents */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Dokumenty</h2>
             <label className={`mb-4 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 py-6 text-sm text-slate-500 transition-colors hover:border-blue-300 hover:text-blue-500 ${uploading ? "pointer-events-none opacity-50" : ""}`}>
               {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
@@ -328,7 +328,7 @@ export default function DealDetailPage() {
           </div>
 
           {/* Activities */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Aktivity</h2>
             <form onSubmit={handleAddActivity} className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
               <div className="grid grid-cols-2 gap-3">
@@ -371,7 +371,7 @@ export default function DealDetailPage() {
         {/* Right (1/3) */}
         <div className="space-y-4">
           {/* Contact */}
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">Kontakt</h3>
             {deal.contact_name ? (
               <div className="mb-3 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">{deal.contact_name[0].toUpperCase()}</div><p className="font-semibold text-slate-900">{deal.contact_name}</p></div>
@@ -381,7 +381,7 @@ export default function DealDetailPage() {
           </div>
 
           {/* Stage progress */}
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">Průběh</h3>
             <div className="space-y-1">
               {stages.map((s) => {
@@ -398,7 +398,7 @@ export default function DealDetailPage() {
           </div>
 
           {/* Client */}
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">Klient</h3>
             {clientId && clients.find((c) => c.id === clientId) ? (
               <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100"><User className="h-4 w-4 text-slate-500" /></div><p className="text-sm font-medium text-slate-900">{clients.find((c) => c.id === clientId)!.first_name} {clients.find((c) => c.id === clientId)!.last_name}</p></div>
@@ -406,7 +406,7 @@ export default function DealDetailPage() {
           </div>
 
           {/* Info */}
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">Informace</h3>
             <dl className="space-y-2.5 text-sm">
               <InfoRow label="Vytvořeno" value={formatDate(deal.created_at)} />
@@ -469,7 +469,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function DetailSkeleton() {
   return (
     <div className="h-full overflow-y-auto">
-      <div className="border-b bg-white px-8 py-5"><Skeleton className="mb-3 h-4 w-32" /><Skeleton className="h-8 w-64" /><Skeleton className="mt-2 h-6 w-40" /></div>
+      <div className="border-b bg-[var(--card-bg)] px-8 py-5"><Skeleton className="mb-3 h-4 w-32" /><Skeleton className="h-8 w-64" /><Skeleton className="mt-2 h-6 w-40" /></div>
       <div className="grid grid-cols-3 gap-6 p-8">
         <div className="col-span-2 space-y-6"><Skeleton className="h-72 rounded-xl" /><Skeleton className="h-48 rounded-xl" /></div>
         <div className="space-y-4"><Skeleton className="h-36 rounded-xl" /><Skeleton className="h-48 rounded-xl" /><Skeleton className="h-28 rounded-xl" /></div>

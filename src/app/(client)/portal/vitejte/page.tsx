@@ -317,7 +317,7 @@ export default function ClientOnboardingPage() {
                         ? "border-blue-500 bg-blue-500 text-white"
                         : isCurrent
                           ? "border-blue-500 bg-blue-50 text-blue-600"
-                          : "border-slate-200 bg-white text-slate-400"
+                          : "border-[var(--card-border)] bg-[var(--card-bg)] text-[var(--card-text-dim)]"
                     }`}
                   >
                     {isCompleted ? (
@@ -332,7 +332,7 @@ export default function ClientOnboardingPage() {
                         ? "text-blue-600"
                         : isCompleted
                           ? "text-blue-500"
-                          : "text-slate-400"
+                          : "text-[var(--card-text-dim)]"
                     }`}
                   >
                     {s.label}
@@ -342,7 +342,7 @@ export default function ClientOnboardingPage() {
                 {i < stepIcons.length - 1 && (
                   <div
                     className={`mx-1 h-0.5 flex-1 transition-all duration-300 ${
-                      step > stepNum ? "bg-blue-500" : "bg-slate-200"
+                      step > stepNum ? "bg-blue-500" : "bg-[var(--card-border)]"
                     }`}
                   />
                 )}
@@ -371,24 +371,24 @@ export default function ClientOnboardingPage() {
       <div className="w-full max-w-xl">
         <ProgressBar />
 
-        <div className="rounded-2xl border bg-white p-8 shadow-lg">
+        <div className="rounded-2xl border bg-[var(--card-bg)] p-8 shadow-lg">
           {/* ═══ STEP 1: Welcome ═══ */}
           {step === 1 && (
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100">
                 <HandHeart className="h-8 w-8 text-blue-600" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-slate-900">
+              <h1 className="mb-2 text-2xl font-bold text-[var(--card-text)]">
                 Dobrý den, {firstName || ""}!
               </h1>
-              <p className="mb-1 text-slate-600">
+              <p className="mb-1 text-[var(--card-text-muted)]">
                 Váš finanční poradce{" "}
                 <span className="font-semibold text-blue-600">
                   {advisorCompanyName}
                 </span>{" "}
                 vám připravil přístup do portálu.
               </p>
-              <p className="mb-8 text-sm text-slate-500">
+              <p className="mb-8 text-sm text-[var(--card-text-muted)]">
                 Pojďme nastavit váš profil.
               </p>
               <Button onClick={() => setStep(2)} className="w-full" size="lg">
@@ -406,10 +406,10 @@ export default function ClientOnboardingPage() {
                   <UserCircle className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-[var(--card-text)]">
                     Vaše údaje
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--card-text-muted)]">
                     Zkontrolujte a doplňte své kontaktní informace
                   </p>
                 </div>
@@ -466,10 +466,10 @@ export default function ClientOnboardingPage() {
 
                 <div className="flex items-center justify-between rounded-lg border p-3">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">
+                    <p className="text-sm font-medium text-[var(--card-text)]">
                       Jste OSVČ?
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[var(--card-text-muted)]">
                       Zapne modul pro evidenci příjmů a výdajů
                     </p>
                   </div>
@@ -501,10 +501,10 @@ export default function ClientOnboardingPage() {
                   <Settings2 className="h-5 w-5 text-violet-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-[var(--card-text)]">
                     Vaše preference
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--card-text-muted)]">
                     Přizpůsobíme portál vašim potřebám
                   </p>
                 </div>
@@ -512,7 +512,7 @@ export default function ClientOnboardingPage() {
 
               {/* Interests */}
               <div className="mb-5">
-                <p className="mb-3 text-sm font-medium text-slate-700">
+                <p className="mb-3 text-sm font-medium text-[var(--card-text)]">
                   Co vás zajímá?
                 </p>
                 <div className="space-y-2">
@@ -522,21 +522,21 @@ export default function ClientOnboardingPage() {
                       className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
                         interests[opt.key]
                           ? "border-blue-200 bg-blue-50"
-                          : "border-slate-200 hover:bg-slate-50"
+                          : "border-[var(--card-border)] hover:bg-[var(--table-hover)]"
                       }`}
                     >
                       <div
                         className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
                           interests[opt.key]
                             ? "border-blue-500 bg-blue-500"
-                            : "border-slate-300"
+                            : "border-[var(--input-border)]"
                         }`}
                       >
                         {interests[opt.key] && (
                           <Check className="h-3 w-3 text-white" />
                         )}
                       </div>
-                      <span className="text-sm text-slate-700">
+                      <span className="text-sm text-[var(--card-text)]">
                         {opt.label}
                       </span>
                     </label>
@@ -546,7 +546,7 @@ export default function ClientOnboardingPage() {
 
               {/* Family status */}
               <div className="mb-2">
-                <p className="mb-2 text-sm font-medium text-slate-700">
+                <p className="mb-2 text-sm font-medium text-[var(--card-text)]">
                   Rodinný stav
                 </p>
                 <Select value={familyStatus} onValueChange={setFamilyStatus}>
@@ -592,10 +592,10 @@ export default function ClientOnboardingPage() {
                   <FileText className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-[var(--card-text)]">
                     První smlouva
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--card-text-muted)]">
                     Máte nějaké úvěry nebo pojištění?
                   </p>
                 </div>
@@ -622,7 +622,7 @@ export default function ClientOnboardingPage() {
               {/* Contract type selector */}
               {!contractAdded && contractFormMode === "none" && (
                 <div>
-                  <p className="mb-4 text-sm text-slate-600">
+                  <p className="mb-4 text-sm text-[var(--card-text-muted)]">
                     Vyberte typ smlouvy, kterou chcete přidat:
                   </p>
                   <div className="grid grid-cols-2 gap-3">
@@ -632,7 +632,7 @@ export default function ClientOnboardingPage() {
                       onClick={() => setContractFormMode("loan")}
                     >
                       <span className="text-sm font-medium">Přidat úvěr</span>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-[var(--card-text-dim)]">
                         Hypotéka, spotřebitelský úvěr...
                       </span>
                     </Button>
@@ -644,7 +644,7 @@ export default function ClientOnboardingPage() {
                       <span className="text-sm font-medium">
                         Přidat pojištění
                       </span>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-[var(--card-text-dim)]">
                         Životní, majetkové, vozidla...
                       </span>
                     </Button>
@@ -788,7 +788,7 @@ export default function ClientOnboardingPage() {
                   {!contractAdded && (
                     <button
                       onClick={proceedToFinish}
-                      className="text-sm text-slate-500 underline hover:text-slate-700"
+                      className="text-sm text-[var(--card-text-muted)] underline hover:text-[var(--card-text)]"
                     >
                       Přidám později
                     </button>
@@ -810,25 +810,25 @@ export default function ClientOnboardingPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
                 <PartyPopper className="h-8 w-8 text-emerald-600" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-slate-900">
+              <h1 className="mb-2 text-2xl font-bold text-[var(--card-text)]">
                 Váš portál je připraven!
               </h1>
-              <p className="mb-6 text-slate-500">
+              <p className="mb-6 text-[var(--card-text-muted)]">
                 Vše je nastaveno, můžete začít.
               </p>
 
               {/* Summary */}
-              <div className="mb-6 space-y-2 rounded-xl bg-slate-50 p-4 text-left text-sm">
+              <div className="mb-6 space-y-2 rounded-xl bg-[var(--table-hover)] p-4 text-left text-sm">
                 <div className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-emerald-500" />
-                  <span className="text-slate-700">
+                  <span className="text-[var(--card-text)]">
                     Profil nastaven pro{" "}
                     <span className="font-medium">{summary.name}</span>
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-emerald-500" />
-                  <span className="text-slate-700">
+                  <span className="text-[var(--card-text)]">
                     {summary.preferencesCount}{" "}
                     {summary.preferencesCount === 1
                       ? "modul vybrán"
@@ -840,7 +840,7 @@ export default function ClientOnboardingPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-emerald-500" />
-                  <span className="text-slate-700">
+                  <span className="text-[var(--card-text)]">
                     {summary.contractAdded
                       ? "První smlouva přidána"
                       : "Smlouvy přidáte později v portálu"}

@@ -114,7 +114,7 @@ export default function ContractDetailPage() {
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 rounded-xl" /></div>;
-  if (!contract) return <div><p className="text-gray-500">Smlouva nenalezena.</p></div>;
+  if (!contract) return <div><p className="text-[var(--card-text-muted)]">Smlouva nenalezena.</p></div>;
 
   const isLoan = contract.type === "uver";
   const showAlert = isLoan && contract.interest_rate && contract.interest_rate > interestThreshold;
@@ -196,39 +196,39 @@ export default function ContractDetailPage() {
       {isLoan && contract.remaining_balance != null && (
         <>
           {/* Progress bar */}
-          <div className="mb-6 rounded-2xl border bg-white p-6 shadow-sm">
+          <div className="mb-6 rounded-2xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-700">Vývoj vašeho dluhu</h2>
-              <span className="text-sm font-bold text-gray-900">{progress}% splaceno</span>
+              <h2 className="text-sm font-semibold text-[var(--card-text)]">Vývoj vašeho dluhu</h2>
+              <span className="text-sm font-bold text-[var(--card-text)]">{progress}% splaceno</span>
             </div>
-            <div className="h-4 w-full rounded-full bg-gray-100">
+            <div className="h-4 w-full rounded-full bg-[var(--table-header)]">
               <div className="h-4 rounded-full bg-gradient-to-r from-blue-500 to-green-500 transition-all" style={{ width: `${progress}%` }} />
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-4 text-center text-xs text-gray-500">
-              <div><p className="font-medium text-gray-900">{formatCZK(totalPaid)}</p><p>Celkem splaceno</p></div>
-              <div><p className="font-medium text-gray-900">{formatCZK(totalInterest)}</p><p>Zaplacené úroky</p></div>
-              <div><p className="font-medium text-gray-900">{formatCZK(totalPrincipal)}</p><p>Splacená jistina</p></div>
+            <div className="mt-3 grid grid-cols-3 gap-4 text-center text-xs text-[var(--card-text-muted)]">
+              <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalPaid)}</p><p>Celkem splaceno</p></div>
+              <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalInterest)}</p><p>Zaplacené úroky</p></div>
+              <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalPrincipal)}</p><p>Splacená jistina</p></div>
             </div>
           </div>
 
           {/* Last payment breakdown */}
           {lastPayment && (
-            <div className="mb-6 rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="mb-3 text-sm font-semibold text-gray-700">Poslední splátka</h2>
+            <div className="mb-6 rounded-2xl border bg-[var(--card-bg)] p-6 shadow-sm">
+              <h2 className="mb-3 text-sm font-semibold text-[var(--card-text)]">Poslední splátka</h2>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <div className="flex h-4 overflow-hidden rounded-full">
                     <div className="bg-red-400" style={{ width: `${(lastPayment.interest_amount / lastPayment.total_amount) * 100}%` }} />
                     <div className="bg-emerald-400" style={{ width: `${(lastPayment.principal_amount / lastPayment.total_amount) * 100}%` }} />
                   </div>
-                  <div className="mt-2 flex justify-between text-xs text-gray-500">
+                  <div className="mt-2 flex justify-between text-xs text-[var(--card-text-muted)]">
                     <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-red-400" />Úrok: {formatCZK(lastPayment.interest_amount)}</span>
                     <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />Jistina: {formatCZK(lastPayment.principal_amount)}</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-gray-900">{formatCZK(lastPayment.total_amount)}</p>
-                  <p className="text-[10px] text-gray-400">{new Date(lastPayment.payment_date).toLocaleDateString("cs-CZ")}</p>
+                  <p className="text-lg font-bold text-[var(--card-text)]">{formatCZK(lastPayment.total_amount)}</p>
+                  <p className="text-[10px] text-[var(--card-text-dim)]">{new Date(lastPayment.payment_date).toLocaleDateString("cs-CZ")}</p>
                 </div>
               </div>
             </div>
@@ -245,8 +245,8 @@ export default function ContractDetailPage() {
 
           {/* Balance chart */}
           {chartData.length > 1 && (
-            <div className="mb-6 rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">Vývoj zůstatku</h2>
+            <div className="mb-6 rounded-2xl border bg-[var(--card-bg)] p-6 shadow-sm">
+              <h2 className="mb-4 text-sm font-semibold text-[var(--card-text)]">Vývoj zůstatku</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -261,18 +261,18 @@ export default function ContractDetailPage() {
 
           {/* Payment history */}
           {payments.length > 0 && (
-            <div className="rounded-2xl border bg-white shadow-sm">
-              <div className="border-b px-6 py-4"><h2 className="text-sm font-semibold text-gray-700">Historie splátek</h2></div>
+            <div className="rounded-2xl border bg-[var(--card-bg)] shadow-sm">
+              <div className="border-b px-6 py-4"><h2 className="text-sm font-semibold text-[var(--card-text)]">Historie splátek</h2></div>
               <table className="w-full">
-                <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-gray-700"><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Splátka</th><th className="px-6 py-3">Úrok</th><th className="px-6 py-3">Jistina</th><th className="px-6 py-3">Zůstatek</th></tr></thead>
+                <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Splátka</th><th className="px-6 py-3">Úrok</th><th className="px-6 py-3">Jistina</th><th className="px-6 py-3">Zůstatek</th></tr></thead>
                 <tbody>
                   {payments.map((p) => (
-                    <tr key={p.id} className="border-b last:border-0 hover:bg-gray-50">
-                      <td className="px-6 py-3 text-sm text-gray-500">{new Date(p.payment_date).toLocaleDateString("cs-CZ")}</td>
-                      <td className="px-6 py-3 text-sm font-medium text-gray-900">{formatCZK(p.total_amount)}</td>
+                    <tr key={p.id} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
+                      <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{new Date(p.payment_date).toLocaleDateString("cs-CZ")}</td>
+                      <td className="px-6 py-3 text-sm font-medium text-[var(--card-text)]">{formatCZK(p.total_amount)}</td>
                       <td className="px-6 py-3 text-sm text-red-500">{formatCZK(p.interest_amount)}</td>
                       <td className="px-6 py-3 text-sm text-emerald-600">{formatCZK(p.principal_amount)}</td>
-                      <td className="px-6 py-3 text-sm text-gray-700">{formatCZK(p.remaining_balance)}</td>
+                      <td className="px-6 py-3 text-sm text-[var(--card-text)]">{formatCZK(p.remaining_balance)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -284,12 +284,12 @@ export default function ContractDetailPage() {
 
       {/* Documents */}
       {documents.length > 0 && (
-        <div className="mt-6 rounded-2xl border bg-white p-6 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold text-gray-700">Dokumenty</h2>
+        <div className="mt-6 rounded-2xl border bg-[var(--card-bg)] p-6 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold text-[var(--card-text)]">Dokumenty</h2>
           <div className="space-y-2">
             {documents.map((d) => (
-              <div key={d.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                <span className="text-sm text-gray-700">{d.name}</span>
+              <div key={d.id} className="flex items-center justify-between rounded-lg bg-[var(--table-hover)] px-3 py-2">
+                <span className="text-sm text-[var(--card-text)]">{d.name}</span>
                 <Button size="sm" variant="outline" className="text-xs" onClick={async () => {
                   const { data } = await supabase.storage.from("deal-documents").createSignedUrl(d.file_path, 3600);
                   if (data?.signedUrl) window.open(data.signedUrl, "_blank");
@@ -315,9 +315,9 @@ export default function ContractDetailPage() {
 
 function ParamCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-2xl border p-4 shadow-sm ${highlight ? "bg-blue-50 border-blue-200" : "bg-white"}`}>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className={`text-lg font-bold ${highlight ? "text-blue-700" : "text-gray-900"}`}>{value}</p>
+    <div className={`rounded-2xl border p-4 shadow-sm ${highlight ? "bg-blue-50 border-blue-200" : "bg-[var(--card-bg)]"}`}>
+      <p className="text-xs text-[var(--card-text-muted)]">{label}</p>
+      <p className={`text-lg font-bold ${highlight ? "text-blue-700" : "text-[var(--card-text)]"}`}>{value}</p>
     </div>
   );
 }

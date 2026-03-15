@@ -169,7 +169,7 @@ export default function RemindersPage() {
             const status = getDueStatus(r.due_date, r.is_completed);
             const StatusIcon = status.icon;
             return (
-              <div key={r.id} className="flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm">
+              <div key={r.id} className="flex items-center gap-4 rounded-xl border bg-[var(--card-bg)] p-4 shadow-sm">
                 <button
                   onClick={() => !r.is_completed && handleComplete(r.id)}
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${r.is_completed ? "border-emerald-500 bg-emerald-500" : "border-slate-300 hover:border-blue-400"}`}

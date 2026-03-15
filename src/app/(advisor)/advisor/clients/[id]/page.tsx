@@ -288,7 +288,7 @@ export default function ClientDetailPage() {
       {/* Tab content */}
       {tab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="col-span-1 md:col-span-2 rounded-xl border bg-white p-6 shadow-sm">
+          <div className="col-span-1 md:col-span-2 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Kontaktní údaje</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1"><Label className="text-xs">Jméno</Label><Input value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
@@ -309,7 +309,7 @@ export default function ClientDetailPage() {
       {tab === "overview" && (
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* AI Summary */}
-          <div className="col-span-1 md:col-span-2 rounded-xl border bg-white p-6 shadow-sm">
+          <div className="col-span-1 md:col-span-2 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Brain className="h-4 w-4 text-violet-500" />
@@ -332,7 +332,7 @@ export default function ClientDetailPage() {
           </div>
 
           {/* Upsell recommendations */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-500" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">AI doporučení</h2>
@@ -360,7 +360,7 @@ export default function ClientDetailPage() {
       {tab === "deals" && <SimpleTable headers={["Deal", "Hodnota", "Fáze"]} rows={deals.map((d) => [d.title, formatCZK(d.value), d.stage_name])} empty="Žádné dealy" />}
 
       {tab === "messages" && (
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
           <div className="flex h-[400px] flex-col">
             <div className="flex-1 overflow-auto p-4 space-y-3">
               {chatMessages.map((msg) => (
@@ -481,7 +481,7 @@ function formatCZK(v: number | null) {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-l-4 border-l-blue-500 bg-white p-4 shadow-sm hover:shadow-md transition-all">
+    <div className="rounded-xl border border-l-4 border-l-blue-500 bg-[var(--card-bg)] p-4 shadow-sm hover:shadow-md transition-all">
       <p className="text-xs text-slate-500">{label}</p>
       <p className="text-lg font-bold text-slate-900">{value}</p>
     </div>
@@ -491,7 +491,7 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
 function SimpleTable({ headers, rows, empty }: { headers: string[]; rows: string[][]; empty: string }) {
   if (rows.length === 0) return <div className="flex flex-col items-center py-16"><p className="text-lg font-medium text-slate-400">{empty}</p></div>;
   return (
-    <div className="rounded-xl border bg-white shadow-sm">
+    <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
       <table className="w-full">
         <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700">{headers.map((h) => <th key={h} className="px-6 py-3">{h}</th>)}</tr></thead>
         <tbody>{rows.map((row, i) => <tr key={i} className="border-b last:border-0 hover:bg-slate-50 even:bg-slate-50/50">{row.map((cell, j) => <td key={j} className="px-6 py-3 text-sm text-slate-700">{cell}</td>)}</tr>)}</tbody>

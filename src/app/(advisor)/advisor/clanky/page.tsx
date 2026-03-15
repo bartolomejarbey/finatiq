@@ -201,11 +201,11 @@ export default function AdvisorArticlesPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-[var(--card-text)]">
             <FileText className="h-6 w-6 text-blue-600" />
             Články
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-[var(--card-text-muted)]">
             Spravujte články pro své klienty
           </p>
         </div>
@@ -218,25 +218,25 @@ export default function AdvisorArticlesPage() {
       {/* Article list */}
       {articles.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <FileText className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">
+          <FileText className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">
             Zatím žádné články
           </p>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-[var(--card-text-dim)]">
             Vytvořte první článek pro své klienty
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-sm">
           <div className="divide-y">
             {articles.map((article) => (
               <div
                 key={article.id}
-                className="flex items-center justify-between px-6 py-4 hover:bg-slate-50"
+                className="flex items-center justify-between px-6 py-4 hover:bg-[var(--table-hover)]"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-slate-900 truncate">
+                    <h3 className="text-sm font-semibold text-[var(--card-text)] truncate">
                       {article.title}
                     </h3>
                     <Badge
@@ -262,7 +262,7 @@ export default function AdvisorArticlesPage() {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--card-text-muted)]">
                     {new Date(article.created_at).toLocaleDateString("cs-CZ")}
                   </p>
                 </div>
@@ -277,9 +277,9 @@ export default function AdvisorArticlesPage() {
                     }
                   >
                     {article.is_published ? (
-                      <EyeOff className="h-4 w-4 text-slate-400" />
+                      <EyeOff className="h-4 w-4 text-[var(--card-text-dim)]" />
                     ) : (
-                      <Eye className="h-4 w-4 text-slate-400" />
+                      <Eye className="h-4 w-4 text-[var(--card-text-dim)]" />
                     )}
                   </Button>
                   <Button
@@ -288,13 +288,13 @@ export default function AdvisorArticlesPage() {
                     onClick={() => openEdit(article)}
                     className="h-8 w-8 p-0"
                   >
-                    <Edit2 className="h-4 w-4 text-slate-400" />
+                    <Edit2 className="h-4 w-4 text-[var(--card-text-dim)]" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(article.id)}
-                    className="h-8 w-8 p-0 text-slate-400 hover:text-red-600"
+                    className="h-8 w-8 p-0 text-[var(--card-text-dim)] hover:text-red-600"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

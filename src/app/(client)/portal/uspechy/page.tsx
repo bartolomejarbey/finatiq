@@ -103,8 +103,8 @@ export default function MilestonesPage() {
       <div className="mb-6 flex items-center gap-3">
         <Trophy className="h-6 w-6 text-amber-500" />
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Vaše úspěchy</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-[var(--card-text)]">Vaše úspěchy</h1>
+          <p className="text-sm text-[var(--card-text-muted)]">
             {milestones.length} dosažených milníků
           </p>
         </div>
@@ -112,11 +112,11 @@ export default function MilestonesPage() {
 
       {milestones.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Award className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">
+          <Award className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">
             Zatím žádné úspěchy
           </p>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-[var(--card-text-dim)]">
             Vaše milníky se zde brzy objeví
           </p>
         </div>
@@ -128,21 +128,21 @@ export default function MilestonesPage() {
             return (
               <div
                 key={m.id}
-                className={`rounded-xl border bg-white p-6 shadow-sm transition-all ${
+                className={`rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm transition-all ${
                   isUnseen
                     ? "border-amber-400 ring-2 ring-amber-200"
-                    : "border-slate-200"
+                    : "border-[var(--card-border)]"
                 }`}
               >
                 <div className="mb-3 flex items-center justify-between">
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                      isUnseen ? "bg-amber-100" : "bg-slate-100"
+                      isUnseen ? "bg-amber-100" : "bg-[var(--table-header)]"
                     }`}
                   >
                     <Icon
                       className={`h-5 w-5 ${
-                        isUnseen ? "text-amber-500" : "text-slate-500"
+                        isUnseen ? "text-amber-500" : "text-[var(--card-text-muted)]"
                       }`}
                     />
                   </div>
@@ -152,11 +152,11 @@ export default function MilestonesPage() {
                     </Badge>
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-slate-900">
+                <h3 className="text-sm font-semibold text-[var(--card-text)]">
                   {m.title}
                 </h3>
-                <p className="mt-1 text-xs text-slate-500">{m.description}</p>
-                <p className="mt-3 text-[10px] text-slate-400">
+                <p className="mt-1 text-xs text-[var(--card-text-muted)]">{m.description}</p>
+                <p className="mt-3 text-[10px] text-[var(--card-text-dim)]">
                   {new Date(m.achieved_at).toLocaleDateString("cs-CZ")}
                 </p>
               </div>

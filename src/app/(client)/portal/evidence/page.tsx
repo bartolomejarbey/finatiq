@@ -151,7 +151,7 @@ export default function EvidencePage() {
             <select
               value={viewYear}
               onChange={(e) => { setViewYear(parseInt(e.target.value)); setViewMonth(null); }}
-              className="rounded border px-2 py-1 text-sm text-slate-700"
+              className="rounded border px-2 py-1 text-sm text-[var(--card-text)]"
             >
               {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
@@ -164,23 +164,23 @@ export default function EvidencePage() {
 
       {/* Summary cards */}
       <div className="mb-6 grid grid-cols-3 gap-4">
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2"><ArrowUpRight className="h-4 w-4 text-emerald-500" /><p className="text-xs text-slate-500">Příjmy {viewMonth !== null ? `(${monthlyData[viewMonth]?.month})` : `(${viewYear})`}</p></div>
+        <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
+          <div className="flex items-center gap-2"><ArrowUpRight className="h-4 w-4 text-emerald-500" /><p className="text-xs text-[var(--card-text-muted)]">Příjmy {viewMonth !== null ? `(${monthlyData[viewMonth]?.month})` : `(${viewYear})`}</p></div>
           <p className="text-xl font-bold text-emerald-600">{formatCZK(viewIncome)}</p>
         </div>
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2"><ArrowDownRight className="h-4 w-4 text-red-500" /><p className="text-xs text-slate-500">Výdaje</p></div>
+        <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
+          <div className="flex items-center gap-2"><ArrowDownRight className="h-4 w-4 text-red-500" /><p className="text-xs text-[var(--card-text-muted)]">Výdaje</p></div>
           <p className="text-xl font-bold text-red-600">{formatCZK(viewExpense)}</p>
         </div>
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
-          <p className="text-xs text-slate-500">Rozdíl</p>
+        <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
+          <p className="text-xs text-[var(--card-text-muted)]">Rozdíl</p>
           <p className={`text-xl font-bold ${viewIncome - viewExpense >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCZK(viewIncome - viewExpense)}</p>
         </div>
       </div>
 
       {/* Year chart */}
-      <div className="mb-6 rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Roční přehled {viewYear}</h2>
+      <div className="mb-6 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Roční přehled {viewYear}</h2>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -198,13 +198,13 @@ export default function EvidencePage() {
       <div className="mb-4 flex flex-wrap gap-1">
         <button
           onClick={() => setViewMonth(null)}
-          className={`rounded-full px-3 py-1 text-xs font-medium ${viewMonth === null ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+          className={`rounded-full px-3 py-1 text-xs font-medium ${viewMonth === null ? "bg-blue-600 text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
         >Celý rok</button>
         {monthlyData.map((m, i) => (
           <button
             key={i}
             onClick={() => setViewMonth(i)}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${viewMonth === i ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${viewMonth === i ? "bg-blue-600 text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
           >{m.month}</button>
         ))}
       </div>
@@ -212,19 +212,19 @@ export default function EvidencePage() {
       {/* Records list */}
       {viewRecords.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Receipt className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádné doklady</p>
+          <Receipt className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné doklady</p>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
           <table className="w-full">
-            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700"><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Popis</th><th className="px-6 py-3">Kategorie</th><th className="px-6 py-3">Typ</th><th className="px-6 py-3 text-right">Částka</th></tr></thead>
+            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Popis</th><th className="px-6 py-3">Kategorie</th><th className="px-6 py-3">Typ</th><th className="px-6 py-3 text-right">Částka</th></tr></thead>
             <tbody>
               {viewRecords.map((r) => (
-                <tr key={r.id} className="border-b last:border-0 hover:bg-slate-50">
-                  <td className="px-6 py-3 text-sm text-slate-500">{new Date(r.date).toLocaleDateString("cs-CZ")}</td>
-                  <td className="px-6 py-3 text-sm text-slate-700">{r.description || "—"}</td>
-                  <td className="px-6 py-3 text-sm text-slate-500">{CATEGORIES[r.category] || r.category}</td>
+                <tr key={r.id} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
+                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{new Date(r.date).toLocaleDateString("cs-CZ")}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text)]">{r.description || "—"}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{CATEGORIES[r.category] || r.category}</td>
                   <td className="px-6 py-3">
                     <Badge className={`text-[10px] ${r.type === "income" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
                       {r.type === "income" ? "Příjem" : "Výdaj"}
@@ -255,11 +255,11 @@ export default function EvidencePage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setRecType("income")}
-                className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${recType === "income" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-500"}`}
+                className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${recType === "income" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-[var(--card-border)] text-[var(--card-text-muted)]"}`}
               ><TrendingUp className="mx-auto mb-1 h-5 w-5" />Příjem</button>
               <button
                 onClick={() => setRecType("expense")}
-                className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${recType === "expense" ? "border-red-500 bg-red-50 text-red-700" : "border-slate-200 text-slate-500"}`}
+                className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${recType === "expense" ? "border-red-500 bg-red-50 text-red-700" : "border-[var(--card-border)] text-[var(--card-text-muted)]"}`}
               ><TrendingDown className="mx-auto mb-1 h-5 w-5" />Výdaj</button>
             </div>
 

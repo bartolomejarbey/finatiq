@@ -242,7 +242,7 @@ export default function SeasonalRemindersPage() {
             <h1 className="text-2xl font-bold gradient-text">
               Sezónní připomínky
             </h1>
-            <p className="mt-0.5 text-sm text-slate-500">
+            <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">
               {reminders.length} připomínek
             </p>
           </div>
@@ -263,11 +263,11 @@ export default function SeasonalRemindersPage() {
 
       {reminders.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <CalendarClock className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">
+          <CalendarClock className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">
             Žádné sezónní připomínky
           </p>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-[var(--card-text-dim)]">
             Načtěte výchozí nebo vytvořte vlastní
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function SeasonalRemindersPage() {
           {reminders.map((r) => (
             <div
               key={r.id}
-              className={`flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm ${
+              className={`flex items-center gap-4 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-sm ${
                 !r.is_active ? "opacity-50" : ""
               }`}
             >
@@ -286,9 +286,9 @@ export default function SeasonalRemindersPage() {
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900">{r.title}</p>
+                <p className="text-sm font-medium text-[var(--card-text)]">{r.title}</p>
                 {r.description && (
-                  <p className="mt-0.5 text-xs text-slate-500 truncate">
+                  <p className="mt-0.5 text-xs text-[var(--card-text-muted)] truncate">
                     {r.description}
                   </p>
                 )}
@@ -310,7 +310,7 @@ export default function SeasonalRemindersPage() {
                 >
                   <Power
                     className={`h-4 w-4 ${
-                      r.is_active ? "text-emerald-500" : "text-slate-400"
+                      r.is_active ? "text-emerald-500" : "text-[var(--card-text-dim)]"
                     }`}
                   />
                 </Button>
@@ -412,7 +412,7 @@ export default function SeasonalRemindersPage() {
                 id="isActive"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300"
+                className="h-4 w-4 rounded border-[var(--input-border)]"
               />
               <Label htmlFor="isActive" className="text-xs">
                 Aktivní

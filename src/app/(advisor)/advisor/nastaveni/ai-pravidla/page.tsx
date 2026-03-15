@@ -168,7 +168,7 @@ export default function AiRulesPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold gradient-text">AI pravidla</h1>
-          <p className="mt-0.5 text-sm text-slate-500">Nastavte pravidla pro automatická doporučení</p>
+          <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">Nastavte pravidla pro automatická doporučení</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={runCheck} disabled={checking}>
@@ -183,18 +183,18 @@ export default function AiRulesPage() {
 
       {rules.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Brain className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádná pravidla</p>
-          <p className="mt-1 text-sm text-slate-300">Vytvořte pravidlo pro identifikaci upsell příležitostí</p>
+          <Brain className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádná pravidla</p>
+          <p className="mt-1 text-sm text-[var(--card-text-dim)]">Vytvořte pravidlo pro identifikaci upsell příležitostí</p>
         </div>
       ) : (
         <div className="space-y-3">
           {rules.map((rule) => (
-            <div key={rule.id} className="rounded-xl border bg-white p-5 shadow-sm">
+            <div key={rule.id} className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 shadow-sm">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-slate-900">{rule.name}</h3>
+                    <h3 className="text-sm font-semibold text-[var(--card-text)]">{rule.name}</h3>
                     <Badge variant={rule.is_active ? "default" : "secondary"} className="text-[10px]">
                       {rule.is_active ? "Aktivní" : "Neaktivní"}
                     </Badge>
@@ -202,21 +202,21 @@ export default function AiRulesPage() {
                       Priorita: {rule.priority}
                     </Badge>
                   </div>
-                  {rule.description && <p className="mt-0.5 text-xs text-slate-500">{rule.description}</p>}
-                  <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
+                  {rule.description && <p className="mt-0.5 text-xs text-[var(--card-text-muted)]">{rule.description}</p>}
+                  <div className="mt-2 flex items-center gap-3 text-xs text-[var(--card-text-muted)]">
                     <span>Podmínka: {CONDITION_LABELS[rule.condition_type] || rule.condition_type}</span>
                   </div>
                   <p className="mt-1 text-xs text-emerald-600">Doporučení: {rule.recommendation}</p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => handleToggle(rule.id, rule.is_active)} className="rounded-md p-1.5 hover:bg-slate-100">
-                    {rule.is_active ? <Pause className="h-4 w-4 text-slate-400" /> : <Play className="h-4 w-4 text-slate-400" />}
+                  <button onClick={() => handleToggle(rule.id, rule.is_active)} className="rounded-md p-1.5 hover:bg-[var(--table-header)]">
+                    {rule.is_active ? <Pause className="h-4 w-4 text-[var(--card-text-dim)]" /> : <Play className="h-4 w-4 text-[var(--card-text-dim)]" />}
                   </button>
-                  <button onClick={() => openEdit(rule)} className="rounded-md p-1.5 hover:bg-slate-100">
-                    <Pencil className="h-4 w-4 text-slate-400" />
+                  <button onClick={() => openEdit(rule)} className="rounded-md p-1.5 hover:bg-[var(--table-header)]">
+                    <Pencil className="h-4 w-4 text-[var(--card-text-dim)]" />
                   </button>
                   <button onClick={() => handleDelete(rule.id)} className="rounded-md p-1.5 hover:bg-red-50 hover:text-red-500">
-                    <Trash2 className="h-4 w-4 text-slate-400" />
+                    <Trash2 className="h-4 w-4 text-[var(--card-text-dim)]" />
                   </button>
                 </div>
               </div>

@@ -89,8 +89,8 @@ export default function InvestmentsPage() {
 
       {/* Chart */}
       {portfolioHistory.length > 0 && (
-        <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-6 hover:shadow-md transition-shadow">
-          <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-gray-500">Vývoj portfolia</h2>
+        <div className="mb-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 hover:shadow-md transition-shadow">
+          <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[var(--card-text-muted)]">Vývoj portfolia</h2>
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={portfolioHistory}>
               <defs>
@@ -112,8 +112,8 @@ export default function InvestmentsPage() {
       {/* Investments list as cards */}
       {investments.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Wallet className="mb-4 h-12 w-12 text-gray-200" />
-          <p className="text-lg font-medium text-gray-400">Žádné investice</p>
+          <Wallet className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné investice</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -127,13 +127,13 @@ export default function InvestmentsPage() {
               v: purchase + (ret * ((i + 1) / 7)) + (Math.random() * ret * 0.1),
             }));
             return (
-              <div key={inv.id} className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-shadow">
+              <div key={inv.id} className="flex items-center gap-4 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 hover:shadow-md transition-shadow">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-white shrink-0">
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">{inv.instrument_name}</p>
-                  <p className="text-xs text-gray-500">{inv.type}</p>
+                  <p className="text-sm font-semibold text-[var(--card-text)]">{inv.instrument_name}</p>
+                  <p className="text-xs text-[var(--card-text-muted)]">{inv.type}</p>
                 </div>
                 {/* Mini sparkline */}
                 <div className="w-20 h-8 hidden sm:block">
@@ -150,7 +150,7 @@ export default function InvestmentsPage() {
                   </ResponsiveContainer>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-sm font-bold text-gray-900">{formatCZK(inv.current_value)}</p>
+                  <p className="text-sm font-bold text-[var(--card-text)]">{formatCZK(inv.current_value)}</p>
                   <p className={`text-xs font-medium ${pos ? "text-emerald-600" : "text-red-600"}`}>
                     {pos ? "+" : ""}{retPct}%
                   </p>

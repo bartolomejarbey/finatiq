@@ -243,7 +243,7 @@ export default function KlientKalendarPage() {
         <Button variant="outline" size="sm" onClick={handlePrevWeek}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm font-medium text-slate-700">
+        <span className="text-sm font-medium text-[var(--card-text)]">
           {formatDate(selectedWeekStart)} &ndash; {formatDate(weekEnd)}
         </span>
         <Button variant="outline" size="sm" onClick={handleNextWeek}>
@@ -252,20 +252,20 @@ export default function KlientKalendarPage() {
       </div>
 
       {/* Weekly grid */}
-      <div className="mb-8 overflow-hidden rounded-xl border bg-white shadow-sm">
+      <div className="mb-8 overflow-hidden rounded-xl border bg-[var(--card-bg)] shadow-sm">
         <div className="grid grid-cols-6">
           {/* Header row */}
-          <div className="border-b border-r bg-slate-50 p-2" />
+          <div className="border-b border-r bg-[var(--table-hover)] p-2" />
           {DAYS.map((day, i) => {
             const d = new Date(selectedWeekStart);
             d.setDate(d.getDate() + i);
             return (
               <div
                 key={day}
-                className="border-b border-r bg-slate-50 p-2 text-center text-xs font-medium text-slate-600"
+                className="border-b border-r bg-[var(--table-hover)] p-2 text-center text-xs font-medium text-[var(--card-text-muted)]"
               >
                 <div>{day}</div>
-                <div className="text-slate-400">{formatDate(d)}</div>
+                <div className="text-[var(--card-text-dim)]">{formatDate(d)}</div>
               </div>
             );
           })}
@@ -275,7 +275,7 @@ export default function KlientKalendarPage() {
             <>
               <div
                 key={`label-${hour}`}
-                className="border-b border-r p-2 text-right text-xs text-slate-500"
+                className="border-b border-r p-2 text-right text-xs text-[var(--card-text-muted)]"
               >
                 {hour}:00
               </div>
@@ -290,7 +290,7 @@ export default function KlientKalendarPage() {
                     key={`${dayIndex}-${hour}`}
                     className={`border-b border-r p-1 ${
                       isPast
-                        ? "bg-slate-50 cursor-not-allowed"
+                        ? "bg-[var(--table-hover)] cursor-not-allowed"
                         : "cursor-pointer hover:bg-blue-50 transition-colors"
                     }`}
                     onClick={() => !isPast && handleSlotClick(dayIndex, hour)}
@@ -362,14 +362,14 @@ export default function KlientKalendarPage() {
       </Sheet>
 
       {/* Upcoming appointments */}
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-700">
+      <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
           <Calendar className="h-4 w-4" />
           Nadcházející schůzky
         </h2>
 
         {appointments.length === 0 ? (
-          <div className="flex flex-col items-center py-8 text-slate-400">
+          <div className="flex flex-col items-center py-8 text-[var(--card-text-dim)]">
             <Calendar className="mb-2 h-10 w-10" />
             <p className="text-sm">Žádné nadcházející schůzky</p>
           </div>
@@ -377,7 +377,7 @@ export default function KlientKalendarPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-xs text-slate-500">
+                <tr className="border-b text-left text-xs text-[var(--card-text-muted)]">
                   <th className="pb-2 pr-4 font-medium">Název</th>
                   <th className="pb-2 pr-4 font-medium">Datum</th>
                   <th className="pb-2 pr-4 font-medium">Čas</th>
@@ -388,27 +388,27 @@ export default function KlientKalendarPage() {
               <tbody>
                 {appointments.map((appt) => (
                   <tr key={appt.id} className="border-b last:border-0">
-                    <td className="py-3 pr-4 font-medium text-slate-900">
+                    <td className="py-3 pr-4 font-medium text-[var(--card-text)]">
                       {appt.title}
                     </td>
-                    <td className="py-3 pr-4 text-slate-600">
+                    <td className="py-3 pr-4 text-[var(--card-text-muted)]">
                       {formatDateFull(appt.start_time)}
                     </td>
-                    <td className="py-3 pr-4 text-slate-600">
+                    <td className="py-3 pr-4 text-[var(--card-text-muted)]">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {formatTime(appt.start_time)} &ndash;{" "}
                         {formatTime(appt.end_time)}
                       </span>
                     </td>
-                    <td className="py-3 pr-4 text-slate-600">
+                    <td className="py-3 pr-4 text-[var(--card-text-muted)]">
                       {appt.location ? (
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
                           {appt.location}
                         </span>
                       ) : (
-                        <span className="text-slate-300">&mdash;</span>
+                        <span className="text-[var(--card-text-dim)]">&mdash;</span>
                       )}
                     </td>
                     <td className="py-3">

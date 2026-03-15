@@ -89,10 +89,10 @@ function InputField({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-gray-700">
+      <Label className="text-sm font-medium text-[var(--card-text)]">
         {label}
         {suffix && (
-          <span className="ml-1 text-xs font-normal text-gray-400">
+          <span className="ml-1 text-xs font-normal text-[var(--card-text-dim)]">
             ({suffix})
           </span>
         )}
@@ -279,8 +279,8 @@ function MortgageCalculator() {
       </div>
 
       {/* Line chart — balance */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <h3 className="mb-4 text-sm font-semibold text-gray-700">
+      <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-sm">
+        <h3 className="mb-4 text-sm font-semibold text-[var(--card-text)]">
           Vývoj zůstatku úvěru v čase
         </h3>
         <ResponsiveContainer width="100%" height={280}>
@@ -310,8 +310,8 @@ function MortgageCalculator() {
 
       {/* Bar chart — interest vs principal per year */}
       {calc.yearlyData.length > 0 && (
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-sm">
+          <h3 className="mb-4 text-sm font-semibold text-[var(--card-text)]">
             Poměr úrok vs jistina dle roku
           </h3>
           <ResponsiveContainer width="100%" height={280}>
@@ -332,14 +332,14 @@ function MortgageCalculator() {
       )}
 
       {/* Amortization table */}
-      <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <h3 className="border-b px-4 py-3 text-sm font-semibold text-gray-700">
+      <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-sm">
+        <h3 className="border-b px-4 py-3 text-sm font-semibold text-[var(--card-text)]">
           Amortizační tabulka
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+              <tr className="border-b bg-[var(--table-hover)] text-left text-xs font-medium uppercase tracking-wide text-[var(--card-text-muted)]">
                 <th className="px-4 py-2">Měsíc</th>
                 <th className="px-4 py-2 text-right">Splátka</th>
                 <th className="px-4 py-2 text-right">Jistina</th>
@@ -349,8 +349,8 @@ function MortgageCalculator() {
             </thead>
             <tbody>
               {visibleRows.map((row) => (
-                <tr key={row.month} className="border-b last:border-0 hover:bg-gray-50">
-                  <td className="px-4 py-2 text-gray-600">{row.month}</td>
+                <tr key={row.month} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
+                  <td className="px-4 py-2 text-[var(--card-text-muted)]">{row.month}</td>
                   <td className="px-4 py-2 text-right">{formatCZK(row.payment)}</td>
                   <td className="px-4 py-2 text-right text-green-700">
                     {formatCZK(row.principalPart)}
@@ -467,8 +467,8 @@ function SavingsCalculator() {
         <StatCard label="Z toho úroky" value={formatCZK(calc.totalInterest)} accent="amber" />
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <h3 className="mb-4 text-sm font-semibold text-gray-700">
+      <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-sm">
+        <h3 className="mb-4 text-sm font-semibold text-[var(--card-text)]">
           Růst úspor v čase
         </h3>
         <ResponsiveContainer width="100%" height={300}>
@@ -601,7 +601,7 @@ function RetirementCalculator() {
         />
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs text-gray-500">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--table-hover)] p-4 text-xs text-[var(--card-text-muted)]">
         Předpoklady: 20 let v důchodu, průměrný roční výnos 4 %.
       </div>
 
@@ -623,8 +623,8 @@ function RetirementCalculator() {
         />
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <h3 className="mb-4 text-sm font-semibold text-gray-700">
+      <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-sm">
+        <h3 className="mb-4 text-sm font-semibold text-[var(--card-text)]">
           Projekce úspor do důchodu
         </h3>
         <ResponsiveContainer width="100%" height={300}>
@@ -670,22 +670,22 @@ function RetirementCalculator() {
 export default function KalkulackyPage() {
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-bold text-gray-900">Finanční kalkulačky</h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <h1 className="mb-1 text-2xl font-bold text-[var(--card-text)]">Finanční kalkulačky</h1>
+      <p className="mb-6 text-sm text-[var(--card-text-muted)]">
         Spočítejte si hypotéku, spoření nebo důchodový plán
       </p>
 
       <Tabs defaultValue="mortgage">
-        <TabsList className="mb-6 w-full sm:w-auto rounded-full bg-gray-100 p-1">
-          <TabsTrigger value="mortgage" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
+        <TabsList className="mb-6 w-full sm:w-auto rounded-full bg-[var(--table-header)] p-1">
+          <TabsTrigger value="mortgage" className="rounded-full data-[state=active]:bg-[var(--card-bg)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
             <Calculator className="h-4 w-4" />
             Hypotéka
           </TabsTrigger>
-          <TabsTrigger value="savings" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
+          <TabsTrigger value="savings" className="rounded-full data-[state=active]:bg-[var(--card-bg)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
             <PiggyBank className="h-4 w-4" />
             Spoření
           </TabsTrigger>
-          <TabsTrigger value="retirement" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
+          <TabsTrigger value="retirement" className="rounded-full data-[state=active]:bg-[var(--card-bg)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
             <Landmark className="h-4 w-4" />
             Důchod
           </TabsTrigger>

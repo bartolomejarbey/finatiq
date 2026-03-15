@@ -183,10 +183,10 @@ export default function AdvisorNewsPage() {
         <div className="flex items-center gap-3">
           <Newspaper className="h-6 w-6 text-blue-500" />
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-[var(--card-text)]">
               Správa novinek
             </h1>
-            <p className="mt-0.5 text-sm text-slate-500">
+            <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">
               {items.length} novinek
             </p>
           </div>
@@ -199,11 +199,11 @@ export default function AdvisorNewsPage() {
 
       {items.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Newspaper className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">
+          <Newspaper className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">
             Žádné novinky
           </p>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-[var(--card-text-dim)]">
             Přidejte první novinku pro klienty
           </p>
         </div>
@@ -212,7 +212,7 @@ export default function AdvisorNewsPage() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="rounded-xl border bg-white p-4 shadow-sm"
+              className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-sm"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -227,14 +227,14 @@ export default function AdvisorNewsPage() {
                         Globální
                       </Badge>
                     )}
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-[var(--card-text-dim)]">
                       {new Date(item.created_at).toLocaleDateString("cs-CZ")}
                     </span>
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-900">
+                  <h3 className="text-sm font-semibold text-[var(--card-text)]">
                     {item.title}
                   </h3>
-                  <p className="mt-1 text-xs text-slate-600 line-clamp-2">
+                  <p className="mt-1 text-xs text-[var(--card-text-muted)] line-clamp-2">
                     {item.content}
                   </p>
                   {item.source_url && (

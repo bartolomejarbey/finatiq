@@ -144,15 +144,15 @@ export default function RodinaPage() {
   if (!hasFamily) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-[var(--card-text)] mb-6 flex items-center gap-2">
           <Users className="h-6 w-6" /> Rodinný účet
         </h1>
-        <div className="rounded-xl border bg-white p-12 text-center shadow-sm">
-          <Users className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-slate-700 mb-2">
+        <div className="rounded-xl border bg-[var(--card-bg)] p-12 text-center shadow-sm">
+          <Users className="h-16 w-16 text-[var(--card-text-dim)] mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-[var(--card-text)] mb-2">
             Nemáte propojený rodinný účet
           </h2>
-          <p className="text-sm text-slate-500 max-w-md mx-auto">
+          <p className="text-sm text-[var(--card-text-muted)] max-w-md mx-auto">
             Požádejte svého poradce o propojení rodinného účtu. Získáte přehled
             o financích celé rodiny — společný majetek, závazky i finanční cíle.
           </p>
@@ -173,8 +173,8 @@ export default function RodinaPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
+        <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+          <div className="flex items-center gap-2 text-sm text-[var(--card-text-muted)] mb-1">
             <TrendingUp className="h-4 w-4 text-emerald-500" />
             Celkový majetek rodiny
           </div>
@@ -183,8 +183,8 @@ export default function RodinaPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
+        <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+          <div className="flex items-center gap-2 text-sm text-[var(--card-text-muted)] mb-1">
             <TrendingDown className="h-4 w-4 text-red-500" />
             Společné závazky
           </div>
@@ -193,8 +193,8 @@ export default function RodinaPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
+        <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+          <div className="flex items-center gap-2 text-sm text-[var(--card-text-muted)] mb-1">
             <Wallet className="h-4 w-4 text-blue-500" />
             Čistá hodnota rodiny
           </div>
@@ -205,9 +205,9 @@ export default function RodinaPage() {
       </div>
 
       {/* Family members */}
-      <div className="rounded-xl border bg-white shadow-sm">
+      <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
         <div className="border-b px-6 py-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
             Členové rodiny
           </h2>
         </div>
@@ -219,7 +219,7 @@ export default function RodinaPage() {
               <UserCircle className="h-5 w-5" />
             </div>
             <div className="flex-1">
-              <span className="font-medium text-slate-900">Vy</span>
+              <span className="font-medium text-[var(--card-text)]">Vy</span>
               <Badge className="ml-2 text-[10px] bg-blue-100 text-blue-700">Vlastník</Badge>
             </div>
             <div className="text-right text-sm">
@@ -231,15 +231,15 @@ export default function RodinaPage() {
           {/* Other members */}
           {members.map((member) => (
             <div key={member.id} className="flex items-center gap-4 px-6 py-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--table-header)] text-[var(--card-text-muted)]">
                 <UserCircle className="h-5 w-5" />
               </div>
               <div className="flex-1">
-                <span className="font-medium text-slate-900">
+                <span className="font-medium text-[var(--card-text)]">
                   {member.first_name} {member.last_name}
                 </span>
                 <Badge
-                  className={`ml-2 text-[10px] ${REL_COLORS[member.relationship] || "bg-slate-100 text-slate-700"}`}
+                  className={`ml-2 text-[10px] ${REL_COLORS[member.relationship] || "bg-[var(--table-header)] text-[var(--card-text)]"}`}
                 >
                   {REL_LABELS[member.relationship] || member.relationship}
                 </Badge>

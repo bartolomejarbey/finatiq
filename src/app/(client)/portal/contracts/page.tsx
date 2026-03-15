@@ -177,27 +177,27 @@ export default function ContractsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Smlouvy</h1>
-        <p className="mt-0.5 text-sm text-gray-500">{contracts.length} smluv</p>
+        <h1 className="text-2xl font-bold text-[var(--card-text)]">Smlouvy</h1>
+        <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{contracts.length} smluv</p>
       </div>
 
       {/* CTA Cards */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <button onClick={() => { resetForm(); setSheetType("uver"); }}
-          className="rounded-2xl border-2 border-dashed border-gray-200 bg-white p-6 text-left transition-all hover:border-blue-300 hover:bg-blue-50/30">
+          className="rounded-2xl border-2 border-dashed border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-left transition-all hover:border-blue-300 hover:bg-blue-50/30">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white mb-3">
             <CreditCard className="h-6 w-6" />
           </div>
-          <h3 className="text-sm font-semibold text-gray-900">Přidat úvěr</h3>
-          <p className="mt-1 text-xs text-gray-500">Hypotéka, spotřebitelský úvěr...</p>
+          <h3 className="text-sm font-semibold text-[var(--card-text)]">Přidat úvěr</h3>
+          <p className="mt-1 text-xs text-[var(--card-text-muted)]">Hypotéka, spotřebitelský úvěr...</p>
         </button>
         <button onClick={() => { resetForm(); setSheetType("pojisteni"); }}
-          className="rounded-2xl border-2 border-dashed border-gray-200 bg-white p-6 text-left transition-all hover:border-blue-300 hover:bg-blue-50/30">
+          className="rounded-2xl border-2 border-dashed border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-left transition-all hover:border-blue-300 hover:bg-blue-50/30">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-white mb-3">
             <Shield className="h-6 w-6" />
           </div>
-          <h3 className="text-sm font-semibold text-gray-900">Přidat pojištění</h3>
-          <p className="mt-1 text-xs text-gray-500">Životní, majetkové, auto...</p>
+          <h3 className="text-sm font-semibold text-[var(--card-text)]">Přidat pojištění</h3>
+          <p className="mt-1 text-xs text-[var(--card-text-muted)]">Životní, majetkové, auto...</p>
         </button>
       </div>
 
@@ -211,7 +211,7 @@ export default function ContractsPage() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${filter === f.key ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${filter === f.key ? "bg-blue-600 text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
           >
             {f.label}
           </button>
@@ -221,8 +221,8 @@ export default function ContractsPage() {
       {/* Contract list */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <FileText className="mb-4 h-12 w-12 text-gray-200" />
-          <p className="text-lg font-medium text-gray-400">Žádné smlouvy</p>
+          <FileText className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné smlouvy</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -234,20 +234,20 @@ export default function ContractsPage() {
                 : { from: "from-blue-400", to: "to-blue-600", Icon: Shield };
             return (
               <div key={c.id} onClick={() => router.push(`/portal/contracts/${c.id}`)}
-                className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-5 cursor-pointer hover:shadow-md transition-all">
+                className="flex items-center gap-4 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 cursor-pointer hover:shadow-md transition-all">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${iconConfig.from} ${iconConfig.to} text-white shrink-0`}>
                   <iconConfig.Icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900">{c.title}</h3>
-                  <p className="text-xs text-gray-500">{c.provider || "—"}</p>
+                  <h3 className="text-sm font-semibold text-[var(--card-text)]">{c.title}</h3>
+                  <p className="text-xs text-[var(--card-text-muted)]">{c.provider || "—"}</p>
                   <Badge variant={c.status === "active" ? "default" : "secondary"} className="mt-1 text-[10px]">
                     {c.status === "active" ? "Aktivní" : c.status}
                   </Badge>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-lg font-bold text-gray-900">{formatCZK(c.monthly_payment)}</p>
-                  <p className="text-xs text-gray-400">měsíčně</p>
+                  <p className="text-lg font-bold text-[var(--card-text)]">{formatCZK(c.monthly_payment)}</p>
+                  <p className="text-xs text-[var(--card-text-dim)]">měsíčně</p>
                 </div>
               </div>
             );
@@ -330,14 +330,14 @@ export default function ContractsPage() {
 
             <TabsContent value="upload" className="mt-4">
               <div
-                className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 p-8 transition-colors hover:border-blue-300"
+                className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] p-8 transition-colors hover:border-blue-300"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setUploadFile(f); }}
               >
-                <Upload className="mb-3 h-8 w-8 text-gray-300" />
-                <p className="text-sm text-gray-500">Přetáhněte soubor sem</p>
-                <p className="mt-1 text-xs text-gray-500">PDF, JPG, PNG</p>
-                <label className="mt-3 cursor-pointer rounded-lg bg-gray-100 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200">
+                <Upload className="mb-3 h-8 w-8 text-[var(--card-text-dim)]" />
+                <p className="text-sm text-[var(--card-text-muted)]">Přetáhněte soubor sem</p>
+                <p className="mt-1 text-xs text-[var(--card-text-muted)]">PDF, JPG, PNG</p>
+                <label className="mt-3 cursor-pointer rounded-lg bg-[var(--table-header)] px-4 py-2 text-xs font-medium text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]">
                   Vybrat soubor
                   <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setUploadFile(f); }} />
                 </label>

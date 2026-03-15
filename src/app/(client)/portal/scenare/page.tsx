@@ -409,7 +409,7 @@ export default function ScenarePage() {
   ) {
     if (mortgages.length === 0)
       return (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-[var(--card-text-muted)]">
           Nemáte žádné aktivní úvěry. Přidejte je v sekci Smlouvy.
         </p>
       );
@@ -418,7 +418,7 @@ export default function ScenarePage() {
       <div className="space-y-1">
         <Label className="text-xs">Úvěr / Hypotéka</Label>
         <select
-          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--input-bg)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -459,7 +459,7 @@ export default function ScenarePage() {
       <h1 className="mb-1 text-2xl font-bold gradient-text">
         &bdquo;Co kdyby&ldquo; scénáře
       </h1>
-      <p className="mb-8 text-sm text-slate-500">
+      <p className="mb-8 text-sm text-[var(--card-text-muted)]">
         Prozkoumejte různé finanční scénáře a zjistěte, jak optimalizovat vaše finance.
       </p>
 
@@ -473,7 +473,7 @@ export default function ScenarePage() {
               <button
                 key={s.id}
                 onClick={() => setSelected(s.id)}
-                className="group cursor-pointer rounded-xl border bg-white p-6 text-left shadow-sm transition-all hover:shadow-md hover:bg-slate-50"
+                className="group cursor-pointer rounded-xl border bg-[var(--card-bg)] p-6 text-left shadow-sm transition-all hover:shadow-md hover:bg-[var(--table-hover)]"
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -482,10 +482,10 @@ export default function ScenarePage() {
                     <Icon className={`h-6 w-6 ${s.color}`} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900">
+                    <h3 className="text-sm font-semibold text-[var(--card-text)]">
                       {d.title}
                     </h3>
-                    <p className="mt-0.5 text-xs text-slate-500">
+                    <p className="mt-0.5 text-xs text-[var(--card-text-muted)]">
                       {d.description}
                     </p>
                   </div>
@@ -499,7 +499,7 @@ export default function ScenarePage() {
           {/* Back button */}
           <button
             onClick={() => setSelected(null)}
-            className="mb-6 flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
+            className="mb-6 flex items-center gap-2 text-sm text-[var(--card-text-muted)] hover:text-[var(--card-text)] transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Zpět na scénáře
@@ -514,12 +514,12 @@ export default function ScenarePage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
                   <RefreshCw className="h-5 w-5 text-blue-600" />
                 </div>
-                <h2 className="text-lg font-bold text-slate-900">
+                <h2 className="text-lg font-bold text-[var(--card-text)]">
                   {DISPLAY[1].title}
                 </h2>
               </div>
 
-              <div className="rounded-xl border bg-white p-6 shadow-sm space-y-4">
+              <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm space-y-4">
                 {renderMortgageSelect(selectedMortgage, setSelectedMortgage)}
                 <div className="space-y-1">
                   <Label className="text-xs">Nový úrok (%)</Label>
@@ -562,8 +562,8 @@ export default function ScenarePage() {
                     </p>
                   </div>
                   {/* Summary */}
-                  <div className="col-span-full rounded-xl border bg-white p-6 shadow-sm text-center">
-                    <p className="text-xs text-slate-500">
+                  <div className="col-span-full rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm text-center">
+                    <p className="text-xs text-[var(--card-text-muted)]">
                       Celková úspora za dobu splácení
                     </p>
                     <p className="mt-1 text-3xl font-bold text-emerald-600">
@@ -604,12 +604,12 @@ export default function ScenarePage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
                   <PiggyBank className="h-5 w-5 text-emerald-600" />
                 </div>
-                <h2 className="text-lg font-bold text-slate-900">
+                <h2 className="text-lg font-bold text-[var(--card-text)]">
                   {DISPLAY[2].title}
                 </h2>
               </div>
 
-              <div className="rounded-xl border bg-white p-6 shadow-sm space-y-4">
+              <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm space-y-4">
                 <div className="space-y-1">
                   <Label className="text-xs">Měsíční částka (Kč)</Label>
                   <Input
@@ -618,7 +618,7 @@ export default function ScenarePage() {
                     value={monthlyAmount}
                     onChange={(e) => setMonthlyAmount(e.target.value)}
                   />
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-[var(--card-text-dim)]">
                     Předpokládaný roční výnos: 5 %
                   </p>
                 </div>
@@ -627,8 +627,8 @@ export default function ScenarePage() {
               {savingsData && (
                 <>
                   {/* Chart */}
-                  <div className="rounded-xl border bg-white p-6 shadow-sm">
-                    <p className="mb-4 text-sm font-semibold text-slate-700">
+                  <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+                    <p className="mb-4 text-sm font-semibold text-[var(--card-text)]">
                       Růst spoření v čase
                     </p>
                     <ResponsiveContainer width="100%" height={300}>
@@ -677,12 +677,12 @@ export default function ScenarePage() {
                     {savingsData.totals.map((t) => (
                       <div
                         key={t.years}
-                        className="rounded-xl border bg-white p-5 shadow-sm text-center"
+                        className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm text-center"
                       >
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-[var(--card-text-muted)]">
                           Za {t.years} let
                         </p>
-                        <p className="mt-1 text-xl font-bold text-slate-900">
+                        <p className="mt-1 text-xl font-bold text-[var(--card-text)]">
                           {formatCZK(t.total)}
                         </p>
                         <p className="mt-0.5 text-[11px] text-emerald-500">
@@ -724,12 +724,12 @@ export default function ScenarePage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50">
                   <Zap className="h-5 w-5 text-amber-600" />
                 </div>
-                <h2 className="text-lg font-bold text-slate-900">
+                <h2 className="text-lg font-bold text-[var(--card-text)]">
                   {DISPLAY[3].title}
                 </h2>
               </div>
 
-              <div className="rounded-xl border bg-white p-6 shadow-sm space-y-4">
+              <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm space-y-4">
                 {renderMortgageSelect(selectedLoan, setSelectedLoan)}
                 <div className="space-y-1">
                   <Label className="text-xs">Jednorázová splátka (Kč)</Label>
@@ -746,22 +746,22 @@ export default function ScenarePage() {
                 <>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {/* Before */}
-                    <div className="rounded-xl border bg-slate-50 p-6 shadow-sm">
-                      <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-400">
+                    <div className="rounded-xl border bg-[var(--table-hover)] p-6 shadow-sm">
+                      <p className="mb-3 text-xs font-medium uppercase tracking-wide text-[var(--card-text-dim)]">
                         Před splátkou
                       </p>
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">Zůstatek</span>
-                          <span className="font-semibold text-slate-900">
+                          <span className="text-[var(--card-text-muted)]">Zůstatek</span>
+                          <span className="font-semibold text-[var(--card-text)]">
                             {formatCZK(earlyPayResult.oldBalance)}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">
+                          <span className="text-[var(--card-text-muted)]">
                             Zbývající měsíce
                           </span>
-                          <span className="font-semibold text-slate-900">
+                          <span className="font-semibold text-[var(--card-text)]">
                             {earlyPayResult.oldMonths}
                           </span>
                         </div>
@@ -795,8 +795,8 @@ export default function ScenarePage() {
 
                   {/* Summary cards */}
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="rounded-xl border bg-white p-5 shadow-sm text-center">
-                      <p className="text-xs text-slate-500">
+                    <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm text-center">
+                      <p className="text-xs text-[var(--card-text-muted)]">
                         Zkrácení doby splácení
                       </p>
                       <p className="mt-1 text-2xl font-bold text-blue-600">
@@ -804,8 +804,8 @@ export default function ScenarePage() {
                         měsíců
                       </p>
                     </div>
-                    <div className="rounded-xl border bg-white p-5 shadow-sm text-center">
-                      <p className="text-xs text-slate-500">
+                    <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm text-center">
+                      <p className="text-xs text-[var(--card-text-muted)]">
                         Úspora na úrocích
                       </p>
                       <p className="mt-1 text-2xl font-bold text-emerald-600">
@@ -849,12 +849,12 @@ export default function ScenarePage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50">
                   <TrendingUp className="h-5 w-5 text-violet-600" />
                 </div>
-                <h2 className="text-lg font-bold text-slate-900">
+                <h2 className="text-lg font-bold text-[var(--card-text)]">
                   {DISPLAY[4].title}
                 </h2>
               </div>
 
-              <div className="rounded-xl border bg-white p-6 shadow-sm space-y-4">
+              <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm space-y-4">
                 <div className="space-y-1">
                   <Label className="text-xs">Částka (Kč)</Label>
                   <Input
@@ -881,8 +881,8 @@ export default function ScenarePage() {
               {investData && (
                 <>
                   {/* Chart */}
-                  <div className="rounded-xl border bg-white p-6 shadow-sm">
-                    <p className="mb-4 text-sm font-semibold text-slate-700">
+                  <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+                    <p className="mb-4 text-sm font-semibold text-[var(--card-text)]">
                       Projekce růstu investice
                     </p>
                     <ResponsiveContainer width="100%" height={300}>
@@ -917,12 +917,12 @@ export default function ScenarePage() {
                     {investData.projections.map((p) => (
                       <div
                         key={p.years}
-                        className="rounded-xl border bg-white p-5 shadow-sm text-center"
+                        className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm text-center"
                       >
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-[var(--card-text-muted)]">
                           Za {p.years} let
                         </p>
-                        <p className="mt-1 text-lg font-bold text-slate-900">
+                        <p className="mt-1 text-lg font-bold text-[var(--card-text)]">
                           {formatCZK(p.value)}
                         </p>
                         <p className="mt-0.5 text-[11px] text-violet-500">

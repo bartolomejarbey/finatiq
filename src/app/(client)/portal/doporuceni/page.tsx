@@ -42,9 +42,9 @@ function getStatusConfig(status: string) {
     case "converted":
       return { label: "Konvertovaný", color: "bg-green-100 text-green-800" };
     case "expired":
-      return { label: "Vypršený", color: "bg-gray-100 text-gray-800" };
+      return { label: "Vypršený", color: "bg-[var(--table-header)] text-[var(--card-text)]" };
     default:
-      return { label: status, color: "bg-slate-100 text-slate-800" };
+      return { label: status, color: "bg-[var(--table-header)] text-[var(--card-text)]" };
   }
 }
 
@@ -149,14 +149,14 @@ export default function ReferralPage() {
       </div>
 
       {/* Share section */}
-      <div className="mb-8 rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
+      <div className="mb-8 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[var(--card-text)]">
           <Share2 className="h-5 w-5 text-blue-600" />
           Vas doporučujici odkaz
         </h2>
 
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex-1 rounded-lg border bg-slate-50 px-4 py-3 font-mono text-sm text-slate-700">
+          <div className="flex-1 rounded-lg border bg-[var(--table-hover)] px-4 py-3 font-mono text-sm text-[var(--card-text)]">
             {shareLink || "Načitani..."}
           </div>
           <Button onClick={copyLink} variant="outline" className="gap-2">
@@ -165,7 +165,7 @@ export default function ReferralPage() {
           </Button>
         </div>
 
-        <div className="mb-2 text-xs text-slate-500">Vas kod: <span className="font-bold text-slate-900">{referralCode}</span></div>
+        <div className="mb-2 text-xs text-[var(--card-text-muted)]">Vas kod: <span className="font-bold text-[var(--card-text)]">{referralCode}</span></div>
 
         <div className="flex gap-3">
           <Button onClick={copyLink} className="gap-2 bg-blue-600 hover:bg-blue-700">
@@ -185,55 +185,55 @@ export default function ReferralPage() {
 
       {/* Stats */}
       <div className="mb-8 grid grid-cols-3 gap-4">
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
               <Users className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-slate-500">Celkem doporučeni</p>
-              <p className="text-lg font-bold text-slate-900">{totalReferrals}</p>
+              <p className="text-xs text-[var(--card-text-muted)]">Celkem doporučeni</p>
+              <p className="text-lg font-bold text-[var(--card-text)]">{totalReferrals}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
               <Phone className="h-5 w-5 text-indigo-600" />
             </div>
             <div>
-              <p className="text-xs text-slate-500">Kontaktovani</p>
-              <p className="text-lg font-bold text-slate-900">{contacted}</p>
+              <p className="text-xs text-[var(--card-text-muted)]">Kontaktovani</p>
+              <p className="text-lg font-bold text-[var(--card-text)]">{contacted}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-slate-500">Konvertovani</p>
-              <p className="text-lg font-bold text-slate-900">{converted}</p>
+              <p className="text-xs text-[var(--card-text-muted)]">Konvertovani</p>
+              <p className="text-lg font-bold text-[var(--card-text)]">{converted}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Referral list */}
-      <div className="rounded-xl border bg-white shadow-sm">
+      <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
         <div className="border-b px-6 py-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
             Vase doporučeni
           </h2>
         </div>
         {referrals.length === 0 ? (
           <div className="flex flex-col items-center py-16">
-            <Gift className="mb-4 h-12 w-12 text-slate-200" />
-            <p className="text-lg font-medium text-slate-400">
+            <Gift className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+            <p className="text-lg font-medium text-[var(--card-text-dim)]">
               Zatim žadna doporučeni
             </p>
-            <p className="mt-1 text-sm text-slate-300">
+            <p className="mt-1 text-sm text-[var(--card-text-dim)]">
               Sdílejte svuj odkaz a sledujte doporučeni zde
             </p>
           </div>
@@ -244,18 +244,18 @@ export default function ReferralPage() {
               return (
                 <div
                   key={ref.id}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-slate-50"
+                  className="flex items-center justify-between px-6 py-4 hover:bg-[var(--table-hover)]"
                 >
                   <div>
-                    <p className="text-sm font-medium text-slate-900">
+                    <p className="text-sm font-medium text-[var(--card-text)]">
                       {ref.referred_name || "Neznamy"}
                     </p>
                     {ref.referred_email && (
-                      <p className="text-xs text-slate-500">{ref.referred_email}</p>
+                      <p className="text-xs text-[var(--card-text-muted)]">{ref.referred_email}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-[var(--card-text-muted)]">
                       <Clock className="mr-1 inline h-3 w-3" />
                       {new Date(ref.created_at).toLocaleDateString("cs-CZ")}
                     </span>

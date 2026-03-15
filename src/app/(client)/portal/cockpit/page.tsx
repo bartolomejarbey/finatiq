@@ -135,7 +135,7 @@ export default function CockpitPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Finanční cockpit</h1>
+      <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Finanční cockpit</h1>
 
       {/* Net worth hero card */}
       <div className="mb-6 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 md:p-8 text-white">
@@ -149,7 +149,7 @@ export default function CockpitPage() {
       {/* Two-column: Liabilities & Assets */}
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* ZÁVAZKY (Liabilities) - Red panel */}
-        <div className="rounded-2xl border border-red-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+        <div className="rounded-2xl border border-red-200 bg-[var(--card-bg)] shadow-sm transition-shadow hover:shadow-md">
           <div className="flex items-center gap-2 rounded-t-2xl bg-gradient-to-r from-red-50 to-red-100/50 border-b border-red-100 px-6 py-4">
             <CreditCard className="h-5 w-5 text-red-500" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-red-600">Závazky</h2>
@@ -157,17 +157,17 @@ export default function CockpitPage() {
           <div className="px-6 py-4">
             {loans.length === 0 ? (
               <div className="flex flex-col items-center py-8">
-                <CreditCard className="mb-2 h-8 w-8 text-gray-200" />
-                <p className="text-sm text-gray-500">Žádné závazky</p>
+                <CreditCard className="mb-2 h-8 w-8 text-[var(--card-text-dim)]" />
+                <p className="text-sm text-[var(--card-text-muted)]">Žádné závazky</p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-[var(--card-border)]">
                 {loans.map((loan) => (
                   <li key={loan.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{loan.title}</p>
+                      <p className="text-sm font-medium text-[var(--card-text)]">{loan.title}</p>
                       {loan.interest_rate != null && (
-                        <p className="text-xs text-gray-500">Úrok: {loan.interest_rate}%</p>
+                        <p className="text-xs text-[var(--card-text-muted)]">Úrok: {loan.interest_rate}%</p>
                       )}
                     </div>
                     <p className="text-sm font-bold text-red-600">{formatCZK(loan.remaining_balance)}</p>
@@ -178,14 +178,14 @@ export default function CockpitPage() {
           </div>
           <div className="border-t border-red-100 px-6 py-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium uppercase tracking-wider text-gray-700">Celkový dluh</span>
+              <span className="text-xs font-medium uppercase tracking-wider text-[var(--card-text)]">Celkový dluh</span>
               <span className="text-lg font-bold text-red-600">{formatCZK(totalDebt)}</span>
             </div>
           </div>
         </div>
 
         {/* AKTIVA (Assets) - Green panel */}
-        <div className="rounded-2xl border border-emerald-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+        <div className="rounded-2xl border border-emerald-200 bg-[var(--card-bg)] shadow-sm transition-shadow hover:shadow-md">
           <div className="flex items-center gap-2 rounded-t-2xl bg-gradient-to-r from-emerald-50 to-emerald-100/50 border-b border-emerald-100 px-6 py-4">
             <Landmark className="h-5 w-5 text-emerald-500" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-emerald-600">Aktiva</h2>
@@ -193,16 +193,16 @@ export default function CockpitPage() {
           <div className="px-6 py-4">
             {investments.length === 0 && goals.length === 0 ? (
               <div className="flex flex-col items-center py-8">
-                <Wallet className="mb-2 h-8 w-8 text-gray-200" />
-                <p className="text-sm text-gray-500">Žádná aktiva</p>
+                <Wallet className="mb-2 h-8 w-8 text-[var(--card-text-dim)]" />
+                <p className="text-sm text-[var(--card-text-muted)]">Žádná aktiva</p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-[var(--card-border)]">
                 {investments.map((inv) => (
                   <li key={inv.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{inv.instrument_name}</p>
-                      <p className="text-xs text-gray-500">{inv.type}</p>
+                      <p className="text-sm font-medium text-[var(--card-text)]">{inv.instrument_name}</p>
+                      <p className="text-xs text-[var(--card-text-muted)]">{inv.type}</p>
                     </div>
                     <p className="text-sm font-bold text-emerald-600">{formatCZK(inv.current_value)}</p>
                   </li>
@@ -210,8 +210,8 @@ export default function CockpitPage() {
                 {goals.map((goal) => (
                   <li key={goal.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{goal.title}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-medium text-[var(--card-text)]">{goal.title}</p>
+                      <p className="text-xs text-[var(--card-text-muted)]">
                         Cíl: {formatCZK(goal.target_amount)}
                       </p>
                     </div>
@@ -223,7 +223,7 @@ export default function CockpitPage() {
           </div>
           <div className="border-t border-emerald-100 px-6 py-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium uppercase tracking-wider text-gray-700">Celková aktiva</span>
+              <span className="text-xs font-medium uppercase tracking-wider text-[var(--card-text)]">Celková aktiva</span>
               <span className="text-lg font-bold text-emerald-600">{formatCZK(totalAssets)}</span>
             </div>
           </div>
@@ -232,8 +232,8 @@ export default function CockpitPage() {
 
       {/* Net worth chart */}
       {netWorthHistory.length > 0 && (
-        <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-700">
+        <div className="rounded-2xl border bg-[var(--card-bg)] p-6 shadow-sm transition-shadow hover:shadow-md">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
             Vývoj čisté hodnoty (12 měsíců)
           </h2>
           <ResponsiveContainer width="100%" height={280}>

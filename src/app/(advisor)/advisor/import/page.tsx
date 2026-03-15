@@ -225,8 +225,8 @@ export default function ImportPage() {
   return (
     <div className="">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Import klientů</h1>
-        <p className="mt-0.5 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-[var(--card-text)]">Import klientů</h1>
+        <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">
           Hromadný import klientů z CSV souboru
         </p>
       </div>
@@ -241,40 +241,40 @@ export default function ImportPage() {
                   ? "bg-green-500 text-white"
                   : step === s.num
                   ? "bg-blue-500 text-white"
-                  : "bg-slate-200 text-slate-500"
+                  : "bg-[var(--card-border)] text-[var(--card-text-muted)]"
               }`}
             >
               {step > s.num ? <Check className="h-4 w-4" /> : s.num}
             </div>
             <span
               className={`hidden text-xs sm:inline ${
-                step === s.num ? "font-medium text-slate-900" : "text-slate-400"
+                step === s.num ? "font-medium text-[var(--card-text)]" : "text-[var(--card-text-dim)]"
               }`}
             >
               {s.label}
             </span>
             {i < steps.length - 1 && (
-              <div className="mx-2 h-px w-8 bg-slate-200" />
+              <div className="mx-2 h-px w-8 bg-[var(--card-border)]" />
             )}
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 shadow-sm">
         {/* Step 1: Upload */}
         {step === 1 && (
           <div className="flex flex-col items-center py-12">
-            <FileSpreadsheet className="mb-4 h-16 w-16 text-slate-300" />
-            <h2 className="mb-2 text-lg font-semibold text-slate-900">
+            <FileSpreadsheet className="mb-4 h-16 w-16 text-[var(--card-text-dim)]" />
+            <h2 className="mb-2 text-lg font-semibold text-[var(--card-text)]">
               Nahrajte CSV soubor
             </h2>
-            <p className="mb-6 text-sm text-slate-500">
+            <p className="mb-6 text-sm text-[var(--card-text-muted)]">
               Soubor musí obsahovat hlavičku s názvy sloupců
             </p>
             <label className="cursor-pointer">
-              <div className="flex items-center gap-2 rounded-lg border-2 border-dashed border-slate-300 px-8 py-4 transition-colors hover:border-blue-400 hover:bg-blue-50">
-                <Upload className="h-5 w-5 text-slate-400" />
-                <span className="text-sm font-medium text-slate-600">
+              <div className="flex items-center gap-2 rounded-lg border-2 border-dashed border-[var(--input-border)] px-8 py-4 transition-colors hover:border-blue-400 hover:bg-blue-50">
+                <Upload className="h-5 w-5 text-[var(--card-text-dim)]" />
+                <span className="text-sm font-medium text-[var(--card-text-muted)]">
                   Vybrat soubor
                 </span>
               </div>
@@ -291,10 +291,10 @@ export default function ImportPage() {
         {/* Step 2: Column mapping */}
         {step === 2 && (
           <div>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--card-text)]">
               Mapování sloupců
             </h2>
-            <p className="mb-4 text-sm text-slate-500">
+            <p className="mb-4 text-sm text-[var(--card-text-muted)]">
               Přiřaďte každému sloupci v CSV odpovídající pole
             </p>
             <div className="space-y-3">
@@ -303,10 +303,10 @@ export default function ImportPage() {
                   key={idx}
                   className="flex items-center gap-4 rounded-lg border p-3"
                 >
-                  <span className="w-40 truncate text-sm font-medium text-slate-700">
+                  <span className="w-40 truncate text-sm font-medium text-[var(--card-text)]">
                     {header}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-slate-400" />
+                  <ArrowRight className="h-4 w-4 text-[var(--card-text-dim)]" />
                   <Select
                     value={mapping[idx] || "skip"}
                     onValueChange={(val) =>
@@ -324,7 +324,7 @@ export default function ImportPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-[var(--card-text-muted)]">
                     např.: {rows[0]?.[idx] || "—"}
                   </span>
                 </div>
@@ -333,13 +333,13 @@ export default function ImportPage() {
 
             {/* Preview first 3 rows */}
             <div className="mt-6">
-              <h3 className="mb-2 text-sm font-medium text-slate-700">
+              <h3 className="mb-2 text-sm font-medium text-[var(--card-text)]">
                 Náhled (první 3 řádky)
               </h3>
               <div className="overflow-x-auto rounded-lg border">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b bg-slate-50 text-left text-xs font-medium uppercase tracking-wider text-slate-700">
+                    <tr className="border-b bg-[var(--table-hover)] text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]">
                       {Object.entries(mapping)
                         .filter(([, t]) => t !== "skip")
                         .map(([, target]) => (
@@ -357,7 +357,7 @@ export default function ImportPage() {
                           {Object.entries(mapping)
                             .filter(([, t]) => t !== "skip")
                             .map(([, target]) => (
-                              <td key={target} className="px-4 py-2 text-slate-600">
+                              <td key={target} className="px-4 py-2 text-[var(--card-text-muted)]">
                                 {mapped[target] || "—"}
                               </td>
                             ))}
@@ -385,16 +385,16 @@ export default function ImportPage() {
         {/* Step 3: Preview */}
         {step === 3 && (
           <div>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--card-text)]">
               Náhled importu
             </h2>
-            <p className="mb-4 text-sm text-slate-500">
+            <p className="mb-4 text-sm text-[var(--card-text-muted)]">
               Celkem řádků k importu: <strong>{rows.length}</strong>
             </p>
             <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b bg-slate-50 text-left text-xs font-medium uppercase tracking-wider text-slate-700">
+                  <tr className="border-b bg-[var(--table-hover)] text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]">
                     <th className="px-4 py-2">#</th>
                     <th className="px-4 py-2">Jméno</th>
                     <th className="px-4 py-2">Příjmení</th>
@@ -411,17 +411,17 @@ export default function ImportPage() {
                         pr.issues.length > 0 ? "bg-red-50" : ""
                       }`}
                     >
-                      <td className="px-4 py-2 text-slate-400">{i + 1}</td>
-                      <td className="px-4 py-2 text-slate-700">
+                      <td className="px-4 py-2 text-[var(--card-text-dim)]">{i + 1}</td>
+                      <td className="px-4 py-2 text-[var(--card-text)]">
                         {pr.mapped.first_name || "—"}
                       </td>
-                      <td className="px-4 py-2 text-slate-700">
+                      <td className="px-4 py-2 text-[var(--card-text)]">
                         {pr.mapped.last_name || "—"}
                       </td>
-                      <td className="px-4 py-2 text-slate-500">
+                      <td className="px-4 py-2 text-[var(--card-text-muted)]">
                         {pr.mapped.email || "—"}
                       </td>
-                      <td className="px-4 py-2 text-slate-500">
+                      <td className="px-4 py-2 text-[var(--card-text-muted)]">
                         {pr.mapped.phone || "—"}
                       </td>
                       <td className="px-4 py-2">
@@ -443,7 +443,7 @@ export default function ImportPage() {
               </table>
             </div>
             {rows.length > 10 && (
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-[var(--card-text-muted)]">
                 ... a dalších {rows.length - 10} řádků
               </p>
             )}
@@ -465,11 +465,11 @@ export default function ImportPage() {
         {step === 4 && (
           <div className="flex flex-col items-center py-12">
             <FileSpreadsheet className="mb-4 h-12 w-12 animate-pulse text-blue-500" />
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--card-text)]">
               Importuji klienty...
             </h2>
             <div className="mb-2 w-full max-w-md">
-              <div className="h-3 w-full rounded-full bg-slate-200">
+              <div className="h-3 w-full rounded-full bg-[var(--card-border)]">
                 <div
                   className="h-3 rounded-full bg-blue-500 transition-all"
                   style={{
@@ -478,7 +478,7 @@ export default function ImportPage() {
                 />
               </div>
             </div>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[var(--card-text-muted)]">
               {progress} / {rows.length}
             </p>
           </div>
@@ -490,21 +490,21 @@ export default function ImportPage() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <Check className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="mb-4 text-xl font-semibold text-slate-900">
+            <h2 className="mb-4 text-xl font-semibold text-[var(--card-text)]">
               Import dokončen
             </h2>
             <div className="mb-6 space-y-2 text-center">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-[var(--card-text-muted)]">
                 Importováno:{" "}
                 <strong className="text-green-600">{stats.imported}</strong>{" "}
                 klientů
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-[var(--card-text-muted)]">
                 Přeskočeno:{" "}
                 <strong className="text-yellow-600">{stats.skipped}</strong>{" "}
                 duplicit
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-[var(--card-text-muted)]">
                 Chyby:{" "}
                 <strong className="text-red-600">{stats.errors}</strong>
               </p>

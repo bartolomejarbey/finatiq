@@ -159,13 +159,13 @@ function CropModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg rounded-xl bg-white shadow-xl overflow-hidden">
+      <div className="w-full max-w-lg rounded-xl bg-[var(--card-bg)] shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-900">Oříznutí loga</h3>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--card-border)]">
+          <h3 className="text-sm font-semibold text-[var(--card-text)]">Oříznutí loga</h3>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors duration-150"
+            className="text-[var(--card-text-dim)] hover:text-[var(--card-text-muted)] cursor-pointer transition-colors duration-150"
           >
             <X className="h-4 w-4" />
           </button>
@@ -188,7 +188,7 @@ function CropModal({
         <div className="px-5 py-4 space-y-3">
           {/* Aspect ratio toggle */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 w-12">Poměr:</span>
+            <span className="text-xs text-[var(--card-text-muted)] w-12">Poměr:</span>
             <div className="flex gap-1.5">
               {([
                 { value: 1, label: "1:1" },
@@ -201,7 +201,7 @@ function CropModal({
                   className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors duration-150 ${
                     aspect === opt.value
                       ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                      : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--card-border)]"
                   }`}
                 >
                   {opt.label}
@@ -212,7 +212,7 @@ function CropModal({
 
           {/* Zoom slider */}
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-500 w-12">Zoom:</span>
+            <span className="text-xs text-[var(--card-text-muted)] w-12">Zoom:</span>
             <input
               type="range"
               min={1}
@@ -222,7 +222,7 @@ function CropModal({
               onChange={(e) => setZoom(Number(e.target.value))}
               className="flex-1 accent-gray-900 cursor-pointer"
             />
-            <span className="text-xs text-gray-400 font-mono w-10 text-right">
+            <span className="text-xs text-[var(--card-text-dim)] font-mono w-10 text-right">
               {zoom.toFixed(1)}x
             </span>
           </div>
@@ -330,7 +330,7 @@ function LogoUpload({
           {mode === "upload" ? <><Link2 className="h-3 w-3" />Zadat URL</> : <><Upload className="h-3 w-3" />Nahrát</>}
         </button>
       </div>
-      <p className="text-xs text-gray-400">{hint}</p>
+      <p className="text-xs text-[var(--card-text-dim)]">{hint}</p>
 
       {mode === "upload" ? (
         <div
@@ -339,16 +339,16 @@ function LogoUpload({
           onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFileSelect(f); }}
           onClick={() => inputRef.current?.click()}
           className={`flex flex-col items-center justify-center rounded-md border border-dashed p-5 cursor-pointer transition-colors duration-150 ${
-            dragOver ? "border-blue-500 bg-blue-500/5" : "border-gray-200 hover:border-gray-300"
+            dragOver ? "border-blue-500 bg-blue-500/5" : "border-[var(--card-border)] hover:border-[var(--card-border)]"
           }`}
         >
           {uploading ? (
-            <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+            <Loader2 className="h-5 w-5 text-[var(--card-text-dim)] animate-spin" />
           ) : (
             <>
-              <Upload className="h-4 w-4 text-gray-300 mb-1" />
-              <p className="text-xs text-gray-400">Přetáhněte nebo klikněte</p>
-              <p className="text-[10px] text-gray-300">PNG, JPG, SVG — max 5 MB</p>
+              <Upload className="h-4 w-4 text-[var(--card-text-dim)] mb-1" />
+              <p className="text-xs text-[var(--card-text-dim)]">Přetáhněte nebo klikněte</p>
+              <p className="text-[10px] text-[var(--card-text-dim)]">PNG, JPG, SVG — max 5 MB</p>
             </>
           )}
           <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = ""; }} />
@@ -358,17 +358,17 @@ function LogoUpload({
       )}
 
       {currentUrl && (
-        <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 border border-gray-100">
+        <div className="flex items-center gap-2 p-2 rounded-md bg-[var(--table-hover)] border border-[var(--card-border)]">
           <img src={currentUrl} alt="" className="h-8 max-w-[100px] object-contain" />
           <button
             type="button"
             onClick={handleEditLogo}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 cursor-pointer transition-colors duration-150"
+            className="flex items-center gap-1 text-xs text-[var(--card-text-muted)] hover:text-[var(--card-text)] cursor-pointer transition-colors duration-150"
           >
             <Crop className="h-3 w-3" />
             Upravit
           </button>
-          <button type="button" onClick={() => onUrlChange("")} className="ml-auto text-gray-300 hover:text-red-500 cursor-pointer transition-colors duration-150">
+          <button type="button" onClick={() => onUrlChange("")} className="ml-auto text-[var(--card-text-dim)] hover:text-red-500 cursor-pointer transition-colors duration-150">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -597,7 +597,7 @@ export default function BrandingPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
+        <Loader2 className="h-6 w-6 animate-spin text-[var(--card-text-dim)]" />
       </div>
     );
   }
@@ -605,8 +605,8 @@ export default function BrandingPage() {
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Branding</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Nastavte jak bude vypadat váš portál pro klienty</p>
+        <h1 className="text-xl font-semibold text-[var(--card-text)]">Branding</h1>
+        <p className="text-sm text-[var(--card-text-dim)] mt-0.5">Nastavte jak bude vypadat váš portál pro klienty</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -633,7 +633,7 @@ export default function BrandingPage() {
                     onChange={(e) => update("logo_size", parseInt(e.target.value))}
                     className="flex-1 accent-gray-900 cursor-pointer"
                   />
-                  <span className="text-xs text-gray-400 font-mono w-8 text-right">{state.logo_size}</span>
+                  <span className="text-xs text-[var(--card-text-dim)] font-mono w-8 text-right">{state.logo_size}</span>
                 </div>
               </div>
               <div>
@@ -647,7 +647,7 @@ export default function BrandingPage() {
                       className={`flex-1 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-colors duration-150 ${
                         state.logo_shape === shape
                           ? "bg-gray-900 text-white"
-                          : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                          : "bg-[var(--table-hover)] text-[var(--card-text-muted)] hover:bg-[var(--table-header)]"
                       }`}
                     >
                       {shape === "original" ? "Original" : shape === "rounded" ? "Rounded" : "Kruh"}
@@ -672,7 +672,7 @@ export default function BrandingPage() {
                     className={`flex-1 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-colors duration-150 ${
                       state.logo_position === opt.value
                         ? "bg-gray-900 text-white"
-                        : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                        : "bg-[var(--table-hover)] text-[var(--card-text-muted)] hover:bg-[var(--table-header)]"
                     }`}
                   >
                     {opt.label}
@@ -695,7 +695,7 @@ export default function BrandingPage() {
                     type="button"
                     onClick={() => applyPalette(palette)}
                     className={`relative flex items-center gap-2 p-2.5 rounded-md border cursor-pointer transition-all duration-150 ${
-                      isActive ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-200"
+                      isActive ? "border-gray-900 bg-[var(--table-hover)]" : "border-[var(--card-border)] hover:border-[var(--card-border)]"
                     }`}
                   >
                     <div className="flex -space-x-1">
@@ -703,7 +703,7 @@ export default function BrandingPage() {
                       <div className="h-5 w-5 rounded-full border-2 border-white" style={{ backgroundColor: palette.secondary }} />
                       <div className="h-5 w-5 rounded-full border-2 border-white" style={{ backgroundColor: palette.accent }} />
                     </div>
-                    <span className="text-[11px] text-gray-600 font-medium truncate">{palette.name}</span>
+                    <span className="text-[11px] text-[var(--card-text-muted)] font-medium truncate">{palette.name}</span>
                     {isActive && <Check className="h-3 w-3 text-gray-900 absolute top-1 right-1" />}
                   </button>
                 );
@@ -713,7 +713,7 @@ export default function BrandingPage() {
             <button
               type="button"
               onClick={() => setCustomColors(!customColors)}
-              className="mt-3 text-xs text-gray-400 hover:text-gray-600 cursor-pointer transition-colors duration-150"
+              className="mt-3 text-xs text-[var(--card-text-dim)] hover:text-[var(--card-text-muted)] cursor-pointer transition-colors duration-150"
             >
               {customColors ? "Skrýt vlastní barvy" : "Vlastní barvy →"}
             </button>
@@ -738,7 +738,7 @@ export default function BrandingPage() {
                     type="button"
                     onClick={() => update("brand_template", tpl.id)}
                     className={`relative rounded-lg border-2 p-3 text-left cursor-pointer transition-all duration-150 ${
-                      isActive ? "border-gray-900" : "border-gray-100 hover:border-gray-200"
+                      isActive ? "border-gray-900" : "border-[var(--card-border)] hover:border-[var(--card-border)]"
                     }`}
                   >
                     {/* Mini preview */}
@@ -753,8 +753,8 @@ export default function BrandingPage() {
                         </div>
                       </div>
                     </div>
-                    <p className="text-sm font-medium text-gray-900">{tpl.name}</p>
-                    <p className="text-xs text-gray-400">{tpl.desc}</p>
+                    <p className="text-sm font-medium text-[var(--card-text)]">{tpl.name}</p>
+                    <p className="text-xs text-[var(--card-text-dim)]">{tpl.desc}</p>
                     {isActive && (
                       <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-gray-900 flex items-center justify-center">
                         <Check className="h-3 w-3 text-white" />
@@ -778,7 +778,7 @@ export default function BrandingPage() {
                     className={`px-3 py-1.5 rounded-md text-sm cursor-pointer transition-colors duration-150 ${
                       state.brand_font === font.value
                         ? "bg-gray-900 text-white font-medium"
-                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                        : "bg-[var(--table-hover)] text-[var(--card-text-muted)] hover:bg-[var(--table-header)]"
                     }`}
                     style={{ fontFamily: font.value + ", sans-serif" }}
                   >
@@ -786,11 +786,11 @@ export default function BrandingPage() {
                   </button>
                 ))}
               </div>
-              <div className="p-3 rounded-md bg-gray-50 border border-gray-100">
-                <p style={{ fontFamily: state.brand_font + ", sans-serif" }} className="text-lg font-semibold text-gray-900">
+              <div className="p-3 rounded-md bg-[var(--table-hover)] border border-[var(--card-border)]">
+                <p style={{ fontFamily: state.brand_font + ", sans-serif" }} className="text-lg font-semibold text-[var(--card-text)]">
                   Aa Bb Cc 123
                 </p>
-                <p style={{ fontFamily: state.brand_font + ", sans-serif" }} className="text-sm text-gray-500 mt-0.5">
+                <p style={{ fontFamily: state.brand_font + ", sans-serif" }} className="text-sm text-[var(--card-text-muted)] mt-0.5">
                   Přehled vašeho podnikání — {state.brand_font}
                 </p>
               </div>
@@ -808,7 +808,7 @@ export default function BrandingPage() {
                   placeholder="FinAdvisor"
                   className="h-9"
                 />
-                <p className="text-xs text-gray-400 mt-1">Tento název uvidí vaši klienti</p>
+                <p className="text-xs text-[var(--card-text-dim)] mt-1">Tento název uvidí vaši klienti</p>
               </div>
               <div>
                 <Label className="text-sm font-medium mb-1.5 block">Login slug</Label>
@@ -819,7 +819,7 @@ export default function BrandingPage() {
                   className="h-9"
                 />
                 {state.login_slug && (
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-[var(--card-text-dim)] mt-1">
                     URL: finatiq.cz/p/{state.login_slug}
                   </p>
                 )}
@@ -839,7 +839,7 @@ export default function BrandingPage() {
         <div className="hidden lg:block w-[380px] shrink-0">
           <div className="sticky top-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Náhled</span>
+              <span className="text-xs font-medium text-[var(--card-text-dim)] uppercase tracking-wider">Náhled</span>
               <Button onClick={handleSave} disabled={saving} size="sm" className="h-8 cursor-pointer">
                 {saving ? <><Loader2 className="mr-1.5 h-3 w-3 animate-spin" />Ukládám</> : "Uložit změny"}
               </Button>
@@ -856,8 +856,8 @@ export default function BrandingPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-gray-100 bg-white p-5">
-      <h2 className="text-sm font-semibold text-gray-900 mb-4">{title}</h2>
+    <section className="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-5">
+      <h2 className="text-sm font-semibold text-[var(--card-text)] mb-4">{title}</h2>
       {children}
     </section>
   );
@@ -866,10 +866,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function ColorPicker({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <Label className="text-xs text-gray-500 mb-1 block">{label}</Label>
+      <Label className="text-xs text-[var(--card-text-muted)] mb-1 block">{label}</Label>
       <div className="flex items-center gap-2">
         <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-7 w-7 rounded cursor-pointer border-0 p-0" />
-        <span className="text-xs text-gray-500 font-mono">{value}</span>
+        <span className="text-xs text-[var(--card-text-muted)] font-mono">{value}</span>
       </div>
     </div>
   );

@@ -118,7 +118,7 @@ export default function ClientContractsQueue() {
           <p className="text-lg font-medium text-slate-400">Žádné smlouvy</p>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
           <table className="w-full">
             <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700"><th className="px-6 py-3">Klient</th><th className="px-6 py-3">Smlouva</th><th className="px-6 py-3">Typ</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Dokument</th><th className="px-6 py-3">Stav</th></tr></thead>
             <tbody>

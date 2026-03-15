@@ -194,31 +194,31 @@ export default function ClientDashboard() {
       {/* BENTO GRID */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
         {/* Aktiva */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-shadow">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 hover:shadow-md transition-shadow">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
             <TrendingUp className="h-5 w-5 text-emerald-600" />
           </div>
-          <p className="mt-3 text-2xl font-bold text-gray-900">{formatCZK(portfolioValue)}</p>
-          <p className="text-xs text-gray-500">celková hodnota aktiv</p>
+          <p className="mt-3 text-2xl font-bold text-[var(--card-text)]">{formatCZK(portfolioValue)}</p>
+          <p className="text-xs text-[var(--card-text-muted)]">celková hodnota aktiv</p>
         </div>
 
         {/* Závazky */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-shadow">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 hover:shadow-md transition-shadow">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
             <CreditCard className="h-5 w-5 text-red-600" />
           </div>
-          <p className="mt-3 text-2xl font-bold text-gray-900">{formatCZK(totalDebt)}</p>
-          <p className="text-xs text-gray-500">celkové závazky</p>
+          <p className="mt-3 text-2xl font-bold text-[var(--card-text)]">{formatCZK(totalDebt)}</p>
+          <p className="text-xs text-[var(--card-text-muted)]">celkové závazky</p>
         </div>
 
         {/* Další platba */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-shadow">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 hover:shadow-md transition-shadow">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50">
             <CalendarDays className="h-5 w-5 text-amber-600" />
           </div>
-          <p className="mt-3 text-2xl font-bold text-gray-900">{nextPayment ? formatCZK(nextPayment.amount) : "—"}</p>
+          <p className="mt-3 text-2xl font-bold text-[var(--card-text)]">{nextPayment ? formatCZK(nextPayment.amount) : "—"}</p>
           <div className="flex items-center gap-2">
-            <p className="text-xs text-gray-500">další platba</p>
+            <p className="text-xs text-[var(--card-text-muted)]">další platba</p>
             {nextPayment && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">za {nextPayment.daysLeft} dní</span>
             )}
@@ -226,7 +226,7 @@ export default function ClientDashboard() {
         </div>
 
         {/* Finanční zdraví - gauge */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-shadow">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="relative h-16 w-16 shrink-0">
               <svg viewBox="0 0 36 36" className="h-16 w-16 -rotate-90">
@@ -238,35 +238,35 @@ export default function ClientDashboard() {
                   strokeDasharray={`${financialHealth * 0.9425} 94.25`}
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-900">
+              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-[var(--card-text)]">
                 {financialHealth}
               </span>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Finanční zdraví</p>
-              <p className="text-xs text-gray-500">skóre 0–100</p>
+              <p className="text-sm font-semibold text-[var(--card-text)]">Finanční zdraví</p>
+              <p className="text-xs text-[var(--card-text-muted)]">skóre 0–100</p>
             </div>
           </div>
         </div>
 
         {/* Plnění cílů */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-shadow">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 hover:shadow-md transition-shadow">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50">
             <Target className="h-5 w-5 text-violet-600" />
           </div>
-          <p className="mt-3 text-sm font-semibold text-gray-900">{onTrackGoals} z {totalGoals} cílů</p>
-          <div className="mt-2 h-2 w-full rounded-full bg-gray-100">
+          <p className="mt-3 text-sm font-semibold text-[var(--card-text)]">{onTrackGoals} z {totalGoals} cílů</p>
+          <div className="mt-2 h-2 w-full rounded-full bg-[var(--table-header)]">
             <div className="h-2 rounded-full bg-violet-500 transition-all" style={{ width: `${goalProgress}%` }} />
           </div>
         </div>
 
         {/* Smlouvy */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-shadow">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 hover:shadow-md transition-shadow">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
             <FileText className="h-5 w-5 text-blue-600" />
           </div>
-          <p className="mt-3 text-2xl font-bold text-gray-900">{activeContracts}</p>
-          <p className="text-xs text-gray-500">aktivních smluv</p>
+          <p className="mt-3 text-2xl font-bold text-[var(--card-text)]">{activeContracts}</p>
+          <p className="text-xs text-[var(--card-text-muted)]">aktivních smluv</p>
         </div>
       </div>
 
@@ -283,10 +283,10 @@ export default function ClientDashboard() {
             href={item.href}
             className="flex flex-col items-center gap-2 rounded-2xl p-4 transition-colors hover:bg-blue-50 group"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
-              <item.icon className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--table-header)] group-hover:bg-blue-100 transition-colors">
+              <item.icon className="h-5 w-5 text-[var(--card-text-muted)] group-hover:text-blue-600 transition-colors" />
             </div>
-            <span className="text-xs text-gray-600 text-center">{item.label}</span>
+            <span className="text-xs text-[var(--card-text-muted)] text-center">{item.label}</span>
           </Link>
         ))}
       </div>
@@ -294,20 +294,20 @@ export default function ClientDashboard() {
       {/* NOTIFICATIONS */}
       {notifications.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-gray-500 mb-3">Poslední oznámení</h2>
+          <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--card-text-muted)] mb-3">Poslední oznámení</h2>
           <div className="space-y-2">
             {notifications.slice(0, 3).map((n) => (
-              <div key={n.id} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4 hover:shadow-sm transition-shadow">
+              <div key={n.id} className="flex items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 hover:shadow-sm transition-shadow">
                 <div className={`flex h-9 w-9 items-center justify-center rounded-full shrink-0 ${
-                  n.type === "payment" ? "bg-amber-100" : n.type === "contract" ? "bg-blue-100" : "bg-gray-100"
+                  n.type === "payment" ? "bg-amber-100" : n.type === "contract" ? "bg-blue-100" : "bg-[var(--table-header)]"
                 }`}>
                   <Bell className={`h-4 w-4 ${
-                    n.type === "payment" ? "text-amber-600" : n.type === "contract" ? "text-blue-600" : "text-gray-600"
+                    n.type === "payment" ? "text-amber-600" : n.type === "contract" ? "text-blue-600" : "text-[var(--card-text-muted)]"
                   }`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{n.title}</p>
-                  <p className="text-xs text-gray-400">{new Date(n.created_at).toLocaleDateString("cs-CZ")}</p>
+                  <p className="text-sm font-medium text-[var(--card-text)] truncate">{n.title}</p>
+                  <p className="text-xs text-[var(--card-text-dim)]">{new Date(n.created_at).toLocaleDateString("cs-CZ")}</p>
                 </div>
               </div>
             ))}
@@ -317,12 +317,12 @@ export default function ClientDashboard() {
 
       {/* Onboarding checklist */}
       {showChecklist && (
-        <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-6">
+        <div className="mt-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-gray-500">Dokončete nastavení</h2>
-            <span className="text-xs text-gray-400">{checklist.filter((i) => i.done).length}/{checklist.length}</span>
+            <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--card-text-muted)]">Dokončete nastavení</h2>
+            <span className="text-xs text-[var(--card-text-dim)]">{checklist.filter((i) => i.done).length}/{checklist.length}</span>
           </div>
-          <div className="mb-3 h-2 rounded-full bg-gray-100">
+          <div className="mb-3 h-2 rounded-full bg-[var(--table-header)]">
             <div className="h-2 rounded-full bg-blue-500 transition-all" style={{ width: `${(checklist.filter((i) => i.done).length / checklist.length) * 100}%` }} />
           </div>
           <div className="space-y-2">
@@ -330,17 +330,17 @@ export default function ClientDashboard() {
               <button
                 key={item.key}
                 onClick={() => item.href && !item.done && router.push(item.href)}
-                className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors ${!item.done && item.href ? "hover:bg-gray-50 cursor-pointer" : ""}`}
+                className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors ${!item.done && item.href ? "hover:bg-[var(--table-hover)] cursor-pointer" : ""}`}
               >
-                {item.done ? <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> : <Circle className="h-5 w-5 text-gray-300 shrink-0" />}
-                <span className={`text-sm ${item.done ? "text-gray-400 line-through" : "text-gray-700"}`}>{item.label}</span>
-                {!item.done && item.href && <ArrowRight className="ml-auto h-3.5 w-3.5 text-gray-300" />}
+                {item.done ? <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> : <Circle className="h-5 w-5 text-[var(--card-text-dim)] shrink-0" />}
+                <span className={`text-sm ${item.done ? "text-[var(--card-text-dim)] line-through" : "text-[var(--card-text)]"}`}>{item.label}</span>
+                {!item.done && item.href && <ArrowRight className="ml-auto h-3.5 w-3.5 text-[var(--card-text-dim)]" />}
               </button>
             ))}
           </div>
           <button
             onClick={() => setShowChecklist(false)}
-            className="mt-3 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            className="mt-3 text-xs text-[var(--card-text-dim)] hover:text-[var(--card-text-muted)] transition-colors"
           >
             Skrýt
           </button>

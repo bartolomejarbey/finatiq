@@ -180,17 +180,17 @@ export default function TrezorPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-[var(--card-text)] flex items-center gap-2">
           <Lock className="h-6 w-6" /> Dokumentový trezor
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-[var(--card-text-muted)] mt-1">
           Bezpečné úložiště vašich důležitých dokumentů
         </p>
       </div>
 
       {/* Upload section */}
-      <div className="mb-6 rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700 mb-4">
+      <div className="mb-6 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)] mb-4">
           Nahrát dokument
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -234,7 +234,7 @@ export default function TrezorPage() {
           </div>
         </div>
         <div className="mt-4 flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-[var(--card-text-muted)]">
             <input
               type="checkbox"
               checked={shareWithAdvisor}
@@ -257,11 +257,11 @@ export default function TrezorPage() {
             <button
               key={cat.key}
               onClick={() => setSelectedCategory(cat.key)}
-              className="rounded-xl border bg-white p-6 shadow-sm hover:shadow-md transition-all text-left"
+              className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm hover:shadow-md transition-all text-left"
             >
               <cat.icon className="h-8 w-8 text-blue-500 mb-2" />
-              <h3 className="font-semibold text-slate-900">{cat.label}</h3>
-              <p className="text-sm text-slate-500">{cat.count} dokumentů</p>
+              <h3 className="font-semibold text-[var(--card-text)]">{cat.label}</h3>
+              <p className="text-sm text-[var(--card-text-muted)]">{cat.count} dokumentů</p>
             </button>
           ))}
         </div>
@@ -272,18 +272,18 @@ export default function TrezorPage() {
         <>
           <button
             onClick={() => setSelectedCategory(null)}
-            className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900"
+            className="mb-4 flex items-center gap-1.5 text-sm text-[var(--card-text-muted)] hover:text-[var(--card-text)]"
           >
             <ArrowLeft className="h-4 w-4" />
             Zpět na kategorie
           </button>
 
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--card-text)] mb-4">
             {CATEGORIES.find((c) => c.key === selectedCategory)?.label}
           </h2>
 
           {filteredDocs.length === 0 ? (
-            <p className="text-center text-slate-400 py-12">
+            <p className="text-center text-[var(--card-text-dim)] py-12">
               Žádné dokumenty v této kategorii
             </p>
           ) : (
@@ -291,12 +291,12 @@ export default function TrezorPage() {
               {filteredDocs.map((doc) => (
                 <div
                   key={doc.id}
-                  className="rounded-xl border bg-white p-4 shadow-sm"
+                  className="rounded-xl border bg-[var(--card-bg)] p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-slate-900">{doc.name}</h3>
-                      <p className="text-xs text-slate-500">
+                      <h3 className="font-semibold text-[var(--card-text)]">{doc.name}</h3>
+                      <p className="text-xs text-[var(--card-text-muted)]">
                         {new Date(doc.created_at).toLocaleDateString("cs-CZ")}
                       </p>
                     </div>
@@ -314,7 +314,7 @@ export default function TrezorPage() {
                       className={`mt-2 text-xs flex items-center gap-1 ${
                         isExpiringSoon(doc.valid_until)
                           ? "text-amber-600"
-                          : "text-slate-500"
+                          : "text-[var(--card-text-muted)]"
                       }`}
                     >
                       {isExpiringSoon(doc.valid_until) && (

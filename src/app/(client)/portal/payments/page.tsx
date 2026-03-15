@@ -74,7 +74,7 @@ export default function PaymentsPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Platby</h1>
+      <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Platby</h1>
 
       <div className="mb-4 flex gap-2">
         {[
@@ -86,7 +86,7 @@ export default function PaymentsPage() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${filter === f.key ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${filter === f.key ? "bg-[var(--card-text)] text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
           >
             {f.label}
           </button>
@@ -95,8 +95,8 @@ export default function PaymentsPage() {
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <CreditCard className="mb-4 h-12 w-12 text-gray-200" />
-          <p className="text-lg font-medium text-gray-400">Žádné platby</p>
+          <CreditCard className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné platby</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -104,18 +104,18 @@ export default function PaymentsPage() {
             const status = getStatusInfo(p);
             const StatusIcon = status.icon;
             return (
-              <div key={p.id} className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 hover:shadow-sm transition-shadow">
+              <div key={p.id} className="flex items-center gap-4 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 hover:shadow-sm transition-shadow">
                 <div className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${status.bg}`}>
                   <StatusIcon className={`h-5 w-5 ${status.text}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">{p.contract_title}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-medium text-[var(--card-text)]">{p.contract_title}</p>
+                  <p className="text-xs text-[var(--card-text-muted)]">
                     {p.due_date ? `Splatnost: ${new Date(p.due_date).toLocaleDateString("cs-CZ")}` : "—"}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-sm font-bold text-gray-900">{formatCZK(p.amount)}</p>
+                  <p className="text-sm font-bold text-[var(--card-text)]">{formatCZK(p.amount)}</p>
                   <span className={`text-[10px] font-medium ${status.text}`}>{status.label}</span>
                 </div>
               </div>

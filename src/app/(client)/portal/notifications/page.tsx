@@ -28,7 +28,7 @@ const TYPE_CONFIG: Record<string, { icon: typeof Bell; color: string; bg: string
   new_document: { icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
   message: { icon: Mail, color: "text-violet-600", bg: "bg-violet-50" },
   saving_alert: { icon: AlertTriangle, color: "text-green-600", bg: "bg-green-50" },
-  info: { icon: Info, color: "text-slate-600", bg: "bg-slate-50" },
+  info: { icon: Info, color: "text-[var(--card-text-muted)]", bg: "bg-[var(--table-hover)]" },
 };
 
 export default function NotificationsPage() {
@@ -70,8 +70,8 @@ export default function NotificationsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Oznámení</h1>
-          {unreadCount > 0 && <p className="mt-0.5 text-sm text-slate-500">{unreadCount} nepřečtených</p>}
+          <h1 className="text-2xl font-bold text-[var(--card-text)]">Oznámení</h1>
+          {unreadCount > 0 && <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{unreadCount} nepřečtených</p>}
         </div>
         {unreadCount > 0 && (
           <Button variant="outline" size="sm" onClick={markAllRead}>
@@ -82,8 +82,8 @@ export default function NotificationsPage() {
 
       {notifications.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Bell className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádná oznámení</p>
+          <Bell className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádná oznámení</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -95,19 +95,19 @@ export default function NotificationsPage() {
                 key={n.id}
                 onClick={() => !n.is_read && markAsRead(n.id)}
                 className={`flex items-start gap-4 rounded-xl border p-4 shadow-sm transition-colors cursor-pointer ${
-                  n.is_read ? "bg-white" : "bg-blue-50/50 border-blue-100"
-                } hover:bg-slate-50`}
+                  n.is_read ? "bg-[var(--card-bg)]" : "bg-blue-50/50 border-blue-100"
+                } hover:bg-[var(--table-hover)]`}
               >
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${config.bg}`}>
                   <Icon className={`h-5 w-5 ${config.color}`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className={`text-sm font-medium ${n.is_read ? "text-slate-700" : "text-slate-900"}`}>{n.title}</h3>
+                    <h3 className={`text-sm font-medium ${n.is_read ? "text-[var(--card-text)]" : "text-[var(--card-text)]"}`}>{n.title}</h3>
                     {!n.is_read && <span className="h-2 w-2 rounded-full bg-blue-500" />}
                   </div>
-                  {n.body && <p className="mt-0.5 text-xs text-slate-500">{n.body}</p>}
-                  <p className="mt-1 text-[10px] text-slate-400">{new Date(n.created_at).toLocaleString("cs-CZ")}</p>
+                  {n.body && <p className="mt-0.5 text-xs text-[var(--card-text-muted)]">{n.body}</p>}
+                  <p className="mt-1 text-[10px] text-[var(--card-text-dim)]">{new Date(n.created_at).toLocaleString("cs-CZ")}</p>
                 </div>
               </div>
             );

@@ -26,18 +26,18 @@ export function DealCard({ deal, tags, isDragging, stageColor, onClick, onDelete
   return (
     <div
       onClick={onClick}
-      className={`group relative cursor-grab rounded-xl border bg-white p-4 mb-2 transition-all duration-150 ${
+      className={`group relative cursor-grab rounded-xl border bg-[var(--card-bg)] p-4 mb-2 transition-all duration-150 ${
         isDragging
           ? "shadow-xl opacity-90 rotate-1 scale-[1.03]"
-          : "border-gray-100/50 shadow-sm hover:shadow-md hover:border-gray-200"
+          : "border-[var(--card-border)]/50 shadow-sm hover:shadow-md hover:border-[var(--card-border)]"
       }`}
       style={{ borderLeftWidth: 3, borderLeftColor: stageColor || "#e5e7eb" }}
     >
       {/* Three dots menu */}
       <div className="absolute right-3 top-3 opacity-0 transition-opacity group-hover:opacity-100">
         <DropdownMenu>
-          <DropdownMenuTrigger onClick={(e) => e.stopPropagation()} className="flex h-6 w-6 items-center justify-center rounded-md hover:bg-gray-100">
-            <MoreVertical className="h-3.5 w-3.5 text-gray-400" />
+          <DropdownMenuTrigger onClick={(e) => e.stopPropagation()} className="flex h-6 w-6 items-center justify-center rounded-md hover:bg-[var(--table-header)]">
+            <MoreVertical className="h-3.5 w-3.5 text-[var(--card-text-dim)]" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onClick(); }}><Pencil className="mr-2 h-3.5 w-3.5" />Editovat</DropdownMenuItem>
@@ -49,18 +49,18 @@ export function DealCard({ deal, tags, isDragging, stageColor, onClick, onDelete
 
       {/* Contact name */}
       <div className="pr-6">
-        {deal.contact_name && <p className="text-sm font-medium text-gray-900">{deal.contact_name}</p>}
+        {deal.contact_name && <p className="text-sm font-medium text-[var(--card-text)]">{deal.contact_name}</p>}
       </div>
 
       {/* Title */}
-      <p className="text-xs text-gray-400 mt-0.5">{deal.title}</p>
+      <p className="text-xs text-[var(--card-text-dim)] mt-0.5">{deal.title}</p>
 
       {/* Divider */}
-      <div className="border-t border-gray-50 my-3" />
+      <div className="border-t border-[var(--table-hover)] my-3" />
 
       {/* Value + source */}
       <div className="flex justify-between items-center">
-        <p className="text-sm font-semibold text-gray-900">{formatCZK(deal.value)}</p>
+        <p className="text-sm font-semibold text-[var(--card-text)]">{formatCZK(deal.value)}</p>
         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${badge.bg} ${badge.text}`}>
           {badge.label}
         </span>
@@ -70,7 +70,7 @@ export function DealCard({ deal, tags, isDragging, stageColor, onClick, onDelete
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
           {tags.map((tag) => (
-            <span key={tag.id} className="rounded-full bg-gray-50 text-gray-500 px-2 py-0.5 text-xs">
+            <span key={tag.id} className="rounded-full bg-[var(--table-hover)] text-[var(--card-text-muted)] px-2 py-0.5 text-xs">
               {tag.name}
             </span>
           ))}
@@ -78,7 +78,7 @@ export function DealCard({ deal, tags, isDragging, stageColor, onClick, onDelete
       )}
 
       {/* Time */}
-      <p className="text-xs text-gray-300 mt-2">{relativeTime(deal.created_at)}</p>
+      <p className="text-xs text-[var(--card-text-dim)] mt-2">{relativeTime(deal.created_at)}</p>
     </div>
   );
 }

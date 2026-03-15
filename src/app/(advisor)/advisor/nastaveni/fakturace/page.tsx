@@ -118,11 +118,11 @@ export default function AdvisorFakturacePage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold">Fakturace</h1>
+      <h1 className="text-2xl font-bold text-[var(--card-text)]">Fakturace</h1>
 
       {/* Billing info */}
-      <div className="border rounded-xl p-6 space-y-4">
-        <h2 className="text-lg font-semibold">Fakturační údaje</h2>
+      <div className="border border-[var(--card-border)] bg-[var(--card-bg)] rounded-xl p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-[var(--card-text)]">Fakturační údaje</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>Název firmy / Jméno</Label>
@@ -167,9 +167,9 @@ export default function AdvisorFakturacePage() {
       </div>
 
       {/* Invoice list */}
-      <div className="border rounded-xl overflow-hidden">
+      <div className="border border-[var(--card-border)] bg-[var(--card-bg)] rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b">
+          <thead className="bg-[var(--table-hover)] border-b border-[var(--card-border)]">
             <tr>
               <th className="text-left p-3 font-medium">Číslo</th>
               <th className="text-left p-3 font-medium">Období</th>
@@ -181,7 +181,7 @@ export default function AdvisorFakturacePage() {
           </thead>
           <tbody>
             {invoices.map((inv) => (
-              <tr key={inv.id} className="border-b hover:bg-slate-50/50">
+              <tr key={inv.id} className="border-b border-[var(--card-border)] hover:bg-[var(--table-hover)]">
                 <td className="p-3 font-mono text-xs">{inv.invoice_number}</td>
                 <td className="p-3">{inv.period}</td>
                 <td className="p-3">
@@ -206,7 +206,7 @@ export default function AdvisorFakturacePage() {
             ))}
             {invoices.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-slate-400">
+                <td colSpan={6} className="p-8 text-center text-[var(--card-text-dim)]">
                   Zatím žádné faktury
                 </td>
               </tr>

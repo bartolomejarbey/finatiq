@@ -102,19 +102,19 @@ export default function DocumentsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-slate-900">Dokumenty</h1>
+      <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Dokumenty</h1>
 
       {/* Upload zone */}
-      <div className="mb-6 rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold text-slate-700">Nahrát dokument</h2>
+      <div className="mb-6 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+        <h2 className="mb-4 text-sm font-semibold text-[var(--card-text)]">Nahrát dokument</h2>
         <div
-          className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 p-8 transition-colors hover:border-blue-300"
+          className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] p-8 transition-colors hover:border-blue-300"
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setUploadFile(f); }}
         >
-          <Upload className="mb-3 h-8 w-8 text-slate-300" />
-          <p className="text-sm text-slate-500">Přetáhněte soubor sem nebo</p>
-          <label className="mt-2 cursor-pointer rounded-lg bg-slate-100 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200">
+          <Upload className="mb-3 h-8 w-8 text-[var(--card-text-dim)]" />
+          <p className="text-sm text-[var(--card-text-muted)]">Přetáhněte soubor sem nebo</p>
+          <label className="mt-2 cursor-pointer rounded-lg bg-[var(--table-header)] px-4 py-2 text-xs font-medium text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]">
             Vyberte soubor
             <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setUploadFile(f); }} />
           </label>
@@ -145,21 +145,21 @@ export default function DocumentsPage() {
       {/* Documents list */}
       {docs.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <FolderOpen className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádné dokumenty</p>
+          <FolderOpen className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné dokumenty</p>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
           <table className="w-full">
-            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700"><th className="px-6 py-3">Název</th><th className="px-6 py-3">Kategorie</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Velikost</th><th className="px-6 py-3">Nahrál</th><th className="px-6 py-3"></th></tr></thead>
+            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Název</th><th className="px-6 py-3">Kategorie</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Velikost</th><th className="px-6 py-3">Nahrál</th><th className="px-6 py-3"></th></tr></thead>
             <tbody>
               {docs.map((d) => (
-                <tr key={d.id} className="border-b last:border-0 hover:bg-slate-50">
-                  <td className="px-6 py-3 text-sm font-medium text-slate-900">{d.name}</td>
+                <tr key={d.id} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
+                  <td className="px-6 py-3 text-sm font-medium text-[var(--card-text)]">{d.name}</td>
                   <td className="px-6 py-3"><Badge variant="secondary" className="text-[10px]">{CATEGORY_LABELS[d.category] || d.category}</Badge></td>
-                  <td className="px-6 py-3 text-sm text-slate-500">{new Date(d.created_at).toLocaleDateString("cs-CZ")}</td>
-                  <td className="px-6 py-3 text-sm text-slate-500">{formatSize(d.file_size)}</td>
-                  <td className="px-6 py-3 text-sm text-slate-500">{d.uploaded_by === "client" ? "Vy" : "Poradce"}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{new Date(d.created_at).toLocaleDateString("cs-CZ")}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{formatSize(d.file_size)}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{d.uploaded_by === "client" ? "Vy" : "Poradce"}</td>
                   <td className="px-6 py-3">
                     <Button size="sm" variant="outline" className="text-xs" onClick={() => handleDownload(d.file_path)}>Stáhnout</Button>
                   </td>

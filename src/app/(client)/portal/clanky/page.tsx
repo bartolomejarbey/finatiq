@@ -34,7 +34,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   pojisteni: "bg-purple-100 text-purple-800",
   investice: "bg-green-100 text-green-800",
   dane: "bg-orange-100 text-orange-800",
-  obecne: "bg-slate-100 text-slate-800",
+  obecne: "bg-[var(--table-header)] text-[var(--card-text)]",
 };
 
 export default function ClientArticlesPage() {
@@ -113,11 +113,11 @@ export default function ClientArticlesPage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-[var(--card-text)]">
           <BookOpen className="h-6 w-6 text-blue-600" />
           Články od poradce
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-[var(--card-text-muted)]">
           Užitečné články a tipy od vašeho finančního poradce
         </p>
       </div>
@@ -144,11 +144,11 @@ export default function ClientArticlesPage() {
       {/* Articles */}
       {sortedArticles.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <BookOpen className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">
+          <BookOpen className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">
             Žádné články
           </p>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-[var(--card-text-dim)]">
             {selectedCategory !== "all"
               ? "Žádné články v této kategorii"
               : "Váš poradce zatím nezveřejnil žádné články"}
@@ -167,7 +167,7 @@ export default function ClientArticlesPage() {
             return (
               <div
                 key={article.id}
-                className={`rounded-xl border bg-white shadow-sm transition-all ${
+                className={`rounded-xl border bg-[var(--card-bg)] shadow-sm transition-all ${
                   isRecommended ? "ring-2 ring-amber-200" : ""
                 }`}
               >
@@ -180,13 +180,13 @@ export default function ClientArticlesPage() {
                   <div className="mb-2 flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 className="text-base font-semibold text-slate-900">
+                        <h3 className="text-base font-semibold text-[var(--card-text)]">
                           {article.title}
                         </h3>
                         <Badge
                           className={`text-[10px] ${
                             CATEGORY_COLORS[article.category] ||
-                            "bg-slate-100 text-slate-800"
+                            "bg-[var(--table-header)] text-[var(--card-text)]"
                           }`}
                         >
                           {CATEGORY_LABELS[article.category] || article.category}
@@ -198,11 +198,11 @@ export default function ClientArticlesPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-[var(--card-text-muted)]">
                         {new Date(article.created_at).toLocaleDateString("cs-CZ")}
                       </p>
                     </div>
-                    <div className="ml-2 shrink-0 text-slate-400">
+                    <div className="ml-2 shrink-0 text-[var(--card-text-dim)]">
                       {isExpanded ? (
                         <ChevronUp className="h-5 w-5" />
                       ) : (
@@ -212,13 +212,13 @@ export default function ClientArticlesPage() {
                   </div>
 
                   {!isExpanded && (
-                    <p className="text-sm text-slate-600">{preview}</p>
+                    <p className="text-sm text-[var(--card-text-muted)]">{preview}</p>
                   )}
                 </div>
 
                 {isExpanded && (
                   <div className="border-t px-6 py-4">
-                    <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
+                    <div className="prose prose-sm max-w-none text-[var(--card-text)] whitespace-pre-wrap">
                       {article.content}
                     </div>
                   </div>

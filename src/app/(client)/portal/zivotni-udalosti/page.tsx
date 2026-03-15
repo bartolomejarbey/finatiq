@@ -33,7 +33,7 @@ import { toast } from "sonner";
 const EVENT_TYPES = [
   { value: "marriage", label: "Svatba", icon: Heart, color: "bg-pink-100 text-pink-700" },
   { value: "baby", label: "Narození dítěte", icon: Baby, color: "bg-blue-100 text-blue-700" },
-  { value: "divorce", label: "Rozvod", icon: Scale, color: "bg-slate-100 text-slate-700" },
+  { value: "divorce", label: "Rozvod", icon: Scale, color: "bg-[var(--table-header)] text-[var(--card-text)]" },
   { value: "new_job", label: "Nové zaměstnání", icon: Briefcase, color: "bg-green-100 text-green-700" },
   { value: "job_loss", label: "Ztráta zaměstnání", icon: AlertCircle, color: "bg-red-100 text-red-700" },
   { value: "buy_property", label: "Koupě nemovitosti", icon: Home, color: "bg-amber-100 text-amber-700" },
@@ -166,8 +166,8 @@ export default function ZivotniUdalostiPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Životní události</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-bold text-[var(--card-text)]">Životní události</h1>
+          <p className="text-sm text-[var(--card-text-muted)] mt-1">
             Informujte poradce o důležitých změnách ve vašem životě
           </p>
         </div>
@@ -186,8 +186,8 @@ export default function ZivotniUdalostiPage() {
 
       {/* Report form */}
       {showForm && (
-        <div className="mb-6 rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+        <div className="mb-6 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--card-text)] mb-4">
             Nahlásit životní změnu
           </h2>
 
@@ -244,15 +244,15 @@ export default function ZivotniUdalostiPage() {
       )}
 
       {/* Event history */}
-      <div className="rounded-xl border bg-white shadow-sm">
+      <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
         <div className="border-b px-6 py-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
             Historie událostí
           </h2>
         </div>
 
         {events.length === 0 ? (
-          <p className="px-6 py-12 text-center text-sm text-slate-500">
+          <p className="px-6 py-12 text-center text-sm text-[var(--card-text-muted)]">
             Zatím žádné nahlášené události
           </p>
         ) : (
@@ -269,7 +269,7 @@ export default function ZivotniUdalostiPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-slate-900">
+                      <span className="font-medium text-[var(--card-text)]">
                         {meta.label}
                       </span>
                       <Badge
@@ -285,7 +285,7 @@ export default function ZivotniUdalostiPage() {
                       </Badge>
                     </div>
                     {event.description && (
-                      <p className="text-sm text-slate-500 mt-1">
+                      <p className="text-sm text-[var(--card-text-muted)] mt-1">
                         {event.description}
                       </p>
                     )}
@@ -294,7 +294,7 @@ export default function ZivotniUdalostiPage() {
                         Doporučená akce: {event.advisor_action}
                       </p>
                     )}
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-[var(--card-text-muted)] mt-1">
                       {new Date(event.event_date).toLocaleDateString("cs-CZ")}
                     </p>
                   </div>

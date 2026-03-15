@@ -116,19 +116,19 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Klienti</h1>
-          <p className="mt-0.5 text-sm text-gray-400">
+          <h1 className="text-2xl font-semibold text-[var(--card-text)]">Klienti</h1>
+          <p className="mt-0.5 text-sm text-[var(--card-text-dim)]">
             {filtered.length} {filtered.length === 1 ? "klient" : "klientů"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--card-text-dim)]" />
             <input
               placeholder="Hledat..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-64 rounded-full border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-gray-300 focus:ring-2 focus:ring-gray-100"
+              className="w-64 rounded-full border border-[var(--input-border)] bg-[var(--input-bg)] py-2 pl-10 pr-4 text-sm text-[var(--input-text)] shadow-sm outline-none transition placeholder:text-[var(--input-placeholder)] focus:border-gray-300 focus:ring-2 focus:ring-gray-100"
             />
           </div>
           <button
@@ -150,7 +150,7 @@ export default function ClientsPage() {
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
               segmentFilter === seg.key
                 ? "bg-black text-white shadow-sm"
-                : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
+                : "bg-[var(--card-bg)] text-[var(--card-text-muted)] border border-[var(--card-border)] hover:border-gray-300"
             }`}
           >
             {seg.label}
@@ -161,21 +161,21 @@ export default function ClientsPage() {
       {/* Table */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center py-20">
-          <Users className="mb-4 h-12 w-12 text-gray-200" />
-          <p className="text-lg font-medium text-gray-400">Žádní klienti</p>
-          <p className="text-sm text-gray-300 mt-1">Vytvořte prvního klienta</p>
+          <Users className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádní klienti</p>
+          <p className="text-sm text-[var(--card-text-dim)] mt-1">Vytvořte prvního klienta</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+        <div className="bg-[var(--card-bg)] rounded-xl border border-[var(--card-border)] overflow-hidden shadow-sm">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="px-6 py-3 text-left text-xs text-gray-400 uppercase tracking-wide font-medium">Jméno</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-400 uppercase tracking-wide font-medium">Email</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-400 uppercase tracking-wide font-medium hidden md:table-cell">Telefon</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-400 uppercase tracking-wide font-medium">Segment</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-400 uppercase tracking-wide font-medium hidden lg:table-cell">Portál</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-400 uppercase tracking-wide font-medium hidden lg:table-cell">Skóre</th>
+              <tr className="bg-[var(--table-hover)]/50 border-b border-[var(--card-border)]">
+                <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium">Jméno</th>
+                <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium">Email</th>
+                <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium hidden md:table-cell">Telefon</th>
+                <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium">Segment</th>
+                <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium hidden lg:table-cell">Portál</th>
+                <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium hidden lg:table-cell">Skóre</th>
               </tr>
             </thead>
             <tbody>
@@ -186,21 +186,21 @@ export default function ClientsPage() {
                   <tr
                     key={c.id}
                     onClick={() => router.push(`/advisor/clients/${c.id}`)}
-                    className="cursor-pointer border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50/50"
+                    className="cursor-pointer border-b border-[var(--table-hover)] last:border-0 transition-colors hover:bg-[var(--table-hover)]/50"
                   >
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 text-white text-xs font-medium">
                           {c.first_name[0]}{c.last_name[0]}
                         </div>
-                        <span className="text-sm font-medium text-gray-900">{c.first_name} {c.last_name}</span>
+                        <span className="text-sm font-medium text-[var(--card-text)]">{c.first_name} {c.last_name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-3.5">
-                      <span className="text-sm text-gray-500">{c.email || "—"}</span>
+                      <span className="text-sm text-[var(--card-text-muted)]">{c.email || "—"}</span>
                     </td>
                     <td className="px-6 py-3.5 hidden md:table-cell">
-                      <span className="text-sm text-gray-500">{c.phone || "—"}</span>
+                      <span className="text-sm text-[var(--card-text-muted)]">{c.phone || "—"}</span>
                     </td>
                     <td className="px-6 py-3.5">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${pill.bg} ${pill.text}`}>
@@ -215,20 +215,20 @@ export default function ClientsPage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5">
-                          <div className="h-2 w-2 rounded-full bg-gray-300" />
-                          <span className="text-xs text-gray-400">Neaktivní</span>
+                          <div className="h-2 w-2 rounded-full bg-[var(--card-text-dim)]" />
+                          <span className="text-xs text-[var(--card-text-dim)]">Neaktivní</span>
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-3.5 hidden lg:table-cell">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-10 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-1.5 w-10 rounded-full bg-[var(--table-header)] overflow-hidden">
                           <div
                             className="h-full rounded-full bg-blue-500 transition-all"
                             style={{ width: `${c.score}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-400 tabular-nums">{c.score}</span>
+                        <span className="text-xs text-[var(--card-text-dim)] tabular-nums">{c.score}</span>
                       </div>
                     </td>
                   </tr>

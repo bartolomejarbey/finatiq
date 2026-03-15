@@ -122,10 +122,10 @@ export default function SatisfactionPage() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-[var(--card-text)]">
             Spokojenost klientů
           </h1>
-          <p className="mt-0.5 text-sm text-slate-500">
+          <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">
             {surveys.length} hodnocení celkem
           </p>
         </div>
@@ -146,32 +146,32 @@ export default function SatisfactionPage() {
 
       {/* Stats cards */}
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 shadow-sm">
+          <p className="text-xs font-medium text-[var(--card-text-muted)]">
             Průměrné hodnocení
           </p>
           <div className="mt-2 flex items-center gap-3">
-            <span className="text-3xl font-bold text-slate-900">
+            <span className="text-3xl font-bold text-[var(--card-text)]">
               {avgRating.toFixed(1)}
             </span>
             <StarRating rating={Math.round(avgRating)} />
           </div>
         </div>
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">Celkem odpovědí</p>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 shadow-sm">
+          <p className="text-xs font-medium text-[var(--card-text-muted)]">Celkem odpovědí</p>
           <div className="mt-2 flex items-center gap-3">
-            <span className="text-3xl font-bold text-slate-900">
+            <span className="text-3xl font-bold text-[var(--card-text)]">
               {filtered.length}
             </span>
-            <Users className="h-5 w-5 text-slate-400" />
+            <Users className="h-5 w-5 text-[var(--card-text-dim)]" />
           </div>
         </div>
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <p className="text-xs font-medium text-slate-500">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 shadow-sm">
+          <p className="text-xs font-medium text-[var(--card-text-muted)]">
             Trend (30 dní)
           </p>
           <div className="mt-2 flex items-center gap-3">
-            <span className="text-3xl font-bold text-slate-900">
+            <span className="text-3xl font-bold text-[var(--card-text)]">
               {trendDiff > 0 ? "+" : ""}
               {trendDiff.toFixed(1)}
             </span>
@@ -180,20 +180,20 @@ export default function SatisfactionPage() {
             ) : trendDiff < 0 ? (
               <TrendingDown className="h-5 w-5 text-red-500" />
             ) : (
-              <Minus className="h-5 w-5 text-slate-400" />
+              <Minus className="h-5 w-5 text-[var(--card-text-dim)]" />
             )}
           </div>
         </div>
       </div>
 
       {/* Survey list */}
-      <h2 className="mb-4 text-lg font-semibold text-slate-900">
+      <h2 className="mb-4 text-lg font-semibold text-[var(--card-text)]">
         Poslední hodnocení
       </h2>
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Star className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">
+          <Star className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">
             Zatím žádná hodnocení
           </p>
         </div>
@@ -202,12 +202,12 @@ export default function SatisfactionPage() {
           {filtered.map((s) => (
             <div
               key={s.id}
-              className="rounded-xl border bg-white p-4 shadow-sm"
+              className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-sm"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <StarRating rating={s.rating} />
-                  <span className="text-sm font-medium text-slate-900">
+                  <span className="text-sm font-medium text-[var(--card-text)]">
                     {s.clients
                       ? `${s.clients.first_name} ${s.clients.last_name}`
                       : "Klient"}
@@ -219,13 +219,13 @@ export default function SatisfactionPage() {
                       {s.trigger_type}
                     </Badge>
                   )}
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-[var(--card-text-muted)]">
                     {new Date(s.created_at).toLocaleDateString("cs-CZ")}
                   </span>
                 </div>
               </div>
               {s.comment && (
-                <p className="mt-2 text-sm text-slate-600">{s.comment}</p>
+                <p className="mt-2 text-sm text-[var(--card-text-muted)]">{s.comment}</p>
               )}
             </div>
           ))}

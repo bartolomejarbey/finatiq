@@ -67,16 +67,16 @@ export default function GoalsPage() {
 
   return (
     <div className="p-4 md:p-8 animate-fade-in">
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">Finanční plán</h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <h1 className="mb-2 text-2xl font-bold text-[var(--card-text)]">Finanční plán</h1>
+      <p className="mb-6 text-sm text-[var(--card-text-muted)]">
         {goals.length > 0 ? `${onTrack} z ${goals.length} cílů na dobré cestě` : "Žádné cíle"}
       </p>
 
       {goals.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Target className="mb-4 h-12 w-12 text-gray-200" />
-          <p className="text-lg font-medium text-gray-400">Žádné finanční cíle</p>
-          <p className="mt-1 text-sm text-gray-300">Váš poradce vám nastaví finanční plán</p>
+          <Target className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné finanční cíle</p>
+          <p className="mt-1 text-sm text-[var(--card-text-dim)]">Váš poradce vám nastaví finanční plán</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -88,16 +88,16 @@ export default function GoalsPage() {
             const GoalIcon = goalIcon.icon;
             const remaining = Math.max(0, g.target_amount - g.current_amount);
             return (
-              <div key={g.id} className="rounded-2xl border border-gray-100 bg-white p-6 hover:shadow-md transition-shadow">
+              <div key={g.id} className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 hover:shadow-md transition-shadow">
                 <div className="mb-4 flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${goalIcon.from} ${goalIcon.to} text-white shrink-0`}>
                       <GoalIcon className="h-6 w-6" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900">{g.title}</h3>
-                      <p className="text-xs text-gray-500">Cíl: {formatCZK(g.target_amount)}</p>
-                      {g.deadline && <p className="text-xs text-gray-400">Termín: {new Date(g.deadline).toLocaleDateString("cs-CZ")}</p>}
+                      <h3 className="text-sm font-semibold text-[var(--card-text)]">{g.title}</h3>
+                      <p className="text-xs text-[var(--card-text-muted)]">Cíl: {formatCZK(g.target_amount)}</p>
+                      {g.deadline && <p className="text-xs text-[var(--card-text-dim)]">Termín: {new Date(g.deadline).toLocaleDateString("cs-CZ")}</p>}
                     </div>
                   </div>
                   <div className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${status.bg} ${status.color}`}>
@@ -105,19 +105,19 @@ export default function GoalsPage() {
                     {status.label}
                   </div>
                 </div>
-                <div className="h-3 w-full rounded-full bg-gray-100">
+                <div className="h-3 w-full rounded-full bg-[var(--table-header)]">
                   <div
                     className={`h-3 rounded-full transition-all ${pct >= 75 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : pct >= 40 ? "bg-gradient-to-r from-amber-400 to-amber-500" : "bg-gradient-to-r from-red-400 to-red-500"}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between text-xs">
-                  <span className="text-gray-500">{pct}% splněno</span>
-                  <span className="font-medium text-gray-700">Zbývá {formatCZK(remaining)}</span>
+                  <span className="text-[var(--card-text-muted)]">{pct}% splněno</span>
+                  <span className="font-medium text-[var(--card-text)]">Zbývá {formatCZK(remaining)}</span>
                 </div>
                 {g.notes && (
-                  <div className="mt-3 rounded-xl bg-gray-50 p-3">
-                    <p className="text-xs text-gray-600"><span className="font-medium">Doporučení poradce:</span> {g.notes}</p>
+                  <div className="mt-3 rounded-xl bg-[var(--table-hover)] p-3">
+                    <p className="text-xs text-[var(--card-text-muted)]"><span className="font-medium">Doporučení poradce:</span> {g.notes}</p>
                   </div>
                 )}
               </div>

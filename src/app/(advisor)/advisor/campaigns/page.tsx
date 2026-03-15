@@ -133,10 +133,10 @@ export default function CampaignsPage() {
     const camp = campaigns.find((c) => c.id === selectedCampaign);
     return (
       <div className="p-8">
-        <button onClick={() => setSelectedCampaign(null)} className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900">
+        <button onClick={() => setSelectedCampaign(null)} className="mb-4 flex items-center gap-1.5 text-sm text-[var(--card-text-muted)] hover:text-[var(--card-text)]">
           <ArrowLeft className="h-4 w-4" />Zpět na kampaně
         </button>
-        <h1 className="mb-6 text-2xl font-bold text-slate-900">{camp?.name || "Kampaň"}</h1>
+        <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">{camp?.name || "Kampaň"}</h1>
         <div className="mb-6 grid grid-cols-4 gap-4">
           <KpiCard icon={DollarSign} label="Utraceno" value={formatCZK(camp?.spent || 0)} color="text-red-600" bg="bg-red-50" />
           <KpiCard icon={Users} label="Leadů" value={String(camp?.leads_count || 0)} color="text-blue-600" bg="bg-blue-50" />
@@ -145,21 +145,21 @@ export default function CampaignsPage() {
         </div>
         {campaignAds.length === 0 ? (
           <div className="flex flex-col items-center py-16">
-            <Megaphone className="mb-4 h-12 w-12 text-slate-200" />
-            <p className="text-lg font-medium text-slate-400">Žádné reklamy</p>
+            <Megaphone className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+            <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné reklamy</p>
           </div>
         ) : (
-          <div className="rounded-xl border bg-white shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
             <table className="w-full">
-              <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700"><th className="px-6 py-3">Reklama</th><th className="px-6 py-3">Stav</th><th className="px-6 py-3">Utraceno</th><th className="px-6 py-3">Leadů</th><th className="px-6 py-3">Konverzí</th></tr></thead>
+              <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Reklama</th><th className="px-6 py-3">Stav</th><th className="px-6 py-3">Utraceno</th><th className="px-6 py-3">Leadů</th><th className="px-6 py-3">Konverzí</th></tr></thead>
               <tbody>
                 {campaignAds.map((ad) => (
-                  <tr key={ad.id} className="border-b last:border-0 hover:bg-slate-50">
-                    <td className="px-6 py-3 text-sm font-medium text-slate-900">{ad.name}</td>
+                  <tr key={ad.id} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
+                    <td className="px-6 py-3 text-sm font-medium text-[var(--card-text)]">{ad.name}</td>
                     <td className="px-6 py-3"><Badge variant={ad.status === "active" ? "default" : "secondary"} className="text-[10px]">{ad.status === "active" ? "Aktivní" : "Pozastaveno"}</Badge></td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{formatCZK(ad.spent)}</td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{ad.leads_count}</td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{ad.conversions_count}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{formatCZK(ad.spent)}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{ad.leads_count}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{ad.conversions_count}</td>
                   </tr>
                 ))}
               </tbody>
@@ -172,7 +172,7 @@ export default function CampaignsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-6 text-2xl font-bold text-slate-900">Meta Ads kampaně</h1>
+      <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Meta Ads kampaně</h1>
 
       {/* KPI cards */}
       <div className="mb-6 grid grid-cols-4 gap-4">
@@ -184,16 +184,16 @@ export default function CampaignsPage() {
 
       {campaigns.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Megaphone className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádné kampaně</p>
-          <p className="mt-1 text-sm text-slate-300">Propojte Meta Ads účet v Nastavení pro zobrazení kampaní</p>
+          <Megaphone className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné kampaně</p>
+          <p className="mt-1 text-sm text-[var(--card-text-dim)]">Propojte Meta Ads účet v Nastavení pro zobrazení kampaní</p>
         </div>
       ) : (
         <>
           {/* Charts */}
           <div className="mb-6 grid grid-cols-2 gap-6">
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Leady za posledních 30 dní</h2>
+            <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Leady za posledních 30 dní</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -204,10 +204,10 @@ export default function CampaignsPage() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Leady per kampaň</h2>
+            <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Leady per kampaň</h2>
               {pieData.length === 0 ? (
-                <div className="flex h-[250px] items-center justify-center"><p className="text-sm text-slate-500">Žádná data</p></div>
+                <div className="flex h-[250px] items-center justify-center"><p className="text-sm text-[var(--card-text-muted)]">Žádná data</p></div>
               ) : (
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
@@ -223,20 +223,20 @@ export default function CampaignsPage() {
           </div>
 
           {/* Campaigns table */}
-          <div className="mb-6 rounded-xl border bg-white shadow-sm">
+          <div className="mb-6 rounded-xl border bg-[var(--card-bg)] shadow-sm">
             <table className="w-full">
-              <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700"><th className="px-6 py-3">Kampaň</th><th className="px-6 py-3">Stav</th><th className="px-6 py-3">Rozpočet</th><th className="px-6 py-3">Utraceno</th><th className="px-6 py-3">Leadů</th><th className="px-6 py-3">Konverzí</th><th className="px-6 py-3">CPL</th><th className="px-6 py-3">CPA</th></tr></thead>
+              <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Kampaň</th><th className="px-6 py-3">Stav</th><th className="px-6 py-3">Rozpočet</th><th className="px-6 py-3">Utraceno</th><th className="px-6 py-3">Leadů</th><th className="px-6 py-3">Konverzí</th><th className="px-6 py-3">CPL</th><th className="px-6 py-3">CPA</th></tr></thead>
               <tbody>
                 {campaigns.map((c) => (
-                  <tr key={c.id} onClick={() => loadCampaignAds(c.id)} className="cursor-pointer border-b last:border-0 hover:bg-slate-50">
-                    <td className="px-6 py-3 text-sm font-medium text-slate-900">{c.name}</td>
+                  <tr key={c.id} onClick={() => loadCampaignAds(c.id)} className="cursor-pointer border-b last:border-0 hover:bg-[var(--table-hover)]">
+                    <td className="px-6 py-3 text-sm font-medium text-[var(--card-text)]">{c.name}</td>
                     <td className="px-6 py-3"><Badge variant={c.status === "active" ? "default" : "secondary"} className="text-[10px]">{c.status === "active" ? "Aktivní" : "Pozastaveno"}</Badge></td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{formatCZK(c.budget)}</td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{formatCZK(c.spent)}</td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{c.leads_count}</td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{c.conversions_count}</td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{formatCZK(c.cost_per_lead)}</td>
-                    <td className="px-6 py-3 text-sm text-slate-700">{formatCZK(c.cost_per_conversion)}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{formatCZK(c.budget)}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{formatCZK(c.spent)}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{c.leads_count}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{c.conversions_count}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{formatCZK(c.cost_per_lead)}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--card-text)]">{formatCZK(c.cost_per_conversion)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -247,19 +247,19 @@ export default function CampaignsPage() {
 
       {/* Recent Meta leads */}
       {metaLeads.length > 0 && (
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
           <div className="border-b px-6 py-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">Poslední leady z Meta Ads</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Poslední leady z Meta Ads</h2>
           </div>
           <table className="w-full">
-            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700"><th className="px-6 py-3">Kontakt</th><th className="px-6 py-3">Kampaň</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Stav dealu</th></tr></thead>
+            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Kontakt</th><th className="px-6 py-3">Kampaň</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Stav dealu</th></tr></thead>
             <tbody>
               {metaLeads.map((l, i) => (
-                <tr key={i} className="border-b last:border-0 hover:bg-slate-50">
-                  <td className="px-6 py-3 text-sm font-medium text-slate-900">{l.contact_name}</td>
-                  <td className="px-6 py-3 text-sm text-slate-700">{l.campaign_name}</td>
-                  <td className="px-6 py-3 text-sm text-slate-500">{new Date(l.created_at).toLocaleDateString("cs-CZ")}</td>
-                  <td className="px-6 py-3 text-sm text-slate-700">{l.stage_name}</td>
+                <tr key={i} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
+                  <td className="px-6 py-3 text-sm font-medium text-[var(--card-text)]">{l.contact_name}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text)]">{l.campaign_name}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{new Date(l.created_at).toLocaleDateString("cs-CZ")}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text)]">{l.stage_name}</td>
                 </tr>
               ))}
             </tbody>
@@ -272,14 +272,14 @@ export default function CampaignsPage() {
 
 function KpiCard({ icon: Icon, label, value, color, bg }: { icon: typeof DollarSign; label: string; value: string; color: string; bg: string }) {
   return (
-    <div className="rounded-xl border bg-white p-5 shadow-sm">
+    <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
       <div className="flex items-center gap-3">
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${bg}`}>
           <Icon className={`h-5 w-5 ${color}`} />
         </div>
         <div>
-          <p className="text-xs text-slate-500">{label}</p>
-          <p className="text-lg font-bold text-slate-900">{value}</p>
+          <p className="text-xs text-[var(--card-text-muted)]">{label}</p>
+          <p className="text-lg font-bold text-[var(--card-text)]">{value}</p>
         </div>
       </div>
     </div>

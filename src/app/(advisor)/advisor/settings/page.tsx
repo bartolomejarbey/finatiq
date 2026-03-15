@@ -234,7 +234,7 @@ export default function SettingsPage() {
           {/* Branding link card */}
           <button
             onClick={() => router.push("/advisor/nastaveni/branding")}
-            className="w-full rounded-xl border bg-white p-6 shadow-sm text-left hover:shadow-md transition-shadow flex items-center justify-between group"
+            className="w-full rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm text-left hover:shadow-md transition-shadow flex items-center justify-between group"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
@@ -249,7 +249,7 @@ export default function SettingsPage() {
           </button>
 
           {/* Profil firmy */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <Sliders className="h-4 w-4 text-slate-400" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
@@ -308,7 +308,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Správa tagů */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <Tag className="h-4 w-4 text-slate-400" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
@@ -371,7 +371,7 @@ export default function SettingsPage() {
 
       {/* Moduly tab */}
       {activeTab === "moduly" && (
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <Boxes className="h-4 w-4 text-slate-400" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">Moduly</h2>
@@ -417,7 +417,7 @@ export default function SettingsPage() {
       {activeTab === "propojeni" && (
         <div className="space-y-6">
           {/* Meta Ads */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <Megaphone className="h-4 w-4 text-slate-400" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
@@ -479,7 +479,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Google Calendar */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <Calendar className="h-4 w-4 text-slate-400" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
@@ -508,7 +508,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Messaging webhook */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <Link2 className="h-4 w-4 text-slate-400" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
@@ -549,7 +549,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Webhook URL */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <Link2 className="h-4 w-4 text-slate-400" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">

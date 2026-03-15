@@ -149,8 +149,8 @@ export default function AutomationsPage() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Automatizace</h1>
-          <p className="mt-0.5 text-sm text-slate-500">{automations.length} pravidel</p>
+          <h1 className="text-2xl font-bold text-[var(--card-text)]">Automatizace</h1>
+          <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{automations.length} pravidel</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />Nová automatizace
@@ -159,28 +159,28 @@ export default function AutomationsPage() {
 
       {automations.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Zap className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádné automatizace</p>
-          <p className="mt-1 text-sm text-slate-300">Vytvořte první automatizaci pro zefektivnění práce</p>
+          <Zap className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné automatizace</p>
+          <p className="mt-1 text-sm text-[var(--card-text-dim)]">Vytvořte první automatizaci pro zefektivnění práce</p>
         </div>
       ) : (
         <div className="space-y-3">
           {automations.map((auto) => (
-            <div key={auto.id} className="flex items-center justify-between rounded-xl border bg-white p-5 shadow-sm">
+            <div key={auto.id} className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 shadow-sm">
               <div className="flex items-center gap-4">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${auto.is_active ? "bg-emerald-50" : "bg-slate-100"}`}>
-                  <Zap className={`h-5 w-5 ${auto.is_active ? "text-emerald-600" : "text-slate-400"}`} />
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${auto.is_active ? "bg-emerald-50" : "bg-[var(--table-header)]"}`}>
+                  <Zap className={`h-5 w-5 ${auto.is_active ? "text-emerald-600" : "text-[var(--card-text-dim)]"}`} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-slate-900">{auto.name}</h3>
+                    <h3 className="text-sm font-semibold text-[var(--card-text)]">{auto.name}</h3>
                     {auto.is_system && <Badge variant="secondary" className="text-[10px]">Systém</Badge>}
                     <Badge variant={auto.is_active ? "default" : "secondary"} className="text-[10px]">
                       {auto.is_active ? "Aktivní" : "Neaktivní"}
                     </Badge>
                   </div>
-                  {auto.description && <p className="mt-0.5 text-xs text-slate-500">{auto.description}</p>}
-                  <div className="mt-1 flex items-center gap-3 text-xs text-slate-500">
+                  {auto.description && <p className="mt-0.5 text-xs text-[var(--card-text-muted)]">{auto.description}</p>}
+                  <div className="mt-1 flex items-center gap-3 text-xs text-[var(--card-text-muted)]">
                     <span>Spouštěč: {TRIGGER_LABELS[auto.trigger_type] || auto.trigger_type}</span>
                     <span>Akce: {ACTION_LABELS[auto.action_type] || auto.action_type}</span>
                   </div>
@@ -196,7 +196,7 @@ export default function AutomationsPage() {
                   {auto.is_active ? "Zastavit" : "Spustit"}
                 </Button>
                 {!auto.is_system && (
-                  <button onClick={() => handleDelete(auto.id)} className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
+                  <button onClick={() => handleDelete(auto.id)} className="rounded-md p-1.5 text-[var(--card-text-dim)] hover:bg-red-50 hover:text-red-500">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 )}
@@ -209,11 +209,11 @@ export default function AutomationsPage() {
       {/* Logs */}
       {logs.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Poslední spuštění</h2>
-          <div className="rounded-xl border bg-white shadow-sm">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Poslední spuštění</h2>
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-sm">
             <table className="w-full">
               <thead>
-                <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700">
+                <tr className="border-b border-[var(--card-border)] text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]">
                   <th className="px-6 py-3">Čas</th>
                   <th className="px-6 py-3">Automatizace</th>
                   <th className="px-6 py-3">Stav</th>
@@ -223,14 +223,14 @@ export default function AutomationsPage() {
                 {logs.map((log) => {
                   const auto = automations.find((a) => a.id === log.automation_id);
                   return (
-                    <tr key={log.id} className="border-b last:border-0 hover:bg-slate-50">
-                      <td className="px-6 py-3 text-sm text-slate-500">
+                    <tr key={log.id} className="border-b border-[var(--card-border)] last:border-0 hover:bg-[var(--table-hover)]">
+                      <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">
                         <div className="flex items-center gap-1.5">
                           <Clock className="h-3 w-3" />
                           {new Date(log.executed_at).toLocaleString("cs-CZ")}
                         </div>
                       </td>
-                      <td className="px-6 py-3 text-sm text-slate-700">{auto?.name || "—"}</td>
+                      <td className="px-6 py-3 text-sm text-[var(--card-text)]">{auto?.name || "—"}</td>
                       <td className="px-6 py-3">
                         {log.status === "success" ? (
                           <span className="flex items-center gap-1 text-xs font-medium text-emerald-600"><CheckCircle2 className="h-3 w-3" />Úspěch</span>

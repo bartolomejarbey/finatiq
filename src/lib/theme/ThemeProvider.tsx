@@ -13,7 +13,17 @@ export interface TemplateConfig {
   mainBg: string;
   mainText: string;
   cardBg: string;
+  cardText: string;
+  cardTextMuted: string;
+  cardTextDim: string;
   cardBorder: string;
+  tableHeader: string;
+  tableHover: string;
+  inputBg: string;
+  inputBorder: string;
+  inputText: string;
+  inputPlaceholder: string;
+  skeletonBg: string;
 }
 
 export const TEMPLATES: Record<string, TemplateConfig> = {
@@ -25,7 +35,17 @@ export const TEMPLATES: Record<string, TemplateConfig> = {
     mainBg: "#F8FAFC",
     mainText: "#0F172A",
     cardBg: "#FFFFFF",
+    cardText: "#111827",
+    cardTextMuted: "#6B7280",
+    cardTextDim: "#9CA3AF",
     cardBorder: "#E2E8F0",
+    tableHeader: "#F9FAFB",
+    tableHover: "#F9FAFB",
+    inputBg: "#FFFFFF",
+    inputBorder: "#D1D5DB",
+    inputText: "#111827",
+    inputPlaceholder: "#9CA3AF",
+    skeletonBg: "#E5E7EB",
   },
   luxe: {
     id: "luxe",
@@ -35,7 +55,17 @@ export const TEMPLATES: Record<string, TemplateConfig> = {
     mainBg: "#FFFBF5",
     mainText: "#1C1917",
     cardBg: "#FFFFFF",
+    cardText: "#1C1917",
+    cardTextMuted: "#78716C",
+    cardTextDim: "#A8A29E",
     cardBorder: "#D6D3D1",
+    tableHeader: "#FAF9F7",
+    tableHover: "#FAF9F7",
+    inputBg: "#FFFFFF",
+    inputBorder: "#D6D3D1",
+    inputText: "#1C1917",
+    inputPlaceholder: "#A8A29E",
+    skeletonBg: "#E7E5E4",
   },
   fintech: {
     id: "fintech",
@@ -45,7 +75,17 @@ export const TEMPLATES: Record<string, TemplateConfig> = {
     mainBg: "#0F172A",
     mainText: "#F8FAFC",
     cardBg: "#1E293B",
-    cardBorder: "#1E293B",
+    cardText: "#F1F5F9",
+    cardTextMuted: "#94A3B8",
+    cardTextDim: "#64748B",
+    cardBorder: "#334155",
+    tableHeader: "#0F172A",
+    tableHover: "#334155",
+    inputBg: "#0F172A",
+    inputBorder: "#334155",
+    inputText: "#F1F5F9",
+    inputPlaceholder: "#64748B",
+    skeletonBg: "#334155",
   },
   corporate: {
     id: "corporate",
@@ -55,7 +95,17 @@ export const TEMPLATES: Record<string, TemplateConfig> = {
     mainBg: "#F9FAFB",
     mainText: "#111827",
     cardBg: "#FFFFFF",
+    cardText: "#111827",
+    cardTextMuted: "#6B7280",
+    cardTextDim: "#9CA3AF",
     cardBorder: "#E5E7EB",
+    tableHeader: "#F3F4F6",
+    tableHover: "#F3F4F6",
+    inputBg: "#FFFFFF",
+    inputBorder: "#D1D5DB",
+    inputText: "#111827",
+    inputPlaceholder: "#9CA3AF",
+    skeletonBg: "#E5E7EB",
   },
 };
 
@@ -142,17 +192,41 @@ const FONT_SIZE_MAP = { small: "14px", medium: "16px", large: "18px" };
 
 function applyThemeToDOM(t: ThemeValues) {
   const root = document.documentElement;
+  const tpl = t.template;
+
+  // Brand colors
   root.style.setProperty("--color-primary", t.primary);
   root.style.setProperty("--color-secondary", t.secondary);
   root.style.setProperty("--color-accent", t.accent);
-  root.style.setProperty("--color-background", t.template.mainBg);
   root.style.setProperty("--font-family", t.font + ", sans-serif");
   root.style.setProperty("--border-radius", BORDER_RADIUS_MAP[t.borderRadius]);
   root.style.setProperty("--font-size-base", FONT_SIZE_MAP[t.fontSize]);
-  root.style.setProperty("--sidebar-bg", t.template.sidebarBg);
-  root.style.setProperty("--sidebar-text", t.template.sidebarText);
-  root.style.setProperty("--card-bg", t.template.cardBg);
-  root.style.setProperty("--card-border", t.template.cardBorder);
+
+  // Template: layout
+  root.style.setProperty("--color-background", tpl.mainBg);
+  root.style.setProperty("--main-text", tpl.mainText);
+  root.style.setProperty("--sidebar-bg", tpl.sidebarBg);
+  root.style.setProperty("--sidebar-text", tpl.sidebarText);
+
+  // Template: cards
+  root.style.setProperty("--card-bg", tpl.cardBg);
+  root.style.setProperty("--card-text", tpl.cardText);
+  root.style.setProperty("--card-text-muted", tpl.cardTextMuted);
+  root.style.setProperty("--card-text-dim", tpl.cardTextDim);
+  root.style.setProperty("--card-border", tpl.cardBorder);
+
+  // Template: tables
+  root.style.setProperty("--table-header", tpl.tableHeader);
+  root.style.setProperty("--table-hover", tpl.tableHover);
+
+  // Template: inputs
+  root.style.setProperty("--input-bg", tpl.inputBg);
+  root.style.setProperty("--input-border", tpl.inputBorder);
+  root.style.setProperty("--input-text", tpl.inputText);
+  root.style.setProperty("--input-placeholder", tpl.inputPlaceholder);
+
+  // Template: skeleton
+  root.style.setProperty("--skeleton-bg", tpl.skeletonBg);
 
   // Load Google Font
   const fontLink = document.getElementById("theme-font") as HTMLLinkElement | null;

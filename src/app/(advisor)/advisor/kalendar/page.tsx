@@ -254,9 +254,9 @@ export default function AdvisorKalendarPage() {
 
       {/* List view */}
       {view === "list" && (
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-sm">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center py-12 text-slate-400">
+            <div className="flex flex-col items-center py-12 text-[var(--card-text-dim)]">
               <Calendar className="mb-2 h-10 w-10" />
               <p className="text-sm">Žádné schůzky pro zvolené období</p>
             </div>
@@ -264,7 +264,7 @@ export default function AdvisorKalendarPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-xs text-slate-500">
+                  <tr className="border-b text-left text-xs text-[var(--card-text-muted)]">
                     <th className="p-4 pb-2 font-medium">Datum</th>
                     <th className="p-4 pb-2 font-medium">Čas</th>
                     <th className="p-4 pb-2 font-medium">Klient</th>
@@ -277,28 +277,28 @@ export default function AdvisorKalendarPage() {
                 <tbody>
                   {filtered.map((appt) => (
                     <tr key={appt.id} className="border-b last:border-0">
-                      <td className="p-4 text-slate-600">
+                      <td className="p-4 text-[var(--card-text-muted)]">
                         {formatDate(appt.start_time)}
                       </td>
-                      <td className="p-4 text-slate-600">
+                      <td className="p-4 text-[var(--card-text-muted)]">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formatTime(appt.start_time)} &ndash;{" "}
                           {formatTime(appt.end_time)}
                         </span>
                       </td>
-                      <td className="p-4 font-medium text-slate-900">
+                      <td className="p-4 font-medium text-[var(--card-text)]">
                         {getClientName(appt.client_id)}
                       </td>
-                      <td className="p-4 text-slate-700">{appt.title}</td>
-                      <td className="p-4 text-slate-600">
+                      <td className="p-4 text-[var(--card-text)]">{appt.title}</td>
+                      <td className="p-4 text-[var(--card-text-muted)]">
                         {appt.location ? (
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
                             {appt.location}
                           </span>
                         ) : (
-                          <span className="text-slate-300">&mdash;</span>
+                          <span className="text-[var(--card-text-dim)]">&mdash;</span>
                         )}
                       </td>
                       <td className="p-4">{getStatusBadge(appt.status)}</td>
@@ -342,7 +342,7 @@ export default function AdvisorKalendarPage() {
       {/* Calendar view */}
       {view === "calendar" && (
         <div className="space-y-4">
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 shadow-sm">
             {/* Month navigation */}
             <div className="mb-4 flex items-center justify-between">
               <Button
@@ -360,7 +360,7 @@ export default function AdvisorKalendarPage() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium capitalize text-slate-700">
+              <span className="text-sm font-medium capitalize text-[var(--card-text)]">
                 {monthLabel}
               </span>
               <Button
@@ -381,7 +381,7 @@ export default function AdvisorKalendarPage() {
             </div>
 
             {/* Day headers */}
-            <div className="mb-2 grid grid-cols-7 text-center text-xs font-medium text-slate-400">
+            <div className="mb-2 grid grid-cols-7 text-center text-xs font-medium text-[var(--card-text-dim)]">
               {["Po", "Út", "St", "Čt", "Pá", "So", "Ne"].map((d) => (
                 <div key={d} className="py-1">
                   {d}
@@ -412,12 +412,12 @@ export default function AdvisorKalendarPage() {
                         ? "border-blue-500 bg-blue-50"
                         : isToday
                         ? "border-blue-200 bg-blue-50/50"
-                        : "border-transparent hover:bg-slate-50"
+                        : "border-transparent hover:bg-[var(--table-hover)]"
                     }`}
                   >
                     <span
                       className={`text-sm ${
-                        isToday ? "font-bold text-blue-600" : "text-slate-700"
+                        isToday ? "font-bold text-blue-600" : "text-[var(--card-text)]"
                       }`}
                     >
                       {day}
@@ -437,7 +437,7 @@ export default function AdvisorKalendarPage() {
                           />
                         ))}
                         {dayAppts.length > 3 && (
-                          <span className="text-[9px] text-slate-400">
+                          <span className="text-[9px] text-[var(--card-text-dim)]">
                             +{dayAppts.length - 3}
                           </span>
                         )}
@@ -451,8 +451,8 @@ export default function AdvisorKalendarPage() {
 
           {/* Selected day detail */}
           {selectedDay && (
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-semibold text-slate-700">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold text-[var(--card-text)]">
                 {new Date(calendarYear, calendarMonth, selectedDay).toLocaleDateString("cs-CZ", {
                   weekday: "long",
                   day: "numeric",
@@ -461,7 +461,7 @@ export default function AdvisorKalendarPage() {
                 })}
               </h3>
               {getAppointmentsForDay(selectedDay).length === 0 ? (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-[var(--card-text-muted)]">
                   Žádné schůzky v tento den
                 </p>
               ) : (
@@ -472,10 +472,10 @@ export default function AdvisorKalendarPage() {
                       className="flex items-center justify-between rounded-lg border p-3"
                     >
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-slate-900">
+                        <p className="text-sm font-medium text-[var(--card-text)]">
                           {appt.title}
                         </p>
-                        <p className="flex items-center gap-2 text-xs text-slate-500">
+                        <p className="flex items-center gap-2 text-xs text-[var(--card-text-muted)]">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {formatTime(appt.start_time)} &ndash;{" "}

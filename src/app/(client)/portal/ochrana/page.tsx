@@ -168,10 +168,10 @@ export default function OchranaPage() {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-[var(--card-text)]">
                     {check.title}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 text-sm text-[var(--card-text-muted)]">
                     {check.description}
                   </p>
                   {(check.status === "danger" || check.status === "warning") && (

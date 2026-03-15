@@ -52,16 +52,16 @@ function getPriorityConfig(priority: string) {
     case "medium":
       return { label: "Střední", color: "bg-blue-100 text-blue-800" };
     case "low":
-      return { label: "Nízká", color: "bg-gray-100 text-gray-800" };
+      return { label: "Nízká", color: "bg-[var(--table-header)] text-[var(--card-text)]" };
     default:
-      return { label: priority, color: "bg-slate-100 text-slate-800" };
+      return { label: priority, color: "bg-[var(--table-header)] text-[var(--card-text)]" };
   }
 }
 
 function getStatusConfig(status: string) {
   switch (status) {
     case "new":
-      return { label: "Nové", color: "bg-slate-100 text-slate-800" };
+      return { label: "Nové", color: "bg-[var(--table-header)] text-[var(--card-text)]" };
     case "planned":
       return { label: "Plánované", color: "bg-blue-100 text-blue-800" };
     case "in_progress":
@@ -69,7 +69,7 @@ function getStatusConfig(status: string) {
     case "achieved":
       return { label: "Splněno", color: "bg-green-100 text-green-800" };
     default:
-      return { label: status, color: "bg-slate-100 text-slate-800" };
+      return { label: status, color: "bg-[var(--table-header)] text-[var(--card-text)]" };
   }
 }
 
@@ -183,11 +183,11 @@ export default function WishlistPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-[var(--card-text)]">
             <Star className="h-6 w-6 text-amber-500" />
             Má přání
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-[var(--card-text-muted)]">
             Sdílejte svá přání a cíle s poradcem
           </p>
         </div>
@@ -267,9 +267,9 @@ export default function WishlistPage() {
       {/* Wishes list */}
       {wishes.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Gift className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Zatím žádná přání</p>
-          <p className="mt-1 text-sm text-slate-300">
+          <Gift className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Zatím žádná přání</p>
+          <p className="mt-1 text-sm text-[var(--card-text-dim)]">
             Přidejte své první přání a cíle
           </p>
         </div>
@@ -281,12 +281,12 @@ export default function WishlistPage() {
             return (
               <div
                 key={w.id}
-                className="rounded-xl border bg-white p-6 shadow-sm"
+                className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm"
               >
                 <div className="mb-3 flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-sm font-semibold text-slate-900">
+                    <h3 className="text-sm font-semibold text-[var(--card-text)]">
                       {w.title}
                     </h3>
                   </div>
@@ -294,14 +294,14 @@ export default function WishlistPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(w.id)}
-                    className="h-8 w-8 p-0 text-slate-400 hover:text-red-600"
+                    className="h-8 w-8 p-0 text-[var(--card-text-dim)] hover:text-red-600"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
 
                 {w.description && (
-                  <p className="mb-3 text-sm text-slate-500">{w.description}</p>
+                  <p className="mb-3 text-sm text-[var(--card-text-muted)]">{w.description}</p>
                 )}
 
                 <div className="mb-3 flex flex-wrap gap-2">
@@ -315,12 +315,12 @@ export default function WishlistPage() {
 
                 <div className="flex items-center justify-between text-sm">
                   {w.target_amount != null && (
-                    <span className="font-medium text-slate-700">
+                    <span className="font-medium text-[var(--card-text)]">
                       {formatCZK(w.target_amount)}
                     </span>
                   )}
                   {w.target_date && (
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-[var(--card-text-muted)]">
                       Do: {new Date(w.target_date).toLocaleDateString("cs-CZ")}
                     </span>
                   )}

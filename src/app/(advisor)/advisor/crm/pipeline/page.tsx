@@ -238,23 +238,23 @@ export default function PipelinePage() {
       <div className="px-6 md:px-8 pt-6 pb-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Obchodní příležitosti</h1>
-            <p className="mt-1 text-sm text-gray-400">
+            <h1 className="text-2xl font-semibold text-[var(--card-text)]">Obchodní příležitosti</h1>
+            <p className="mt-1 text-sm text-[var(--card-text-dim)]">
               {totalDeals} dealů • {formatCompactCZK(totalValue)} • {conversionRate}% konverze
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--card-text-dim)]" />
               <input
                 placeholder="Hledat deal..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 rounded-full border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-gray-300 focus:ring-2 focus:ring-gray-100"
+                className="w-64 rounded-full border border-[var(--input-border)] bg-[var(--input-bg)] py-2 pl-10 pr-4 text-sm text-[var(--input-text)] shadow-sm outline-none transition placeholder:text-[var(--input-placeholder)] focus:border-gray-300 focus:ring-2 focus:ring-gray-100"
               />
             </div>
             <Select value={sourceFilter} onValueChange={setSourceFilter}>
-              <SelectTrigger className="w-36 rounded-full border-gray-200 bg-white shadow-sm">
+              <SelectTrigger className="w-36 rounded-full border-[var(--card-border)] bg-[var(--card-bg)] shadow-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -277,7 +277,7 @@ export default function PipelinePage() {
         {/* Tag filter */}
         {allTags.length > 0 && (
           <div className="mt-4 flex items-center gap-2">
-            <Tag className="h-3.5 w-3.5 text-gray-400" />
+            <Tag className="h-3.5 w-3.5 text-[var(--card-text-dim)]" />
             {allTags.map((tag) => (
               <button
                 key={tag.id}
@@ -285,7 +285,7 @@ export default function PipelinePage() {
                 className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-all ${
                   selectedTags.includes(tag.id)
                     ? "border-transparent text-white shadow-sm"
-                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                    : "border-[var(--card-border)] text-[var(--card-text-muted)] hover:border-gray-300"
                 }`}
                 style={selectedTags.includes(tag.id) ? { backgroundColor: tag.color } : undefined}
               >
@@ -293,7 +293,7 @@ export default function PipelinePage() {
               </button>
             ))}
             {selectedTags.length > 0 && (
-              <button onClick={() => setSelectedTags([])} className="text-xs text-gray-400 hover:text-gray-600">Zrušit</button>
+              <button onClick={() => setSelectedTags([])} className="text-xs text-[var(--card-text-dim)] hover:text-[var(--card-text-muted)]">Zrušit</button>
             )}
           </div>
         )}
@@ -307,18 +307,18 @@ export default function PipelinePage() {
               const stageDeals = filteredDeals.filter((d) => d.stage_id === stage.id);
               const stageTotal = stageDeals.reduce((s, d) => s + (d.value ?? 0), 0);
               return (
-                <div key={stage.id} className="flex min-w-[280px] w-[280px] shrink-0 flex-col rounded-xl bg-white/60 p-2 backdrop-blur-sm">
+                <div key={stage.id} className="flex min-w-[280px] w-[280px] shrink-0 flex-col rounded-xl bg-[var(--card-bg)]/60 p-2 backdrop-blur-sm">
                   {/* Column header */}
                   <div className="flex items-center justify-between mb-2 px-2 py-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{stage.name}</span>
-                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gray-100 px-1.5 text-xs text-gray-500">
+                      <span className="text-xs font-medium text-[var(--card-text-muted)] uppercase tracking-wide">{stage.name}</span>
+                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--table-header)] px-1.5 text-xs text-[var(--card-text-muted)]">
                         {stageDeals.length}
                       </span>
                     </div>
                   </div>
                   {stageTotal > 0 && (
-                    <p className="text-xs text-gray-400 px-2 mb-2">{formatCZK(stageTotal)}</p>
+                    <p className="text-xs text-[var(--card-text-dim)] px-2 mb-2">{formatCZK(stageTotal)}</p>
                   )}
 
                   <Droppable droppableId={stage.id}>
@@ -330,8 +330,8 @@ export default function PipelinePage() {
                         style={{ minHeight: 60 }}
                       >
                         {stageDeals.length === 0 && !snapshot.isDraggingOver && (
-                          <div className="flex h-16 items-center justify-center rounded-lg border-2 border-dashed border-gray-100">
-                            <p className="text-xs text-gray-300">Přetáhněte sem</p>
+                          <div className="flex h-16 items-center justify-center rounded-lg border-2 border-dashed border-[var(--card-border)]">
+                            <p className="text-xs text-[var(--card-text-dim)]">Přetáhněte sem</p>
                           </div>
                         )}
                         {stageDeals.map((deal, index) => (
@@ -381,7 +381,7 @@ function PipelineSkeleton() {
       </div>
       <div className="flex flex-1 gap-3 px-6 pb-6">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="w-[280px] shrink-0 space-y-2 rounded-xl bg-white/60 p-2">
+          <div key={i} className="w-[280px] shrink-0 space-y-2 rounded-xl bg-[var(--card-bg)]/60 p-2">
             <Skeleton className="h-5 w-28 mx-2 mt-1" />
             {[1, 2].map((j) => <Skeleton key={j} className="h-28 w-full rounded-xl" />)}
           </div>

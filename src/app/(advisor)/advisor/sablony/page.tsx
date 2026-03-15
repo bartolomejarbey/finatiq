@@ -142,7 +142,7 @@ export default function TemplatesPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold gradient-text">Emailové šablony</h1>
-          <p className="mt-0.5 text-sm text-slate-500">{templates.length} šablon</p>
+          <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{templates.length} šablon</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => handleSeedDefaults()} disabled={seeding}>
@@ -155,26 +155,26 @@ export default function TemplatesPage() {
 
       {templates.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <FileText className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádné šablony</p>
+          <FileText className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné šablony</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">
           {templates.map((tmpl) => (
-            <div key={tmpl.id} className="rounded-xl border bg-white p-5 shadow-sm">
+            <div key={tmpl.id} className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 shadow-sm">
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-slate-900">{tmpl.name}</h3>
+                  <h3 className="text-sm font-semibold text-[var(--card-text)]">{tmpl.name}</h3>
                   {tmpl.is_default && <Badge variant="secondary" className="text-[10px]">Výchozí</Badge>}
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setPreviewTemplate(tmpl)} className="rounded-md p-1.5 hover:bg-slate-100"><Eye className="h-4 w-4 text-slate-400" /></button>
-                  <button onClick={() => openEdit(tmpl)} className="rounded-md p-1.5 hover:bg-slate-100"><Pencil className="h-4 w-4 text-slate-400" /></button>
-                  {!tmpl.is_default && <button onClick={() => handleDelete(tmpl.id)} className="rounded-md p-1.5 hover:bg-red-50"><Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500" /></button>}
+                  <button onClick={() => setPreviewTemplate(tmpl)} className="rounded-md p-1.5 hover:bg-[var(--table-header)]"><Eye className="h-4 w-4 text-[var(--card-text-dim)]" /></button>
+                  <button onClick={() => openEdit(tmpl)} className="rounded-md p-1.5 hover:bg-[var(--table-header)]"><Pencil className="h-4 w-4 text-[var(--card-text-dim)]" /></button>
+                  {!tmpl.is_default && <button onClick={() => handleDelete(tmpl.id)} className="rounded-md p-1.5 hover:bg-red-50"><Trash2 className="h-4 w-4 text-[var(--card-text-dim)] hover:text-red-500" /></button>}
                 </div>
               </div>
-              <p className="text-xs font-medium text-slate-600">Předmět: {tmpl.subject}</p>
-              <p className="mt-1 line-clamp-2 text-xs text-slate-500">{tmpl.body}</p>
+              <p className="text-xs font-medium text-[var(--card-text-muted)]">Předmět: {tmpl.subject}</p>
+              <p className="mt-1 line-clamp-2 text-xs text-[var(--card-text-muted)]">{tmpl.body}</p>
             </div>
           ))}
         </div>
@@ -193,7 +193,7 @@ export default function TemplatesPage() {
               <div className="flex flex-wrap gap-1 mt-1">
                 {AVAILABLE_VARS.map((v) => (
                   <button key={v.key} type="button" onClick={() => setBody((prev) => prev + `{${v.key}}`)}
-                    className="rounded bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500 hover:bg-blue-100 hover:text-blue-600">
+                    className="rounded bg-[var(--table-header)] px-2 py-0.5 text-[10px] text-[var(--card-text-muted)] hover:bg-blue-100 hover:text-blue-600">
                     {`{${v.key}}`}
                   </button>
                 ))}
@@ -210,11 +210,11 @@ export default function TemplatesPage() {
           <SheetHeader><SheetTitle>Náhled: {previewTemplate?.name}</SheetTitle></SheetHeader>
           {previewTemplate && (
             <div className="mt-6">
-              <div className="mb-4 rounded-lg bg-slate-50 p-4">
-                <p className="text-xs text-slate-500">Předmět:</p>
-                <p className="text-sm font-medium text-slate-900">{previewTemplate.subject}</p>
+              <div className="mb-4 rounded-lg bg-[var(--table-hover)] p-4">
+                <p className="text-xs text-[var(--card-text-muted)]">Předmět:</p>
+                <p className="text-sm font-medium text-[var(--card-text)]">{previewTemplate.subject}</p>
               </div>
-              <div className="whitespace-pre-wrap rounded-lg border p-4 text-sm text-slate-700">{previewTemplate.body}</div>
+              <div className="whitespace-pre-wrap rounded-lg border p-4 text-sm text-[var(--card-text)]">{previewTemplate.body}</div>
               <Button variant="outline" className="mt-4" onClick={() => { navigator.clipboard.writeText(previewTemplate.body); toast.success("Zkopírováno do schránky."); }}>
                 <Copy className="mr-2 h-4 w-4" />Kopírovat text
               </Button>

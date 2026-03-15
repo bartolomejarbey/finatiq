@@ -100,17 +100,17 @@ function KpiCard({
 }) {
   return (
     <div
-      className={`rounded-xl border bg-white p-5 transition-colors duration-150 hover:border-gray-200 ${wide ? "col-span-2" : ""}`}
+      className={`rounded-xl border bg-[var(--card-bg)] p-5 transition-colors duration-150 hover:border-[var(--card-border)] ${wide ? "col-span-2" : ""}`}
       style={{ borderColor: "var(--card-border, #e5e7eb)" }}
     >
-      <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-3">
+      <p className="text-xs font-medium uppercase tracking-wider text-[var(--card-text-dim)] mb-3">
         {title}
       </p>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="text-2xl font-semibold text-gray-900">{value}</p>
+          <p className="text-2xl font-semibold text-[var(--card-text)]">{value}</p>
           {subtitle && (
-            <p className="mt-0.5 text-xs text-gray-400">{subtitle}</p>
+            <p className="mt-0.5 text-xs text-[var(--card-text-dim)]">{subtitle}</p>
           )}
         </div>
         {sparkData && sparkData.length > 0 && (
@@ -131,7 +131,7 @@ function Section({
 }) {
   return (
     <div
-      className={`rounded-xl border bg-white p-5 transition-colors duration-150 hover:border-gray-200 ${className}`}
+      className={`rounded-xl border bg-[var(--card-bg)] p-5 transition-colors duration-150 hover:border-[var(--card-border)] ${className}`}
       style={{ borderColor: "var(--card-border, #e5e7eb)" }}
     >
       {children}
@@ -141,7 +141,7 @@ function Section({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-4">
+    <h2 className="text-xs font-medium uppercase tracking-wider text-[var(--card-text-dim)] mb-4">
       {children}
     </h2>
   );
@@ -423,14 +423,14 @@ export default function AdvisorDashboard() {
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+          <h1 className="text-xl md:text-2xl font-semibold text-[var(--card-text)]">
             {getGreeting()}, {userName || "poradce"}
           </h1>
-          <p className="mt-0.5 text-sm text-gray-400">
+          <p className="mt-0.5 text-sm text-[var(--card-text-dim)]">
             Tady je přehled vašeho podnikání
           </p>
         </div>
-        <p className="hidden md:block text-xs text-gray-400 mt-1">
+        <p className="hidden md:block text-xs text-[var(--card-text-dim)] mt-1">
           {formatCzechDate()}
         </p>
       </div>
@@ -536,10 +536,10 @@ export default function AdvisorDashboard() {
             </ResponsiveContainer>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
-                <p className="text-xl font-semibold text-gray-900">
+                <p className="text-xl font-semibold text-[var(--card-text)]">
                   {totalSourceCount}
                 </p>
-                <p className="text-[10px] text-gray-400">celkem</p>
+                <p className="text-[10px] text-[var(--card-text-dim)]">celkem</p>
               </div>
             </div>
           </div>
@@ -553,7 +553,7 @@ export default function AdvisorDashboard() {
                       sourceColors[i % sourceColors.length],
                   }}
                 />
-                <span className="text-[11px] text-gray-500">
+                <span className="text-[11px] text-[var(--card-text-muted)]">
                   {s.name}
                 </span>
               </div>
@@ -568,7 +568,7 @@ export default function AdvisorDashboard() {
         <Section>
           <SectionTitle>Top příležitosti</SectionTitle>
           {topDeals.length === 0 ? (
-            <p className="text-sm text-gray-400 py-4 text-center">
+            <p className="text-sm text-[var(--card-text-dim)] py-4 text-center">
               Žádné dealy
             </p>
           ) : (
@@ -576,17 +576,17 @@ export default function AdvisorDashboard() {
               {topDeals.map((d, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0 cursor-pointer transition-colors duration-150 hover:bg-gray-50 -mx-2 px-2 rounded"
+                  className="flex items-center justify-between py-2.5 border-b border-[var(--card-border)] last:border-0 cursor-pointer transition-colors duration-150 hover:bg-[var(--table-hover)] -mx-2 px-2 rounded"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-gray-800">
+                    <p className="truncate text-sm font-medium text-[var(--card-text)]">
                       {d.title}
                     </p>
-                    <p className="text-[11px] text-gray-400">
+                    <p className="text-[11px] text-[var(--card-text-dim)]">
                       {d.contact} · {d.stage}
                     </p>
                   </div>
-                  <span className="shrink-0 ml-3 text-sm font-semibold text-gray-900">
+                  <span className="shrink-0 ml-3 text-sm font-semibold text-[var(--card-text)]">
                     {formatCZK(d.value)}
                   </span>
                 </div>
@@ -631,7 +631,7 @@ export default function AdvisorDashboard() {
                   className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: s.color }}
                 />
-                <span className="text-[11px] text-gray-500">
+                <span className="text-[11px] text-[var(--card-text-muted)]">
                   {s.name} ({s.value})
                 </span>
               </div>
@@ -646,7 +646,7 @@ export default function AdvisorDashboard() {
             <SectionTitle>Příležitosti</SectionTitle>
           </div>
           {upsellAlerts.length === 0 ? (
-            <p className="text-sm text-gray-400 py-4 text-center">
+            <p className="text-sm text-[var(--card-text-dim)] py-4 text-center">
               Žádné nové příležitosti
             </p>
           ) : (
@@ -654,15 +654,15 @@ export default function AdvisorDashboard() {
               {upsellAlerts.slice(0, 3).map((alert) => (
                 <div
                   key={alert.id}
-                  className="rounded-lg border border-gray-100 p-3 transition-colors duration-150 hover:border-gray-200"
+                  className="rounded-lg border border-[var(--card-border)] p-3 transition-colors duration-150 hover:border-[var(--card-border)]"
                 >
                   <div className="flex items-start justify-between">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-800">
+                      <p className="text-sm font-medium text-[var(--card-text)]">
                         {alert.title}
                       </p>
                       {alert.description && (
-                        <p className="mt-0.5 text-[11px] text-gray-400 line-clamp-1">
+                        <p className="mt-0.5 text-[11px] text-[var(--card-text-dim)] line-clamp-1">
                           {alert.description}
                         </p>
                       )}
@@ -676,7 +676,7 @@ export default function AdvisorDashboard() {
                             .update({ status: "viewed" })
                             .eq("id", alert.id);
                         }}
-                        className="rounded-md px-2 py-1 text-xs font-medium transition-colors duration-150 cursor-pointer hover:bg-gray-100"
+                        className="rounded-md px-2 py-1 text-xs font-medium transition-colors duration-150 cursor-pointer hover:bg-[var(--table-header)]"
                         style={{ color: primary }}
                       >
                         Zobrazit
@@ -695,7 +695,7 @@ export default function AdvisorDashboard() {
                         className="rounded-md p-1 cursor-pointer transition-colors duration-150 hover:bg-red-50"
                         title="Zamítnout"
                       >
-                        <X className="h-3.5 w-3.5 text-gray-400" />
+                        <X className="h-3.5 w-3.5 text-[var(--card-text-dim)]" />
                       </button>
                     </div>
                   </div>
@@ -711,11 +711,11 @@ export default function AdvisorDashboard() {
         <Section className="mt-5">
           <div className="mb-3 flex items-center justify-between">
             <SectionTitle>Dokončete nastavení</SectionTitle>
-            <span className="text-[11px] text-gray-400">
+            <span className="text-[11px] text-[var(--card-text-dim)]">
               {checklist.filter((i) => i.done).length}/{checklist.length}
             </span>
           </div>
-          <div className="mb-3 h-1.5 rounded-full bg-gray-100">
+          <div className="mb-3 h-1.5 rounded-full bg-[var(--table-header)]">
             <div
               className="h-1.5 rounded-full transition-all duration-300"
               style={{
@@ -733,7 +733,7 @@ export default function AdvisorDashboard() {
                 }
                 className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors duration-150 ${
                   !item.done && item.href
-                    ? "hover:bg-gray-50 cursor-pointer"
+                    ? "hover:bg-[var(--table-hover)] cursor-pointer"
                     : ""
                 }`}
               >
@@ -743,22 +743,22 @@ export default function AdvisorDashboard() {
                     style={{ color: accent }}
                   />
                 ) : (
-                  <Circle className="h-4 w-4 text-gray-300 shrink-0" />
+                  <Circle className="h-4 w-4 text-[var(--card-text-dim)] shrink-0" />
                 )}
                 <span
-                  className={`text-sm ${item.done ? "text-gray-400 line-through" : "text-gray-700"}`}
+                  className={`text-sm ${item.done ? "text-[var(--card-text-dim)] line-through" : "text-[var(--card-text-muted)]"}`}
                 >
                   {item.label}
                 </span>
                 {!item.done && item.href && (
-                  <ArrowUpRight className="ml-auto h-3.5 w-3.5 text-gray-300" />
+                  <ArrowUpRight className="ml-auto h-3.5 w-3.5 text-[var(--card-text-dim)]" />
                 )}
               </button>
             ))}
           </div>
           <button
             onClick={() => setShowChecklist(false)}
-            className="mt-3 text-xs text-gray-400 cursor-pointer transition-colors duration-150 hover:text-gray-600"
+            className="mt-3 text-xs text-[var(--card-text-dim)] cursor-pointer transition-colors duration-150 hover:text-[var(--card-text-muted)]"
           >
             Skrýt
           </button>
