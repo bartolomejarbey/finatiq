@@ -181,9 +181,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         .select(ADVISOR_BRAND_COLUMNS)
         .eq("id", advisorId)
         .single();
-      if (!advisor) { setIsLoading(false); return; }
+      if (!advisor) { console.log("[Theme] No advisor found for id:", advisorId); setIsLoading(false); return; }
 
+      console.log("[Theme] DB read — brand_primary:", advisor.brand_primary, "accent:", advisor.brand_accent_color);
       const t = advisorToTheme(advisor);
+      console.log("[Theme] Applied theme — primary:", t.primary, "accent:", t.accent);
       setTheme(t);
       applyThemeToDOM(t);
     } finally {

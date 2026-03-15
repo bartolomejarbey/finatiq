@@ -561,7 +561,7 @@ export default function BrandingPage() {
     };
 
     console.log("[Branding] Saving to advisorId:", advisorId);
-    console.log("[Branding] Payload:", payload);
+    console.log("[Branding] Payload brand_primary:", payload.brand_primary, "accent:", payload.brand_accent_color);
 
     try {
       const supabase = createClient();
@@ -573,7 +573,7 @@ export default function BrandingPage() {
 
       console.log("[Branding] Response status:", res.status);
       console.log("[Branding] Response error:", res.error);
-      console.log("[Branding] Response data:", res.data);
+      console.log("[Branding] Saved row brand_primary:", res.data?.[0]?.brand_primary, "accent:", res.data?.[0]?.brand_accent_color);
 
       if (res.error) {
         console.error("[Branding] SAVE ERROR:", res.error);
