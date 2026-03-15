@@ -15,8 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, Loader2, Users, Power, LogIn, CheckCircle2, Circle } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Users, Power, LogIn, CheckCircle2, Circle, MessageCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+
+const FEATURE_NAMES: Record<string, string> = {
+  crm: "CRM & Pipeline", portal: "Klientský portál", templates: "Šablony smluv",
+  scoring: "Lead scoring", automations: "Automatizace", meta_ads: "Meta Ads",
+  ocr: "OCR dokumentů", ai_assistant: "AI asistent", osvc: "OSVČ modul", calendar: "Kalendář",
+};
 
 interface Advisor {
   id: string;
@@ -31,6 +44,8 @@ interface Advisor {
   logo_url: string | null;
   brand_accent_color: string | null;
   created_at: string;
+  feature_trials?: Record<string, string>;
+  enabled_modules?: Record<string, boolean>;
 }
 
 interface Client {
@@ -64,13 +79,16 @@ export default function AdvisorDetailPage() {
   const [tier, setTier] = useState("starter");
   const [dealsCount, setDealsCount] = useState(0);
   const [hasRecentAudit, setHasRecentAudit] = useState(false);
+  const [featureTrials, setFeatureTrials] = useState<Record<string, string>>({});
+  const [dmDialogOpen, setDmDialogOpen] = useState(false);
+  const [dmMessage, setDmMessage] = useState("");
 
   const fetchData = useCallback(async () => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const [advRes, clientsRes, invoicesRes, dealsRes, auditRes] = await Promise.all([
-      supabase.from("advisors").select("*").eq("id", advisorId).single(),
+      supabase.from("advisors").select("*, feature_trials, enabled_modules").eq("id", advisorId).single(),
       supabase.from("clients").select("id, first_name, last_name, email, segment, user_id").eq("advisor_id", advisorId),
       supabase.from("invoices").select("*").eq("advisor_id", advisorId).order("period", { ascending: false }),
       supabase.from("deals").select("id", { count: "exact", head: true }).eq("advisor_id", advisorId),
@@ -81,6 +99,7 @@ export default function AdvisorDetailPage() {
       setAdvisor(advRes.data);
       setCompanyName(advRes.data.company_name);
       setTier(advRes.data.subscription_tier);
+      if (advRes.data.feature_trials) setFeatureTrials(advRes.data.feature_trials);
     }
     setClients(clientsRes.data || []);
     setInvoices(invoicesRes.data || []);
@@ -105,6 +124,64 @@ export default function AdvisorDetailPage() {
     toast.success(advisor.is_active ? "Poradce deaktivován." : "Poradce aktivován.");
   }
 
+  const giveFeatureTrial = async (feature: string) => {
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + 14);
+    const updated = { ...featureTrials, [feature]: expiry.toISOString() };
+    await supabase.from("advisors").update({ feature_trials: updated }).eq("id", advisor!.id);
+    setFeatureTrials(updated);
+    toast.success(`Trial ${FEATURE_NAMES[feature]} aktivován na 14 dní`);
+  };
+
+  const activateFeature = async (feature: string) => {
+    const modules = { ...(advisor!.enabled_modules || {}), [feature]: true };
+    const trials = { ...featureTrials };
+    delete trials[feature];
+    await supabase.from("advisors").update({ enabled_modules: modules, feature_trials: trials }).eq("id", advisor!.id);
+    setFeatureTrials(trials);
+    toast.success(`${FEATURE_NAMES[feature]} aktivován natrvalo`);
+    fetchData();
+  };
+
+  const deactivateFeature = async (feature: string) => {
+    const modules = { ...(advisor!.enabled_modules || {}), [feature]: false };
+    const trials = { ...featureTrials };
+    delete trials[feature];
+    await supabase.from("advisors").update({ enabled_modules: modules, feature_trials: trials }).eq("id", advisor!.id);
+    setFeatureTrials(trials);
+    toast.success(`${FEATURE_NAMES[feature]} deaktivován`);
+    fetchData();
+  };
+
+  const sendDM = async () => {
+    if (!dmMessage.trim()) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: ticket } = await supabase.from("tickets").insert({
+      advisor_id: advisor!.id,
+      subject: "Zpráva od Finatiq",
+      category: "dm",
+      priority: "low",
+      status: "open",
+    }).select("id").single();
+
+    if (ticket) {
+      await supabase.from("ticket_messages").insert({
+        ticket_id: ticket.id,
+        sender_type: "superadmin",
+        sender_id: user?.id,
+        message: dmMessage.trim(),
+      });
+      fetch("/api/tickets/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "dm", advisorName: advisor!.company_name, advisorEmail: advisor!.email, message: dmMessage.trim() }),
+      }).catch(() => {});
+      toast.success("Zpráva odeslána");
+      setDmDialogOpen(false);
+      setDmMessage("");
+    }
+  };
+
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 rounded-xl" /></div>;
   if (!advisor) return <div><p className="text-slate-500">Poradce nenalezen.</p></div>;
 
@@ -120,6 +197,9 @@ export default function AdvisorDetailPage() {
           <p className="text-sm text-slate-500">ID: {advisor.id}</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button onClick={() => setDmDialogOpen(true)} variant="outline" size="sm">
+            <MessageCircle className="w-4 h-4 mr-2" /> Poslat zprávu
+          </Button>
           <Button variant="outline" size="sm" onClick={toggleActive}>
             <Power className="mr-2 h-4 w-4" />{advisor.is_active ? "Deaktivovat" : "Aktivovat"}
           </Button>
@@ -213,6 +293,44 @@ export default function AdvisorDetailPage() {
         );
       })()}
 
+      {/* Feature trialy */}
+      {advisor && (
+        <div className="mb-6 border rounded-xl p-6 shadow-sm">
+          <h3 className="font-semibold mb-4">Feature trialy</h3>
+          <div className="space-y-3">
+            {Object.entries(FEATURE_NAMES).map(([key, label]) => {
+              const inPlan = advisor?.enabled_modules?.[key] === true;
+              const trialDate = featureTrials[key];
+              const trialActive = trialDate && new Date(trialDate) > new Date();
+              const trialExpired = trialDate && new Date(trialDate) <= new Date();
+
+              return (
+                <div key={key} className="flex items-center justify-between py-2 border-b last:border-0">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium">{label}</span>
+                    {inPlan && <Badge className="bg-green-100 text-green-700">V plánu</Badge>}
+                    {trialActive && <Badge className="bg-amber-100 text-amber-700">Trial do {new Date(trialDate).toLocaleDateString("cs-CZ")}</Badge>}
+                    {trialExpired && <Badge className="bg-red-100 text-red-700">Trial expiroval</Badge>}
+                    {!inPlan && !trialActive && !trialExpired && <Badge className="bg-gray-100 text-gray-500">Neaktivní</Badge>}
+                  </div>
+                  <div className="flex gap-2">
+                    {!inPlan && !trialActive && (
+                      <Button size="sm" variant="outline" onClick={() => giveFeatureTrial(key)}>Trial 14d</Button>
+                    )}
+                    {!inPlan && (
+                      <Button size="sm" variant="outline" onClick={() => activateFeature(key)}>Aktivovat</Button>
+                    )}
+                    {(inPlan || trialActive) && (
+                      <Button size="sm" variant="ghost" className="text-red-500" onClick={() => deactivateFeature(key)}>Deaktivovat</Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Clients */}
       <div className="mb-6 rounded-xl border bg-white shadow-sm">
         <div className="border-b px-6 py-4 flex items-center gap-2">
@@ -255,6 +373,21 @@ export default function AdvisorDetailPage() {
           </table>
         </div>
       )}
+
+      <Dialog open={dmDialogOpen} onOpenChange={setDmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Poslat zprávu — {advisor?.company_name}</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            value={dmMessage}
+            onChange={(e) => setDmMessage(e.target.value)}
+            placeholder="Napište zprávu poradci..."
+            rows={4}
+          />
+          <Button onClick={sendDM} disabled={!dmMessage.trim()}>Odeslat</Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

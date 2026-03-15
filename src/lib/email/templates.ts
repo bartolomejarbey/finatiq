@@ -217,3 +217,130 @@ export function automationNotification(
     ].join("")),
   };
 }
+
+// --- Invoice templates ---
+
+export function invoiceReady(name: string, amount: number, period: string, dueDate: string): { subject: string; html: string } {
+  return {
+    subject: `Faktura za ${period} — Finatiq`,
+    html: layout("Nová faktura", [
+      p(`Dobrý den, ${name},`),
+      p(`vaše faktura za období <strong>${period}</strong> byla vystavena.`),
+      p(`Částka: <strong style="color:${BRAND.accent};">${amount.toLocaleString("cs-CZ")} Kč</strong>`),
+      p(`Splatnost: <strong>${dueDate}</strong>`),
+      btn("Zobrazit fakturu", "https://www.finatiq.cz/advisor/nastaveni/fakturace"),
+    ].join("")),
+  };
+}
+
+export function invoiceDueSoon(name: string, amount: number, dueDate: string): { subject: string; html: string } {
+  return {
+    subject: "Připomínka splatnosti faktury — Finatiq",
+    html: layout("Připomínka splatnosti", [
+      p(`Dobrý den, ${name},`),
+      p(`připomínáme, že vaše faktura ve výši <strong style="color:${BRAND.accent};">${amount.toLocaleString("cs-CZ")} Kč</strong> je splatná <strong>${dueDate}</strong>.`),
+      btn("Zobrazit fakturu", "https://www.finatiq.cz/advisor/nastaveni/fakturace"),
+    ].join("")),
+  };
+}
+
+export function invoiceOverdue(name: string, amount: number, dueDate: string): { subject: string; html: string } {
+  return {
+    subject: "Faktura po splatnosti — Finatiq",
+    html: layout("Faktura po splatnosti", [
+      p(`Dobrý den, ${name},`),
+      p(`vaše faktura ve výši <strong style="color:${BRAND.accent};">${amount.toLocaleString("cs-CZ")} Kč</strong> byla splatná <strong>${dueDate}</strong> a dosud nebyla uhrazena.`),
+      p("Prosíme o co nejrychlejší úhradu."),
+      btn("Zobrazit fakturu", "https://www.finatiq.cz/advisor/nastaveni/fakturace"),
+    ].join("")),
+  };
+}
+
+export function invoiceSecondReminder(name: string, amount: number): { subject: string; html: string } {
+  return {
+    subject: "Druhá upomínka — neuhrazená faktura — Finatiq",
+    html: layout("Druhá upomínka", [
+      p(`Dobrý den, ${name},`),
+      p(`vaše faktura ve výši <strong style="color:${BRAND.accent};">${amount.toLocaleString("cs-CZ")} Kč</strong> je stále neuhrazena.`),
+      p("Pokud nebude uhrazena do 7 dní, bude váš účet pozastaven."),
+      btn("Uhradit nyní", "https://www.finatiq.cz/advisor/nastaveni/fakturace"),
+    ].join("")),
+  };
+}
+
+export function subscriptionSuspended(name: string): { subject: string; html: string } {
+  return {
+    subject: "Účet pozastaven — neuhrazená faktura — Finatiq",
+    html: layout("Účet pozastaven", [
+      p(`Dobrý den, ${name},`),
+      p("váš účet byl pozastaven z důvodu neuhrazené faktury."),
+      p("Pro obnovení přístupu prosíme o úhradu dlužné částky."),
+      btn("Zobrazit faktury", "https://www.finatiq.cz/advisor/nastaveni/fakturace"),
+    ].join("")),
+  };
+}
+
+// --- Feature trial templates ---
+
+export function featureTrialExpiring(advisorName: string, featureName: string, daysLeft: number): { subject: string; html: string } {
+  const dayWord = daysLeft === 1 ? "den" : daysLeft < 5 ? "dny" : "dní";
+  return {
+    subject: `Trial funkce "${featureName}" končí za ${daysLeft} ${dayWord} — Finatiq`,
+    html: layout("Trial funkce končí", [
+      p(`Dobrý den, ${advisorName},`),
+      p(`trial funkce <strong style="color:${BRAND.accent};">${featureName}</strong> končí za <strong>${daysLeft} ${dayWord}</strong>.`),
+      p("Pro pokračování upgradujte svůj plán."),
+      btn("Zobrazit plány", "https://www.finatiq.cz/advisor/predplatne"),
+    ].join("")),
+  };
+}
+
+export function featureTrialExpired(advisorName: string, featureName: string): { subject: string; html: string } {
+  return {
+    subject: `Trial funkce "${featureName}" skončil — Finatiq`,
+    html: layout("Trial funkce skončil", [
+      p(`Dobrý den, ${advisorName},`),
+      p(`trial funkce <strong style="color:${BRAND.accent};">${featureName}</strong> skončil.`),
+      p("Pro obnovení přístupu upgradujte svůj plán."),
+      btn("Upgradovat", "https://www.finatiq.cz/advisor/predplatne"),
+    ].join("")),
+  };
+}
+
+// --- Ticket/DM templates ---
+
+export function newTicketAlert(ticketSubject: string, advisorName: string): { subject: string; html: string } {
+  return {
+    subject: `Nový tiket: ${ticketSubject} — Finatiq`,
+    html: layout("Nový tiket", [
+      p("Nový tiket v systému:"),
+      p(`<strong style="color:${BRAND.accent};">${ticketSubject}</strong>`),
+      p(`Od: ${advisorName}`),
+      btn("Zobrazit tiket", "https://www.finatiq.cz/superadmin/tikety"),
+    ].join("")),
+  };
+}
+
+export function ticketReply(advisorName: string, message: string): { subject: string; html: string } {
+  return {
+    subject: "Nová odpověď na váš tiket — Finatiq",
+    html: layout("Nová odpověď na tiket", [
+      p(`Dobrý den, ${advisorName},`),
+      p("na váš tiket byla přidána odpověď:"),
+      p(`<em>"${message.substring(0, 200)}${message.length > 200 ? "..." : ""}"</em>`),
+      btn("Zobrazit tiket", "https://www.finatiq.cz/advisor"),
+    ].join("")),
+  };
+}
+
+export function newDirectMessage(advisorName: string, message: string): { subject: string; html: string } {
+  return {
+    subject: "Nová zpráva od Finatiq týmu",
+    html: layout("Nová zpráva", [
+      p(`Dobrý den, ${advisorName},`),
+      p("máte novou zprávu od Finatiq týmu:"),
+      p(`<em>"${message.substring(0, 300)}${message.length > 300 ? "..." : ""}"</em>`),
+      btn("Zobrazit zprávy", "https://www.finatiq.cz/advisor"),
+    ].join("")),
+  };
+}

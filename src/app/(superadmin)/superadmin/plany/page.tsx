@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,8 +15,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Loader2, CreditCard } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, CreditCard, X } from "lucide-react";
 import { toast } from "sonner";
+import { PlanCard } from "@/components/PlanCard";
 
 interface Plan {
   id: string;
@@ -25,6 +27,11 @@ interface Plan {
   price_monthly: number;
   features: Record<string, boolean>;
   is_active: boolean;
+  description?: string | null;
+  perks?: string[] | null;
+  sort_order?: number;
+  badge?: string | null;
+  trial_days?: number;
 }
 
 const FEATURE_LABELS: Record<string, string> = {
@@ -57,10 +64,16 @@ export default function PlansPage() {
   const [maxClients, setMaxClients] = useState("50");
   const [price, setPrice] = useState("0");
   const [features, setFeatures] = useState<Record<string, boolean>>({});
+  const [formDescription, setFormDescription] = useState("");
+  const [formPerks, setFormPerks] = useState<string[]>([]);
+  const [formPerkInput, setFormPerkInput] = useState("");
+  const [formBadge, setFormBadge] = useState("");
+  const [formTrialDays, setFormTrialDays] = useState(14);
+  const [formSortOrder, setFormSortOrder] = useState(0);
 
   useEffect(() => {
     async function fetchData() {
-      const { data } = await supabase.from("pricing_plans").select("*").order("price_monthly");
+      const { data } = await supabase.from("pricing_plans").select("id,name,tier,max_clients,price_monthly,features,is_active,description,perks,sort_order,badge,trial_days").order("price_monthly");
       setPlans(data || []);
       setLoading(false);
     }
@@ -75,10 +88,22 @@ export default function PlansPage() {
       setMaxClients(String(plan.max_clients));
       setPrice(String(plan.price_monthly));
       setFeatures(plan.features || {});
+      setFormDescription(plan.description || "");
+      setFormPerks(plan.perks || []);
+      setFormPerkInput("");
+      setFormBadge(plan.badge || "");
+      setFormTrialDays(plan.trial_days ?? 14);
+      setFormSortOrder(plan.sort_order ?? 0);
     } else {
       setEditPlan(null);
       setName(""); setTier(""); setMaxClients("50"); setPrice("0");
       setFeatures({});
+      setFormDescription("");
+      setFormPerks([]);
+      setFormPerkInput("");
+      setFormBadge("");
+      setFormTrialDays(14);
+      setFormSortOrder(0);
     }
     setDialogOpen(true);
   }
@@ -91,6 +116,11 @@ export default function PlansPage() {
       max_clients: parseInt(maxClients) || 50,
       price_monthly: parseFloat(price) || 0,
       features,
+      description: formDescription || null,
+      perks: formPerks.length > 0 ? formPerks : null,
+      badge: formBadge || null,
+      trial_days: formTrialDays,
+      sort_order: formSortOrder,
     };
 
     if (editPlan) {
@@ -102,7 +132,7 @@ export default function PlansPage() {
     setSaving(false);
     setDialogOpen(false);
     toast.success(editPlan ? "Plán aktualizován." : "Plán vytvořen.");
-    const { data } = await supabase.from("pricing_plans").select("*").order("price_monthly");
+    const { data } = await supabase.from("pricing_plans").select("id,name,tier,max_clients,price_monthly,features,is_active,description,perks,sort_order,badge,trial_days").order("price_monthly");
     setPlans(data || []);
   }
 
@@ -135,7 +165,11 @@ export default function PlansPage() {
               </div>
             </div>
             <p className="mb-1 text-2xl font-bold text-slate-900">{formatCZK(plan.price_monthly)}<span className="text-sm font-normal text-slate-400">/měs</span></p>
-            <p className="mb-4 text-xs text-slate-500">Max {plan.max_clients} klientů</p>
+            <p className="mb-2 text-xs text-slate-500">Max {plan.max_clients} klientů</p>
+            <div className="mb-4 flex items-center gap-2">
+              {plan.badge && <Badge variant="outline" className="text-[10px] border-cyan-300 text-cyan-600">{plan.badge}</Badge>}
+              <span className="text-[10px] text-slate-400">Řazení: {plan.sort_order ?? 0}</span>
+            </div>
             <div className="space-y-1">
               {Object.entries(FEATURE_LABELS).map(([key, label]) => (
                 <div key={key} className="flex items-center gap-2 text-xs">
@@ -149,7 +183,7 @@ export default function PlansPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editPlan ? "Upravit plán" : "Nový plán"}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -170,6 +204,49 @@ export default function PlansPage() {
                   </label>
                 ))}
               </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Popis</Label>
+              <Textarea value={formDescription} onChange={(e) => setFormDescription(e.target.value)} placeholder="Krátký popis plánu..." rows={2} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Výhody (perks)</Label>
+              <div className="flex gap-2">
+                <Input value={formPerkInput} onChange={(e) => setFormPerkInput(e.target.value)} placeholder="Nová výhoda..." onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (formPerkInput.trim()) { setFormPerks((prev) => [...prev, formPerkInput.trim()]); setFormPerkInput(""); } } }} />
+                <Button type="button" variant="outline" size="sm" onClick={() => { if (formPerkInput.trim()) { setFormPerks((prev) => [...prev, formPerkInput.trim()]); setFormPerkInput(""); } }}>Přidat</Button>
+              </div>
+              {formPerks.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {formPerks.map((perk, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 rounded-full bg-cyan-50 px-2.5 py-0.5 text-xs text-cyan-700">
+                      {perk}
+                      <button type="button" onClick={() => setFormPerks((prev) => prev.filter((_, j) => j !== i))}><X className="h-3 w-3" /></button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1"><Label className="text-xs">Badge</Label><Input value={formBadge} onChange={(e) => setFormBadge(e.target.value)} placeholder="např. Nejoblíbenější" /></div>
+              <div className="space-y-1"><Label className="text-xs">Zkušební dny</Label><Input type="number" value={formTrialDays} onChange={(e) => setFormTrialDays(parseInt(e.target.value) || 0)} /></div>
+              <div className="space-y-1"><Label className="text-xs">Řazení</Label><Input type="number" value={formSortOrder} onChange={(e) => setFormSortOrder(parseInt(e.target.value) || 0)} /></div>
+            </div>
+            <div className="mt-6 p-4 bg-[#060d1a] rounded-xl">
+              <p className="text-xs text-white/40 mb-3 font-mono uppercase tracking-wider">Náhled na webu</p>
+              <PlanCard
+                plan={{
+                  name: name || "Název plánu",
+                  price_monthly: parseFloat(price) || 0,
+                  max_clients: parseInt(maxClients) || 50,
+                  features,
+                  description: formDescription || null,
+                  perks: formPerks.length > 0 ? formPerks : null,
+                  badge: formBadge || null,
+                  trial_days: formTrialDays,
+                }}
+                featured={false}
+                showCta={false}
+              />
             </div>
           </div>
           <DialogFooter>

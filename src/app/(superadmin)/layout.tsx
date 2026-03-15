@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { SuperadminChatWidget } from "@/components/SuperadminChatWidget";
 
 /* ───── Typy ───── */
 
@@ -261,6 +262,7 @@ export default function SuperadminLayout({
 
       <main className="flex-1 overflow-auto bg-slate-50 pt-14 md:pt-0 p-4 md:p-8">
         {children}
+        <SuperadminChatWidget />
       </main>
     </div>
   );

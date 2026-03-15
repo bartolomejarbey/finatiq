@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Check, X as XIcon, ChevronDown, ArrowRight } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { PlanCard } from "@/components/PlanCard";
 
 /* ── Types ── */
 type Plan = {
@@ -131,38 +131,14 @@ const FAQ_ITEMS = [
 export default function CenikPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("subscription_plans")
-      .select("id, name, price_monthly, max_clients, features")
-      .eq("is_active", true)
-      .order("price_monthly")
-      .then(({ data }) => {
-        if (data && data.length > 0) setPlans(data);
-        setLoading(false);
-      });
+    fetch("/api/public/plans")
+      .then((r) => r.json())
+      .then((data) => { setPlans(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
-
-  const displayPlans = plans.length > 0
-    ? plans.map((p) => ({
-        id: p.id,
-        name: p.name,
-        price: p.price_monthly,
-        maxClients: p.max_clients,
-        slug: PLAN_SLUG_MAP[p.name] || p.name.toLowerCase(),
-        desc: PLAN_DESCRIPTIONS[p.name] || "",
-        featured: p.name === "Profesionál",
-        featureKeys: PLAN_FEATURES[p.name] || [],
-      }))
-    : [
-        { id: "1", name: "Základ", price: 359, maxClients: 50, slug: "zaklad", desc: "Pro začínající poradce", featured: false, featureKeys: PLAN_FEATURES["Základ"] },
-        { id: "2", name: "Profesionál", price: 599, maxClients: 200, slug: "profesional", desc: "Nejoblíbenější volba", featured: true, featureKeys: PLAN_FEATURES["Profesionál"] },
-        { id: "3", name: "Expert", price: 899, maxClients: 500, slug: "expert", desc: "Pro profesionály", featured: false, featureKeys: PLAN_FEATURES["Expert"] },
-      ];
 
   return (
     <div className="grid-pattern">
@@ -197,74 +173,8 @@ export default function CenikPage() {
               </div>
             ))
           ) : (
-            displayPlans.map((plan, i) => (
-              <Reveal key={plan.id} delay={i * 100}>
-                <div
-                  className={`p-8 transition-all duration-300 ${
-                    plan.featured
-                      ? "bg-[#22d3ee]/[.04] border border-[#22d3ee]/20 shadow-[0_0_60px_rgba(34,211,238,.08)] md:scale-[1.03]"
-                      : "bg-white/[.02] border border-white/[.06]"
-                  }`}
-                  style={{ clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))" }}
-                >
-                  {plan.featured && (
-                    <span className="inline-block bg-[#22d3ee] text-[#060d1a] text-[.6rem] font-bold px-3 py-1 mb-5 font-[Oswald] uppercase tracking-[3px]">
-                      Nejoblíbenější
-                    </span>
-                  )}
-                  <h3 className="font-[Oswald] text-xl font-bold uppercase tracking-wide text-white">{plan.name}</h3>
-                  <p className="font-[DM_Sans] text-sm text-white/40 mt-1">{plan.desc}</p>
-                  <div className="mt-5 flex items-baseline gap-1">
-                    <span className="font-[Oswald] text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="font-[DM_Sans] text-white/40 text-sm">Kč / měsíc</span>
-                  </div>
-                  <p className="font-[DM_Sans] text-xs text-white/25 mt-1">bez DPH · až {plan.maxClients} klientů</p>
-
-                  <div className="h-px bg-white/[.04] my-6" />
-
-                  <ul className="space-y-3">
-                    {plan.featureKeys.map((key) => (
-                      <li key={key} className="flex items-start gap-2.5">
-                        <Check className={`w-4 h-4 mt-0.5 shrink-0 ${plan.featured ? "text-[#22d3ee]" : "text-white/30"}`} />
-                        <span className="font-[DM_Sans] text-sm text-white/50">{FEATURE_LABELS[key]}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Expandable details */}
-                  <button
-                    onClick={() => setExpandedPlan(expandedPlan === plan.slug ? null : plan.slug)}
-                    className="flex items-center gap-1.5 mt-5 text-xs text-white/30 hover:text-[#22d3ee] transition-colors font-[JetBrains_Mono] tracking-wider"
-                  >
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expandedPlan === plan.slug ? "rotate-180" : ""}`} />
-                    Zobrazit podrobnosti
-                  </button>
-
-                  {expandedPlan === plan.slug && (
-                    <div className="mt-4 space-y-3 border-t border-white/[.04] pt-4">
-                      {plan.featureKeys.map((key) => (
-                        <div key={key}>
-                          <p className="font-[DM_Sans] text-xs text-white/60 leading-relaxed">
-                            {FEATURE_DETAILS[key]}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <Link
-                    href={`/register?plan=${plan.slug}`}
-                    className={`mt-8 block text-center py-3 font-[Oswald] uppercase tracking-[2px] text-sm font-bold transition-all ${
-                      plan.featured
-                        ? "bg-[#22d3ee] text-[#060d1a] hover:bg-[#22d3ee]/90"
-                        : "border border-white/[.1] text-white hover:border-[#22d3ee]"
-                    }`}
-                    style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))" }}
-                  >
-                    Vybrat {plan.name}
-                  </Link>
-                </div>
-              </Reveal>
+            plans.map((plan, i) => (
+              <PlanCard key={plan.id || i} plan={plan} featured={i === 1} />
             ))
           )}
         </div>

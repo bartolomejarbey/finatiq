@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
 import CookieBanner from "@/components/CookieBanner";
 import StickyCTA from "@/components/StickyCTA";
+import { PlanCard, type PlanData } from "@/components/PlanCard";
 import {
   BarChart3,
   Users,
@@ -880,6 +881,16 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [plans, setPlans] = useState<PlanData[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+
+  /* Fetch plans from API */
+  useEffect(() => {
+    fetch("/api/public/plans")
+      .then((r) => r.json())
+      .then((data) => { setPlans(data); setPlansLoading(false); })
+      .catch(() => setPlansLoading(false));
+  }, []);
 
   /* Scroll listener */
   useEffect(() => {
@@ -1449,82 +1460,31 @@ export default function LandingPage() {
             </p>
           </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            {PLAN_DATA.map((plan, i) => (
-              <Reveal key={plan.slug} delay={i * 100}>
-                <div
-                  className={`p-8 transition-all duration-300 ${
-                    plan.featured
-                      ? "bg-[#22d3ee]/[.04] border border-[#22d3ee]/20 shadow-[0_0_60px_rgba(34,211,238,.08)] md:scale-[1.03]"
-                      : "bg-white/[.02] border border-white/[.06]"
-                  }`}
-                  style={{
-                    clipPath:
-                      "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            {plansLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-2xl border border-white/[.06] bg-white/[.02] p-8 animate-pulse h-96" />
+              ))
+            ) : plans.length > 0 ? (
+              plans.map((plan, i) => (
+                <PlanCard key={plan.id || i} plan={plan} featured={i === 1} />
+              ))
+            ) : (
+              PLAN_DATA.map((plan, i) => (
+                <PlanCard
+                  key={plan.slug}
+                  plan={{
+                    name: plan.name,
+                    price_monthly: plan.price,
+                    max_clients: plan.maxClients,
+                    features: {},
+                    description: plan.desc,
+                    badge: plan.featured ? "Nejoblíbenější" : null,
                   }}
-                >
-                  {plan.featured && (
-                    <span className="inline-block bg-[#22d3ee] text-[#060d1a] text-[.6rem] font-bold px-3 py-1 mb-5 font-[Oswald] uppercase tracking-[3px]">
-                      Nejoblíbenější
-                    </span>
-                  )}
-                  <h3 className="font-[Oswald] text-xl font-bold uppercase tracking-wide text-white">
-                    {plan.name}
-                  </h3>
-                  <p className="font-[DM_Sans] text-sm text-white/40 mt-1">
-                    {plan.desc}
-                  </p>
-                  <div className="mt-5 flex items-baseline gap-1">
-                    <span className="font-[Oswald] text-4xl font-bold text-white">
-                      {plan.price}
-                    </span>
-                    <span className="font-[DM_Sans] text-white/40 text-sm">
-                      Kč / měsíc
-                    </span>
-                  </div>
-                  <p className="font-[DM_Sans] text-xs text-white/25 mt-1">
-                    bez DPH · až {plan.maxClients} klientů
-                  </p>
-
-                  <div className="h-px bg-white/[.04] my-6" />
-
-                  <ul className="space-y-3">
-                    {plan.features.map((f) => (
-                      <li
-                        key={f}
-                        className="flex items-start gap-2.5"
-                      >
-                        <Check
-                          className={`w-4 h-4 mt-0.5 shrink-0 ${
-                            plan.featured
-                              ? "text-[#22d3ee]"
-                              : "text-white/30"
-                          }`}
-                        />
-                        <span className="font-[DM_Sans] text-sm text-white/50">
-                          {f}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    href={`/register?plan=${plan.slug}`}
-                    className={`mt-8 block text-center py-3 font-[Oswald] uppercase tracking-[2px] text-sm font-bold transition-all ${
-                      plan.featured
-                        ? "bg-[#22d3ee] text-[#060d1a] hover:bg-[#22d3ee]/90"
-                        : "border border-white/[.1] text-white hover:border-[#22d3ee]"
-                    }`}
-                    style={{
-                      clipPath:
-                        "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
-                    }}
-                  >
-                    Vybrat {plan.name}
-                  </Link>
-                </div>
-              </Reveal>
-            ))}
+                  featured={plan.featured}
+                />
+              ))
+            )}
           </div>
 
           <Reveal delay={300}>

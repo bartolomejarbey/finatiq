@@ -60,6 +60,7 @@ function AdvisorLayoutInner({ children }: { children: React.ReactNode }) {
   const [newContractsCount, setNewContractsCount] = useState(0);
   const [ticketOpen, setTicketOpen] = useState(false);
   const [enabledModules, setEnabledModules] = useState<Record<string, boolean>>({});
+  const [featureTrials, setFeatureTrials] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const supabase = createClient();
@@ -79,8 +80,9 @@ function AdvisorLayoutInner({ children }: { children: React.ReactNode }) {
       setReminderCount(reminders.count || 0);
       setNewContractsCount(contracts.count || 0);
 
-      const { data: adv } = await supabase.from("advisors").select("enabled_modules").single();
+      const { data: adv } = await supabase.from("advisors").select("enabled_modules, feature_trials").single();
       if (adv?.enabled_modules) setEnabledModules(adv.enabled_modules);
+      if (adv?.feature_trials) setFeatureTrials(adv.feature_trials);
     }
     fetchCounts();
     const interval = setInterval(fetchCounts, 60000);
@@ -95,7 +97,13 @@ function AdvisorLayoutInner({ children }: { children: React.ReactNode }) {
   }
 
   const navItems: LayoutNavItem[] = NAV_DEFS
-    .filter((item) => !item.moduleKey || enabledModules[item.moduleKey] !== false)
+    .filter((item) => {
+      if (!item.moduleKey) return true;
+      if (enabledModules[item.moduleKey] === true) return true;
+      const trialExpiry = featureTrials[item.moduleKey];
+      if (trialExpiry && new Date(trialExpiry) > new Date()) return true;
+      return false;
+    })
     .map((item) => ({
       href: item.href,
       label: item.label,
