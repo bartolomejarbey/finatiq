@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import { Plus, FileText, Eye, Pencil, Trash2, Loader2, Copy, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { ModuleGate } from "@/components/ModuleGate";
 
 interface Template {
   id: string;
@@ -138,6 +139,7 @@ export default function TemplatesPage() {
   if (loading) return <div className="p-8 space-y-4"><Skeleton className="h-8 w-48" />{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>;
 
   return (
+    <ModuleGate moduleKey="templates" moduleName="Šablony" moduleDescription="Předpřipravené emailové šablony pro komunikaci s klienty — ušetřete čas na opakující se emaily.">
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
@@ -223,5 +225,6 @@ export default function TemplatesPage() {
         </SheetContent>
       </Sheet>
     </div>
+    </ModuleGate>
   );
 }

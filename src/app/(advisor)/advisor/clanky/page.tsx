@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { FileText, Plus, Edit2, Trash2, Eye, EyeOff } from "lucide-react";
+import { ModuleGate } from "@/components/ModuleGate";
 
 interface Article {
   id: string;
@@ -197,6 +198,7 @@ export default function AdvisorArticlesPage() {
   }
 
   return (
+    <ModuleGate moduleKey="articles" moduleName="Články" moduleDescription="Publikujte odborné články pro vaše klienty — budujte důvěru a vzdělávejte své klienty o finančních tématech.">
     <div className="p-8">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
@@ -374,5 +376,6 @@ export default function AdvisorArticlesPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </ModuleGate>
   );
 }

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Zap, Plus, Play, Pause, Trash2, Loader2, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { ModuleGate } from "@/components/ModuleGate";
 
 interface Automation {
   id: string;
@@ -146,6 +147,7 @@ export default function AutomationsPage() {
   if (loading) return <div className="p-8 space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64 rounded-xl" /></div>;
 
   return (
+    <ModuleGate moduleKey="automations" moduleName="Automatizace" moduleDescription="Nastavte automatické akce a workflow — například odeslání emailu po podpisu smlouvy, připomínka na follow-up, nebo upozornění na expiraci.">
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
@@ -303,5 +305,6 @@ export default function AutomationsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </ModuleGate>
   );
 }

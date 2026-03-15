@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { CalendarClock, Plus, Power, Pencil, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ModuleGate } from "@/components/ModuleGate";
 
 interface SeasonalReminder {
   id: string;
@@ -234,6 +235,7 @@ export default function SeasonalRemindersPage() {
   }
 
   return (
+    <ModuleGate moduleKey="seasonal_reminders" moduleName="Sezónní připomínky" moduleDescription="Automatické připomínky na důležitá data — daňové přiznání, pojistky k obnovení, kontrola investic a další sezónní úkoly.">
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -430,5 +432,6 @@ export default function SeasonalRemindersPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </ModuleGate>
   );
 }

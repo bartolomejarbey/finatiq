@@ -16,6 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ModuleGate } from "@/components/ModuleGate";
 
 interface Appointment {
   id: string;
@@ -208,6 +209,7 @@ export default function AdvisorKalendarPage() {
   );
 
   return (
+    <ModuleGate moduleKey="calendar" moduleName="Kalendář" moduleDescription="Plánujte schůzky s klienty a synchronizujte s Google Calendar — vše na jednom místě.">
     <div className="mx-auto max-w-5xl p-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold gradient-text">Kalendář</h1>
@@ -528,5 +530,6 @@ export default function AdvisorKalendarPage() {
         </div>
       )}
     </div>
+    </ModuleGate>
   );
 }

@@ -25,6 +25,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { ModuleGate } from "@/components/ModuleGate";
 
 interface Campaign {
   id: string;
@@ -171,6 +172,7 @@ export default function CampaignsPage() {
   }
 
   return (
+    <ModuleGate moduleKey="meta_ads" moduleName="Kampaně" moduleDescription="Správa Meta Ads kampaní, sledování výkonu a generování leadů přímo z vašich reklam na Facebooku a Instagramu.">
     <div className="p-8">
       <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Meta Ads kampaně</h1>
 
@@ -267,6 +269,7 @@ export default function CampaignsPage() {
         </div>
       )}
     </div>
+    </ModuleGate>
   );
 }
 

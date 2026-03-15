@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Star, TrendingUp, TrendingDown, Minus, Users } from "lucide-react";
+import { ModuleGate } from "@/components/ModuleGate";
 
 interface Survey {
   id: string;
@@ -119,6 +120,7 @@ export default function SatisfactionPage() {
   }
 
   return (
+    <ModuleGate moduleKey="satisfaction" moduleName="Spokojenost" moduleDescription="Měřte spokojenost klientů pomocí automatických dotazníků — zjistěte co zlepšit a kde jste výborní.">
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
@@ -232,5 +234,6 @@ export default function SatisfactionPage() {
         </div>
       )}
     </div>
+    </ModuleGate>
   );
 }

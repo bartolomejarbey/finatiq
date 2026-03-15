@@ -31,6 +31,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ModuleGate } from "@/components/ModuleGate";
 
 interface NewsItem {
   id: string;
@@ -178,6 +179,7 @@ export default function AdvisorNewsPage() {
   }
 
   return (
+    <ModuleGate moduleKey="news_feed" moduleName="Novinky" moduleDescription="Informujte klienty o důležitých novinkách, změnách v legislativě nebo nových produktech.">
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -363,5 +365,6 @@ export default function AdvisorNewsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </ModuleGate>
   );
 }

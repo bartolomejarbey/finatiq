@@ -23,6 +23,7 @@ import confetti from "canvas-confetti";
 import { DealCard } from "./deal-card";
 import { NewDealSheet } from "./new-deal-sheet";
 import { LostReasonDialog } from "./lost-reason-dialog";
+import { ModuleGate } from "@/components/ModuleGate";
 
 export interface Stage {
   id: string;
@@ -233,6 +234,7 @@ export default function PipelinePage() {
   if (loading) return <PipelineSkeleton />;
 
   return (
+    <ModuleGate moduleKey="crm" moduleName="Obchodní příležitosti" moduleDescription="Kanban board pro správu obchodních případů — sledujte každý deal od prvního kontaktu po uzavření.">
     <div className="flex h-full flex-col bg-[#FAFBFC]">
       {/* Header — clean, no box */}
       <div className="px-6 md:px-8 pt-6 pb-4">
@@ -369,6 +371,7 @@ export default function PipelinePage() {
       <NewDealSheet open={sheetOpen} onOpenChange={setSheetOpen} stages={stages} onCreated={() => { fetchData(); toast.success("Deal vytvořen!"); }} />
       <LostReasonDialog open={lostDialog.open} onConfirm={handleLostConfirm} onCancel={handleLostCancel} />
     </div>
+    </ModuleGate>
   );
 }
 
