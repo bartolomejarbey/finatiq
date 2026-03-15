@@ -33,8 +33,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import Cropper from "react-easy-crop";
-import type { Area } from "react-easy-crop";
+import ReactCrop, { centerCrop, makeAspectCrop, type Crop as CropType, type PixelCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 // ---------------------------------------------------------------------------
 // Module definitions – ALL keys required
@@ -110,28 +110,28 @@ const FONT_OPTIONS = [
 // ---------------------------------------------------------------------------
 // Crop utilities
 // ---------------------------------------------------------------------------
-function createImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.addEventListener("load", () => resolve(img));
-    img.addEventListener("error", (e) => reject(e));
-    img.crossOrigin = "anonymous";
-    img.src = url;
-  });
-}
-
-async function getCroppedBlob(imageSrc: string, crop: Area): Promise<Blob> {
-  const image = await createImage(imageSrc);
+function getCroppedBlobFromImg(
+  image: HTMLImageElement,
+  crop: PixelCrop,
+): Promise<Blob> {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
-  canvas.width = crop.width;
-  canvas.height = crop.height;
-  ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+  canvas.width = Math.round(crop.width * scaleX);
+  canvas.height = Math.round(crop.height * scaleY);
+  ctx.drawImage(
+    image,
+    Math.round(crop.x * scaleX),
+    Math.round(crop.y * scaleY),
+    canvas.width,
+    canvas.height,
+    0, 0, canvas.width, canvas.height,
+  );
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error("Canvas export failed"))),
-      "image/png",
-      1,
+      "image/png", 1,
     );
   });
 }
@@ -139,6 +139,13 @@ async function getCroppedBlob(imageSrc: string, crop: Area): Promise<Blob> {
 // ---------------------------------------------------------------------------
 // Crop Modal
 // ---------------------------------------------------------------------------
+type OBCropAspectMode = "free" | "1:1" | "16:9";
+const OB_ASPECT_OPTIONS: { mode: OBCropAspectMode; label: string; value: number | undefined }[] = [
+  { mode: "free", label: "Volný", value: undefined },
+  { mode: "1:1", label: "1:1", value: 1 },
+  { mode: "16:9", label: "16:9", value: 16 / 9 },
+];
+
 function OnboardingCropModal({
   imageSrc,
   onConfirm,
@@ -148,21 +155,44 @@ function OnboardingCropModal({
   onConfirm: (blob: Blob) => void;
   onCancel: () => void;
 }) {
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [aspect, setAspect] = useState(1);
-  const [croppedArea, setCroppedArea] = useState<Area | null>(null);
+  const [crop, setCrop] = useState<CropType>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const [aspectMode, setAspectMode] = useState<OBCropAspectMode>("free");
   const [processing, setProcessing] = useState(false);
+  const [scale, setScale] = useState(1);
+  const imgRef = useRef<HTMLImageElement>(null);
 
-  const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
-    setCroppedArea(croppedPixels);
-  }, []);
+  const aspect = OB_ASPECT_OPTIONS.find((o) => o.mode === aspectMode)?.value;
+
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+    const { width, height } = e.currentTarget;
+    const initialCrop = centerCrop(
+      makeAspectCrop({ unit: "%", width: 90 }, width / height, width, height),
+      width, height,
+    );
+    setCrop(initialCrop);
+  }
+
+  function handleAspectChange(mode: OBCropAspectMode) {
+    setAspectMode(mode);
+    const img = imgRef.current;
+    if (!img) return;
+    const { width, height } = img;
+    const newAspect = OB_ASPECT_OPTIONS.find((o) => o.mode === mode)?.value;
+    if (newAspect) {
+      const newCrop = centerCrop(
+        makeAspectCrop({ unit: "%", width: 70 }, newAspect, width, height),
+        width, height,
+      );
+      setCrop(newCrop);
+    }
+  }
 
   async function handleConfirm() {
-    if (!croppedArea) return;
+    if (!completedCrop || !imgRef.current) return;
     setProcessing(true);
     try {
-      const blob = await getCroppedBlob(imageSrc, croppedArea);
+      const blob = await getCroppedBlobFromImg(imgRef.current, completedCrop);
       onConfirm(blob);
     } catch {
       toast.error("Nepodařilo se oříznout obrázek.");
@@ -180,28 +210,34 @@ function OnboardingCropModal({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="relative h-[320px] bg-gray-900">
-          <Cropper
-            image={imageSrc}
+        <div className="flex items-center justify-center bg-gray-900 p-4 min-h-[320px] max-h-[400px] overflow-auto">
+          <ReactCrop
             crop={crop}
-            zoom={zoom}
+            onChange={(c) => setCrop(c)}
+            onComplete={(c) => setCompletedCrop(c)}
             aspect={aspect}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-          />
+          >
+            <img
+              ref={imgRef}
+              src={imageSrc}
+              alt="Crop"
+              onLoad={onImageLoad}
+              style={{ transform: `scale(${scale})`, transformOrigin: "center", maxHeight: "380px" }}
+              crossOrigin="anonymous"
+            />
+          </ReactCrop>
         </div>
         <div className="px-5 py-4 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-500 w-12">Poměr:</span>
             <div className="flex gap-1.5">
-              {([{ value: 1, label: "1:1" }, { value: 16 / 9, label: "16:9" }] as const).map((opt) => (
+              {OB_ASPECT_OPTIONS.map((opt) => (
                 <button
-                  key={opt.label}
+                  key={opt.mode}
                   type="button"
-                  onClick={() => setAspect(opt.value)}
+                  onClick={() => handleAspectChange(opt.mode)}
                   className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors duration-150 ${
-                    aspect === opt.value ? "bg-gray-900 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                    aspectMode === opt.mode ? "bg-gray-900 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                   }`}
                 >
                   {opt.label}
@@ -211,12 +247,12 @@ function OnboardingCropModal({
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-slate-500 w-12">Zoom:</span>
-            <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-gray-900 cursor-pointer" />
-            <span className="text-xs text-slate-400 font-mono w-10 text-right">{zoom.toFixed(1)}x</span>
+            <input type="range" min={0.3} max={3} step={0.05} value={scale} onChange={(e) => setScale(Number(e.target.value))} className="flex-1 accent-gray-900 cursor-pointer" />
+            <span className="text-xs text-slate-400 font-mono w-10 text-right">{scale.toFixed(1)}x</span>
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" size="sm" onClick={onCancel} className="h-8 cursor-pointer">Zrušit</Button>
-            <Button size="sm" onClick={handleConfirm} disabled={processing} className="h-8 cursor-pointer">
+            <Button size="sm" onClick={handleConfirm} disabled={processing || !completedCrop} className="h-8 cursor-pointer">
               {processing ? <><Loader2 className="mr-1.5 h-3 w-3 animate-spin" />Ořezávám</> : "Potvrdit"}
             </Button>
           </div>

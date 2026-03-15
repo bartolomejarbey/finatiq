@@ -4,8 +4,8 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRefreshTheme } from "@/lib/theme/ThemeProvider";
 import { toast } from "sonner";
-import Cropper from "react-easy-crop";
-import type { Area } from "react-easy-crop";
+import ReactCrop, { centerCrop, makeAspectCrop, type Crop, type PixelCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 import {
   Upload, Link2, X, Loader2, Check, Crop,
   LayoutDashboard, Users, Settings, Kanban, Bell,
@@ -81,37 +81,29 @@ const DEFAULTS: BrandingState = {
 
 /* ── Crop Utilities ── */
 
-function createImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.addEventListener("load", () => resolve(img));
-    img.addEventListener("error", (e) => reject(e));
-    img.crossOrigin = "anonymous";
-    img.src = url;
-  });
-}
-
-async function getCroppedBlob(
-  imageSrc: string,
-  crop: Area,
+function getCroppedBlob(
+  image: HTMLImageElement,
+  crop: PixelCrop,
 ): Promise<Blob> {
-  const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
 
-  canvas.width = crop.width;
-  canvas.height = crop.height;
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+
+  canvas.width = Math.round(crop.width * scaleX);
+  canvas.height = Math.round(crop.height * scaleY);
 
   ctx.drawImage(
     image,
-    crop.x,
-    crop.y,
-    crop.width,
-    crop.height,
+    Math.round(crop.x * scaleX),
+    Math.round(crop.y * scaleY),
+    canvas.width,
+    canvas.height,
     0,
     0,
-    crop.width,
-    crop.height,
+    canvas.width,
+    canvas.height,
   );
 
   return new Promise((resolve, reject) => {
@@ -125,6 +117,13 @@ async function getCroppedBlob(
 
 /* ── Crop Modal ── */
 
+type AspectMode = "free" | "1:1" | "16:9";
+const ASPECT_OPTIONS: { mode: AspectMode; label: string; value: number | undefined }[] = [
+  { mode: "free", label: "Volný", value: undefined },
+  { mode: "1:1", label: "1:1", value: 1 },
+  { mode: "16:9", label: "16:9", value: 16 / 9 },
+];
+
 function CropModal({
   imageSrc,
   onConfirm,
@@ -134,21 +133,47 @@ function CropModal({
   onConfirm: (blob: Blob) => void;
   onCancel: () => void;
 }) {
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [aspect, setAspect] = useState(1);
-  const [croppedArea, setCroppedArea] = useState<Area | null>(null);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const [aspectMode, setAspectMode] = useState<AspectMode>("free");
   const [processing, setProcessing] = useState(false);
+  const [scale, setScale] = useState(1);
+  const imgRef = useRef<HTMLImageElement>(null);
 
-  const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
-    setCroppedArea(croppedPixels);
-  }, []);
+  const aspect = ASPECT_OPTIONS.find((o) => o.mode === aspectMode)?.value;
+
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+    const { width, height } = e.currentTarget;
+    // Default: select 90% of the image, centered
+    const initialCrop = centerCrop(
+      makeAspectCrop({ unit: "%", width: 90 }, width / height, width, height),
+      width,
+      height,
+    );
+    setCrop(initialCrop);
+  }
+
+  function handleAspectChange(mode: AspectMode) {
+    setAspectMode(mode);
+    const img = imgRef.current;
+    if (!img) return;
+    const { width, height } = img;
+    const newAspect = ASPECT_OPTIONS.find((o) => o.mode === mode)?.value;
+    if (newAspect) {
+      const newCrop = centerCrop(
+        makeAspectCrop({ unit: "%", width: 70 }, newAspect, width, height),
+        width,
+        height,
+      );
+      setCrop(newCrop);
+    }
+  }
 
   async function handleConfirm() {
-    if (!croppedArea) return;
+    if (!completedCrop || !imgRef.current) return;
     setProcessing(true);
     try {
-      const blob = await getCroppedBlob(imageSrc, croppedArea);
+      const blob = await getCroppedBlob(imgRef.current, completedCrop);
       onConfirm(blob);
     } catch {
       toast.error("Nepodařilo se oříznout obrázek.");
@@ -172,16 +197,22 @@ function CropModal({
         </div>
 
         {/* Cropper area */}
-        <div className="relative h-[320px] bg-gray-900">
-          <Cropper
-            image={imageSrc}
+        <div className="flex items-center justify-center bg-gray-900 p-4 min-h-[320px] max-h-[400px] overflow-auto">
+          <ReactCrop
             crop={crop}
-            zoom={zoom}
+            onChange={(c) => setCrop(c)}
+            onComplete={(c) => setCompletedCrop(c)}
             aspect={aspect}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-          />
+          >
+            <img
+              ref={imgRef}
+              src={imageSrc}
+              alt="Crop"
+              onLoad={onImageLoad}
+              style={{ transform: `scale(${scale})`, transformOrigin: "center", maxHeight: "380px" }}
+              crossOrigin="anonymous"
+            />
+          </ReactCrop>
         </div>
 
         {/* Controls */}
@@ -190,16 +221,13 @@ function CropModal({
           <div className="flex items-center gap-2">
             <span className="text-xs text-[var(--card-text-muted)] w-12">Poměr:</span>
             <div className="flex gap-1.5">
-              {([
-                { value: 1, label: "1:1" },
-                { value: 16 / 9, label: "16:9" },
-              ] as const).map((opt) => (
+              {ASPECT_OPTIONS.map((opt) => (
                 <button
-                  key={opt.label}
+                  key={opt.mode}
                   type="button"
-                  onClick={() => setAspect(opt.value)}
+                  onClick={() => handleAspectChange(opt.mode)}
                   className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors duration-150 ${
-                    aspect === opt.value
+                    aspectMode === opt.mode
                       ? "bg-gray-900 text-white"
                       : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--card-border)]"
                   }`}
@@ -215,15 +243,15 @@ function CropModal({
             <span className="text-xs text-[var(--card-text-muted)] w-12">Zoom:</span>
             <input
               type="range"
-              min={1}
+              min={0.3}
               max={3}
               step={0.05}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
+              value={scale}
+              onChange={(e) => setScale(Number(e.target.value))}
               className="flex-1 accent-gray-900 cursor-pointer"
             />
             <span className="text-xs text-[var(--card-text-dim)] font-mono w-10 text-right">
-              {zoom.toFixed(1)}x
+              {scale.toFixed(1)}x
             </span>
           </div>
 
@@ -240,7 +268,7 @@ function CropModal({
             <Button
               size="sm"
               onClick={handleConfirm}
-              disabled={processing}
+              disabled={processing || !completedCrop}
               className="h-8 cursor-pointer"
             >
               {processing ? (
