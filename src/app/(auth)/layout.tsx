@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 
 export default function AuthLayout({
@@ -5,6 +8,21 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isCustomDomain, setIsCustomDomain] = useState(false);
+
+  useEffect(() => {
+    const hostname = window.location.hostname.replace(/^www\./, "");
+    const mainDomains = ["localhost", "finatiq.cz"];
+    if (!mainDomains.includes(hostname) && !hostname.includes("vercel.app")) {
+      setIsCustomDomain(true);
+    }
+  }, []);
+
+  // Custom domain — render children directly (login page handles its own layout)
+  if (isCustomDomain) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* Left branding panel — hidden on mobile */}

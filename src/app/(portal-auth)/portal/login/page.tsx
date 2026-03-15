@@ -1,11 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
+
+interface AdvisorBrand {
+  app_name: string | null;
+  logo_url: string | null;
+  brand_primary: string | null;
+  brand_accent_color: string | null;
+  company_name: string | null;
+  custom_login_title: string | null;
+  custom_login_subtitle: string | null;
+  login_slug: string | null;
+}
+
+function useCustomDomainBrand() {
+  const [brand, setBrand] = useState<AdvisorBrand | null>(null);
+  const [isCustomDomain, setIsCustomDomain] = useState(false);
+
+  useEffect(() => {
+    const hostname = window.location.hostname.replace(/^www\./, "");
+    const mainDomains = ["localhost", "finatiq.cz"];
+    if (mainDomains.includes(hostname) || hostname.includes("vercel.app")) return;
+
+    setIsCustomDomain(true);
+    fetch(`/api/advisor-brand?domain=${encodeURIComponent(hostname)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) setBrand(data); })
+      .catch(() => {});
+  }, []);
+
+  return { brand, isCustomDomain };
+}
 
 export default function PortalLoginPage() {
   const router = useRouter();
@@ -13,6 +43,7 @@ export default function PortalLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { brand, isCustomDomain } = useCustomDomainBrand();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,23 +78,49 @@ export default function PortalLoginPage() {
     window.location.href = "/portal";
   }
 
+  const accent = isCustomDomain
+    ? (brand?.brand_primary || brand?.brand_accent_color || "#22d3ee")
+    : "#3B82F6";
+  const displayName = brand?.app_name || brand?.company_name || "Klientský portál";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#09090b] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#060d1a] px-4 relative overflow-hidden">
       {/* Glow blobs */}
-      <div className="pointer-events-none fixed top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/[.08] blur-[120px]" />
-      <div className="pointer-events-none fixed bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-500/[.06] blur-[120px]" />
+      <div
+        className="pointer-events-none fixed top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px]"
+        style={{ backgroundColor: `${accent}12` }}
+      />
+      <div
+        className="pointer-events-none fixed bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full blur-[120px]"
+        style={{ backgroundColor: `${accent}08` }}
+      />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600/20 border border-blue-500/20">
-            <Lock className="h-6 w-6 text-blue-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
-            Klientský portál
+          {isCustomDomain && brand?.logo_url ? (
+            <img src={brand.logo_url} alt={displayName} className="mx-auto mb-4 h-14 w-auto object-contain" />
+          ) : (
+            <div
+              className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border"
+              style={{
+                backgroundColor: `${accent}20`,
+                borderColor: `${accent}20`,
+              }}
+            >
+              <Lock className="h-6 w-6" style={{ color: accent }} />
+            </div>
+          )}
+          <h1
+            className="text-2xl font-bold text-white"
+            style={{ fontFamily: isCustomDomain ? "Oswald, sans-serif" : "'Syne', sans-serif" }}
+          >
+            {isCustomDomain ? (brand?.custom_login_title || displayName) : "Klientský portál"}
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Přihlaste se do svého portálu
+            {isCustomDomain && brand?.custom_login_subtitle
+              ? brand.custom_login_subtitle
+              : "Přihlaste se do svého portálu"}
           </p>
         </div>
 
@@ -81,7 +138,8 @@ export default function PortalLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:ring-2"
+                style={{ borderColor: undefined }}
               />
             </div>
 
@@ -95,7 +153,7 @@ export default function PortalLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:ring-2"
               />
             </div>
 
@@ -106,7 +164,15 @@ export default function PortalLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-500 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl py-3 font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+              style={{
+                backgroundColor: accent,
+                color: isCustomDomain ? "#060d1a" : "#fff",
+                fontFamily: isCustomDomain ? "Oswald, sans-serif" : undefined,
+                fontWeight: isCustomDomain ? 700 : 500,
+                letterSpacing: isCustomDomain ? "2px" : undefined,
+                textTransform: isCustomDomain ? "uppercase" : undefined,
+              } as React.CSSProperties}
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               Přihlásit se
@@ -118,15 +184,26 @@ export default function PortalLoginPage() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Jste poradce?{" "}
-            <Link href="/login" className="font-medium text-blue-400 hover:text-blue-300 transition-colors">
+            <Link
+              href="/login"
+              className="font-medium transition-colors"
+              style={{ color: accent }}
+            >
               Přihlaste se zde
             </Link>
           </p>
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-xs text-gray-700">
-          &copy; 2026 FinAdvisor
+        <p className="mt-8 text-center text-xs text-white/15" style={{ fontFamily: "DM Sans, sans-serif" }}>
+          {isCustomDomain ? (
+            <>
+              Provozováno na platformě{" "}
+              <a href="https://www.finatiq.cz" className="text-white/25 hover:text-white/40 transition-colors">Finatiq</a>
+            </>
+          ) : (
+            <>&copy; 2026 FinAdvisor</>
+          )}
         </p>
       </div>
     </div>
