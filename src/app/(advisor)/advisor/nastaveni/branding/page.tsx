@@ -3,8 +3,10 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import Cropper from "react-easy-crop";
+import type { Area } from "react-easy-crop";
 import {
-  Upload, Link2, X, Loader2, Check,
+  Upload, Link2, X, Loader2, Check, Crop,
   LayoutDashboard, Users, Settings, Kanban, Bell,
   BarChart3,
 } from "lucide-react";
@@ -76,6 +78,183 @@ const DEFAULTS: BrandingState = {
   custom_login_subtitle: "",
 };
 
+/* ── Crop Utilities ── */
+
+function createImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.addEventListener("load", () => resolve(img));
+    img.addEventListener("error", (e) => reject(e));
+    img.crossOrigin = "anonymous";
+    img.src = url;
+  });
+}
+
+async function getCroppedBlob(
+  imageSrc: string,
+  crop: Area,
+): Promise<Blob> {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d")!;
+
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+
+  ctx.drawImage(
+    image,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
+    0,
+    0,
+    crop.width,
+    crop.height,
+  );
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("Canvas export failed"))),
+      "image/png",
+      1,
+    );
+  });
+}
+
+/* ── Crop Modal ── */
+
+function CropModal({
+  imageSrc,
+  onConfirm,
+  onCancel,
+}: {
+  imageSrc: string;
+  onConfirm: (blob: Blob) => void;
+  onCancel: () => void;
+}) {
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [aspect, setAspect] = useState(1);
+  const [croppedArea, setCroppedArea] = useState<Area | null>(null);
+  const [processing, setProcessing] = useState(false);
+
+  const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
+    setCroppedArea(croppedPixels);
+  }, []);
+
+  async function handleConfirm() {
+    if (!croppedArea) return;
+    setProcessing(true);
+    try {
+      const blob = await getCroppedBlob(imageSrc, croppedArea);
+      onConfirm(blob);
+    } catch {
+      toast.error("Nepodařilo se oříznout obrázek.");
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="w-full max-w-lg rounded-xl bg-white shadow-xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-900">Oříznutí loga</h3>
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors duration-150"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Cropper area */}
+        <div className="relative h-[320px] bg-gray-900">
+          <Cropper
+            image={imageSrc}
+            crop={crop}
+            zoom={zoom}
+            aspect={aspect}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={onCropComplete}
+          />
+        </div>
+
+        {/* Controls */}
+        <div className="px-5 py-4 space-y-3">
+          {/* Aspect ratio toggle */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 w-12">Poměr:</span>
+            <div className="flex gap-1.5">
+              {([
+                { value: 1, label: "1:1" },
+                { value: 16 / 9, label: "16:9" },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => setAspect(opt.value)}
+                  className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors duration-150 ${
+                    aspect === opt.value
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Zoom slider */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-500 w-12">Zoom:</span>
+            <input
+              type="range"
+              min={1}
+              max={3}
+              step={0.05}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="flex-1 accent-gray-900 cursor-pointer"
+            />
+            <span className="text-xs text-gray-400 font-mono w-10 text-right">
+              {zoom.toFixed(1)}x
+            </span>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-end gap-2 pt-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCancel}
+              className="h-8 cursor-pointer"
+            >
+              Zrušit
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleConfirm}
+              disabled={processing}
+              className="h-8 cursor-pointer"
+            >
+              {processing ? (
+                <><Loader2 className="mr-1.5 h-3 w-3 animate-spin" />Ořezávám</>
+              ) : (
+                "Potvrdit"
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Logo Upload ── */
 
 function LogoUpload({
@@ -98,19 +277,30 @@ function LogoUpload({
   );
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = useCallback(
-    async (file: File) => {
+  /* Read file as data URL and open crop modal */
+  const handleFileSelect = useCallback((file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Nahrávejte pouze obrázky."); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Maximální velikost je 5 MB."); return; }
+
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+  }, []);
+
+  /* Upload the cropped blob to Supabase */
+  const uploadBlob = useCallback(
+    async (blob: Blob) => {
       if (!advisorId) { toast.error("Poradce nebyl načten."); return; }
-      if (!file.type.startsWith("image/")) { toast.error("Nahrávejte pouze obrázky."); return; }
-      if (file.size > 2 * 1024 * 1024) { toast.error("Maximální velikost je 2 MB."); return; }
 
       setUploading(true);
+      setCropSrc(null);
       try {
         const supabase = createClient();
-        const ext = file.name.split(".").pop() || "png";
-        const path = `${advisorId}/${fileKey}.${ext}`;
+        const path = `${advisorId}/${fileKey}.png`;
+        const file = new File([blob], `${fileKey}.png`, { type: "image/png" });
         const { error: uploadError } = await supabase.storage.from("branding").upload(path, file, { upsert: true });
         if (uploadError) { toast.error("Chyba: " + uploadError.message); setUploading(false); return; }
         const { data: urlData } = supabase.storage.from("branding").getPublicUrl(path);
@@ -121,6 +311,11 @@ function LogoUpload({
     },
     [advisorId, fileKey, onUrlChange]
   );
+
+  /* Re-edit existing logo */
+  function handleEditLogo() {
+    if (currentUrl) setCropSrc(currentUrl);
+  }
 
   return (
     <div className="space-y-1.5">
@@ -140,7 +335,7 @@ function LogoUpload({
         <div
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFileSelect(f); }}
           onClick={() => inputRef.current?.click()}
           className={`flex flex-col items-center justify-center rounded-md border border-dashed p-5 cursor-pointer transition-colors duration-150 ${
             dragOver ? "border-blue-500 bg-blue-500/5" : "border-gray-200 hover:border-gray-300"
@@ -152,10 +347,10 @@ function LogoUpload({
             <>
               <Upload className="h-4 w-4 text-gray-300 mb-1" />
               <p className="text-xs text-gray-400">Přetáhněte nebo klikněte</p>
-              <p className="text-[10px] text-gray-300">PNG, JPG, SVG — max 2 MB</p>
+              <p className="text-[10px] text-gray-300">PNG, JPG, SVG — max 5 MB</p>
             </>
           )}
-          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = ""; }} />
         </div>
       ) : (
         <Input value={currentUrl} onChange={(e) => onUrlChange(e.target.value)} placeholder="https://..." className="h-9 text-sm" />
@@ -164,10 +359,27 @@ function LogoUpload({
       {currentUrl && (
         <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 border border-gray-100">
           <img src={currentUrl} alt="" className="h-8 max-w-[100px] object-contain" />
+          <button
+            type="button"
+            onClick={handleEditLogo}
+            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 cursor-pointer transition-colors duration-150"
+          >
+            <Crop className="h-3 w-3" />
+            Upravit
+          </button>
           <button type="button" onClick={() => onUrlChange("")} className="ml-auto text-gray-300 hover:text-red-500 cursor-pointer transition-colors duration-150">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
+      )}
+
+      {/* Crop modal */}
+      {cropSrc && (
+        <CropModal
+          imageSrc={cropSrc}
+          onConfirm={uploadBlob}
+          onCancel={() => setCropSrc(null)}
+        />
       )}
     </div>
   );
