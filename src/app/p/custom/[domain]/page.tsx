@@ -18,7 +18,7 @@ interface AdvisorBrand {
 
 export default function CustomDomainPage() {
   const params = useParams();
-  const domain = params.domain as string;
+  const domain = (params.domain as string)?.replace(/^www\./, "");
   const [advisor, setAdvisor] = useState<AdvisorBrand | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

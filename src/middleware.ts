@@ -11,8 +11,9 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 0. Custom domain detection — BEFORE everything else
-  const hostname = request.headers.get("host")?.replace(":3000", "").replace(":3001", "") || "";
-  const mainDomains = ["localhost", "finatiq.cz", "www.finatiq.cz"];
+  const rawHostname = request.headers.get("host")?.replace(":3000", "").replace(":3001", "") || "";
+  const hostname = rawHostname.replace(/^www\./, "");
+  const mainDomains = ["localhost", "finatiq.cz"];
   const isCustomDomain = hostname && !mainDomains.includes(hostname) && !hostname.includes("vercel.app");
 
   if (isCustomDomain) {

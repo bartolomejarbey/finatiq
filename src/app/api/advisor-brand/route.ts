@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
 
   let query;
   if (domain) {
-    query = supabase.from("advisors").select(fields).eq("custom_domain", domain).single();
+    const cleanDomain = domain.replace(/^www\./, "");
+    query = supabase.from("advisors").select(fields).eq("custom_domain", cleanDomain).single();
   } else {
     query = supabase.from("advisors").select(fields).eq("login_slug", slug!).single();
   }
