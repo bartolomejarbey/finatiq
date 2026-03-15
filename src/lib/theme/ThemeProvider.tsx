@@ -159,7 +159,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           .from("clients")
           .select("advisor_id")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (client) {
           advisorId = client.advisor_id;
@@ -168,7 +168,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             .from("advisors")
             .select("id")
             .eq("user_id", user.id)
-            .single();
+            .maybeSingle();
           if (advisor) advisorId = advisor.id;
         }
 
