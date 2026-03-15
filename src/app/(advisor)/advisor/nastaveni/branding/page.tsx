@@ -587,9 +587,11 @@ export default function BrandingPage() {
         return;
       }
 
-      console.log("[Branding] Save successful, refreshing theme...");
-      await refreshTheme();
+      console.log("[Branding] Save successful, reloading page...");
+      console.log("[Branding] Saved row brand_primary:", res.data?.[0]?.brand_primary, "accent:", res.data?.[0]?.brand_accent_color);
       toast.success("Branding uložen.");
+      // Force full reload so ThemeProvider re-reads from DB
+      setTimeout(() => window.location.reload(), 500);
     } catch (err) {
       console.error("[Branding] EXCEPTION:", err);
       toast.error("Nepodařilo se uložit.");
