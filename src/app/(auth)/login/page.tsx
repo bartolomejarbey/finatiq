@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getRoleRedirectPath } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/auth/roles";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface AdvisorBrand {
   app_name: string | null;
@@ -19,7 +19,22 @@ interface AdvisorBrand {
   login_slug: string | null;
 }
 
-function useCustomDomainBrand() {
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const confirmed = searchParams.get("confirmed") === "true";
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [brand, setBrand] = useState<AdvisorBrand | null>(null);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
 
@@ -34,27 +49,6 @@ function useCustomDomainBrand() {
       .then((data) => { if (data) setBrand(data); })
       .catch(() => {});
   }, []);
-
-  return { brand, isCustomDomain };
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#060d1a]"><Loader2 className="h-6 w-6 animate-spin text-white/30" /></div>}>
-      <LoginForm />
-    </Suspense>
-  );
-}
-
-function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const confirmed = searchParams.get("confirmed") === "true";
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { brand, isCustomDomain } = useCustomDomainBrand();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,19 +74,19 @@ function LoginForm() {
       return;
     }
 
-    // Detect role server-side (bypasses RLS)
     const roleRes = await fetch("/api/auth/me");
     const { role } = await roleRes.json() as { role: UserRole };
     window.location.href = getRoleRedirectPath(role);
   }
 
-  // Custom domain branded login
+  // ── Custom domain: full-screen branded login ──
   if (isCustomDomain) {
     const accent = brand?.brand_primary || brand?.brand_accent_color || "#22d3ee";
     const displayName = brand?.app_name || brand?.company_name || "Finanční poradce";
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#060d1a] px-4 relative overflow-hidden">
+      <div className="fixed inset-0 z-50 flex min-h-screen items-center justify-center bg-[#060d1a] px-4 overflow-hidden">
+        {/* Glow blobs */}
         <div
           className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none"
           style={{ backgroundColor: `${accent}12` }}
@@ -103,7 +97,7 @@ function LoginForm() {
         />
 
         <div className="relative z-10 w-full max-w-md">
-          {/* Logo / Name */}
+          {/* Header */}
           <div className="mb-8 text-center">
             {brand?.logo_url ? (
               <img src={brand.logo_url} alt={displayName} className="mx-auto mb-4 h-14 w-auto object-contain" />
@@ -137,8 +131,7 @@ function LoginForm() {
                 <input
                   id="email" type="email" placeholder="vas@email.cz" value={email}
                   onChange={(e) => setEmail(e.target.value)} required
-                  className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:ring-2"
-                  style={{ focusBorderColor: `${accent}50`, focusRingColor: `${accent}20` } as any}
+                  className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div>
@@ -146,7 +139,7 @@ function LoginForm() {
                 <input
                   id="password" type="password" value={password}
                   onChange={(e) => setPassword(e.target.value)} required
-                  className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:ring-2"
+                  className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
@@ -175,7 +168,7 @@ function LoginForm() {
             <div className="h-px flex-1 bg-white/10" />
           </div>
 
-          <div className="mt-4 space-y-2 text-center text-sm">
+          <div className="mt-4 text-center text-sm">
             <p className="text-gray-500">
               Jste klient?{" "}
               <Link href="/portal/login" className="font-medium transition-colors" style={{ color: accent }}>
@@ -193,7 +186,7 @@ function LoginForm() {
     );
   }
 
-  // Default login (finatiq.cz)
+  // ── Default Finatiq login ──
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900">Přihlášení pro poradce</h2>
