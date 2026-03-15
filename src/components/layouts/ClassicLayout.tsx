@@ -28,7 +28,11 @@ interface ClassicLayoutProps {
   appName: string;
   primaryColor: string;
   sidebarBg: string;
+  sidebarText?: string;
+  sidebarActiveText?: string;
   accentColor: string;
+  mainBg?: string;
+  mainText?: string;
   onLogout: () => void;
   bottomContent?: React.ReactNode;
   logoSize?: number;
@@ -38,7 +42,6 @@ interface ClassicLayoutProps {
 
 /* Group nav items into sections */
 const SECTION_MAP: Record<string, string> = {
-  // Advisor nav
   "Přehled": "PŘEHLED",
   "Obchodní příležitosti": "PŘEHLED",
   "Klienti": "PŘEHLED",
@@ -54,7 +57,6 @@ const SECTION_MAP: Record<string, string> = {
   "Import klientů": "NÁSTROJE",
   "Kalendář": "NÁSTROJE",
   "Nastavení": "NASTAVENÍ",
-  // Client portal nav
   "Finanční přehled": "PŘEHLED",
   "Smlouvy": "FINANCE",
   "Platby": "FINANCE",
@@ -91,6 +93,14 @@ function groupNavItems(items: LayoutNavItem[]) {
   return sectionOrder.map((label) => ({ label, items: sectionMap.get(label)! }));
 }
 
+/* Determine if a background color is dark */
+function isDark(hex: string): boolean {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+}
+
 export function ClassicLayout({
   children,
   navItems,
@@ -98,16 +108,29 @@ export function ClassicLayout({
   appName,
   primaryColor,
   sidebarBg,
+  sidebarText,
+  sidebarActiveText,
   accentColor,
+  mainBg,
+  mainText,
   onLogout,
   bottomContent,
   logoSize = 40,
   logoShape = "original",
   logoPosition = "sidebar_top",
 }: ClassicLayoutProps) {
-  console.log("[ClassicLayout] primaryColor:", primaryColor, "accentColor:", accentColor);
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const dark = isDark(sidebarBg);
+  const textColor = sidebarText || (dark ? "#9CA3AF" : "#374151");
+  const activeTextColor = sidebarActiveText || (dark ? "#F9FAFB" : "#111827");
+  const borderColor = dark ? "rgba(255,255,255,0.08)" : "#F3F4F6";
+  const hoverBg = dark ? "rgba(255,255,255,0.05)" : "#F9FAFB";
+  const sectionLabelColor = dark ? "rgba(255,255,255,0.3)" : "#9CA3AF";
+  const logoutColor = dark ? "rgba(255,255,255,0.4)" : "#6B7280";
+  const logoutHoverBg = dark ? "rgba(255,255,255,0.05)" : "#F9FAFB";
+  const contentBg = mainBg || "var(--color-background, #f8fafc)";
 
   const logoStyle: React.CSSProperties = {
     height: `${Math.min(logoSize, 48)}px`,
@@ -121,7 +144,7 @@ export function ClassicLayout({
     return logoUrl ? (
       <img src={logoUrl} alt={appName} style={style} />
     ) : (
-      <span className="text-xl font-bold text-gray-900">{appName}</span>
+      <span className="text-xl font-bold" style={{ color: dark ? "#fff" : "#111827" }}>{appName}</span>
     );
   }
 
@@ -135,27 +158,43 @@ export function ClassicLayout({
   function renderNav(closeSidebar?: () => void) {
     return sections.map((section) => (
       <div key={section.label}>
-        <p className="px-6 mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+        <p
+          className="px-6 mt-6 mb-2 text-xs font-semibold uppercase tracking-wider"
+          style={{ color: sectionLabelColor }}
+        >
           {section.label}
         </p>
         <div className="space-y-0.5">
           {section.items.map((item) => {
             const active = isActive(item.href, basePath);
-            if (active) console.log("[ClassicLayout] ACTIVE item:", item.label, item.href, "pathname:", pathname, "primaryColor:", primaryColor);
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={closeSidebar}
-                className={cn(
-                  "flex items-center gap-3 mx-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                className="flex items-center gap-3 mx-3 px-3 py-2 rounded-lg text-sm transition-colors duration-150"
+                style={
                   active
-                    ? "font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                )}
-                style={active ? { backgroundColor: hexToRgba(primaryColor, 0.15), color: primaryColor, borderLeft: `3px solid ${primaryColor}` } : undefined}
+                    ? {
+                        backgroundColor: hexToRgba(primaryColor, dark ? 0.2 : 0.1),
+                        color: dark ? activeTextColor : primaryColor,
+                        borderLeft: `3px solid ${primaryColor}`,
+                        fontWeight: 500,
+                      }
+                    : {
+                        color: textColor,
+                      }
+                }
+                onMouseEnter={(e) => {
+                  if (!active) e.currentTarget.style.backgroundColor = hoverBg;
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.backgroundColor = "transparent";
+                }}
               >
-                <span style={active ? { color: primaryColor } : { color: "#9ca3af" }}><item.icon className="h-5 w-5" /></span>
+                <span style={{ color: active ? (dark ? activeTextColor : primaryColor) : textColor }}>
+                  <item.icon className="h-5 w-5" />
+                </span>
                 {item.label}
                 {item.badge !== undefined && item.badge > 0 && (
                   <span
@@ -176,8 +215,11 @@ export function ClassicLayout({
   return (
     <div className="flex h-screen">
       {/* Mobile top bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b border-gray-100 bg-white px-4 md:hidden">
-        <button onClick={() => setSidebarOpen(true)} className="text-gray-700">
+      <div
+        className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 px-4 md:hidden"
+        style={{ backgroundColor: sidebarBg, borderBottom: `1px solid ${borderColor}` }}
+      >
+        <button onClick={() => setSidebarOpen(true)} style={{ color: textColor }} className="cursor-pointer">
           <Menu className="h-6 w-6" />
         </button>
         {renderLogo(32)}
@@ -187,23 +229,32 @@ export function ClassicLayout({
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/30" onClick={() => setSidebarOpen(false)} />
-          <aside className="relative flex h-full w-[260px] flex-col bg-white border-r border-gray-100">
-            <div className="flex h-16 items-center justify-between px-6 border-b border-gray-100">
+          <aside className="relative flex h-full w-[260px] flex-col" style={{ backgroundColor: sidebarBg }}>
+            <div
+              className="flex h-16 items-center justify-between px-6"
+              style={{ borderBottom: `1px solid ${borderColor}` }}
+            >
               {renderLogo(40)}
-              <button onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="cursor-pointer transition-opacity duration-150 hover:opacity-70"
+                style={{ color: textColor }}
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
             <nav className="flex-1 overflow-y-auto py-2">
               {renderNav(() => setSidebarOpen(false))}
             </nav>
-            {bottomContent && (
-              <div className="px-3 pb-2">
-                {bottomContent}
-              </div>
-            )}
-            <div className="border-t border-gray-100 p-3">
-              <button onClick={onLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700">
+            {bottomContent && <div className="px-3 pb-2">{bottomContent}</div>}
+            <div style={{ borderTop: `1px solid ${borderColor}` }} className="p-3">
+              <button
+                onClick={onLogout}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer"
+                style={{ color: logoutColor }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = logoutHoverBg; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+              >
                 <LogOut className="h-5 w-5" />Odhlásit se
               </button>
             </div>
@@ -212,9 +263,12 @@ export function ClassicLayout({
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-[260px] shrink-0 flex-col bg-white border-r border-gray-100">
+      <aside
+        className="hidden md:flex w-[260px] shrink-0 flex-col"
+        style={{ backgroundColor: sidebarBg, borderRight: `1px solid ${borderColor}` }}
+      >
         {logoPosition === "sidebar_top" && (
-          <div className="flex h-16 items-center px-6 border-b border-gray-100">
+          <div className="flex h-16 items-center px-6" style={{ borderBottom: `1px solid ${borderColor}` }}>
             {renderLogo()}
           </div>
         )}
@@ -227,23 +281,25 @@ export function ClassicLayout({
           {renderNav()}
         </nav>
         {logoPosition === "sidebar_center" && (
-          <div className="flex items-center justify-center px-6 py-4 border-t border-gray-100">
+          <div className="flex items-center justify-center px-6 py-4" style={{ borderTop: `1px solid ${borderColor}` }}>
             {renderLogo()}
           </div>
         )}
-        {bottomContent && (
-          <div className="px-3 pb-2">
-            {bottomContent}
-          </div>
-        )}
-        <div className="border-t border-gray-100 p-3">
-          <button onClick={onLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700">
+        {bottomContent && <div className="px-3 pb-2">{bottomContent}</div>}
+        <div style={{ borderTop: `1px solid ${borderColor}` }} className="p-3">
+          <button
+            onClick={onLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer"
+            style={{ color: logoutColor }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = logoutHoverBg; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          >
             <LogOut className="h-5 w-5" />Odhlásit se
           </button>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto pt-14 md:pt-0" style={{ backgroundColor: 'var(--color-background, #f8fafc)' }}>
+      <main className="flex-1 overflow-auto pt-14 md:pt-0" style={{ backgroundColor: contentBg }}>
         {children}
       </main>
     </div>

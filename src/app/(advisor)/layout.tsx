@@ -123,14 +123,20 @@ function AdvisorLayoutInner({ children }: { children: React.ReactNode }) {
     </div>
   );
 
+  const tpl = theme.template;
+
   const layoutProps = {
     navItems,
     logoUrl: theme.logoUrl,
     logoIconUrl: theme.logoIconUrl,
     appName: theme.appName,
     primaryColor: theme.primary,
-    sidebarBg: "#0F172A",
+    sidebarBg: tpl.sidebarBg,
+    sidebarText: tpl.sidebarText,
+    sidebarActiveText: tpl.sidebarActiveText,
     accentColor: theme.accent,
+    mainBg: tpl.mainBg,
+    mainText: tpl.mainText,
     onLogout: handleLogout,
     bottomContent,
     logoSize: theme.logoSize,

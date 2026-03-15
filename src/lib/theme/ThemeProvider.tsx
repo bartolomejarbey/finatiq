@@ -3,6 +3,66 @@
 import { useEffect, useState, useCallback, useRef, createContext, useContext } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+/* ── Template definitions ── */
+
+export interface TemplateConfig {
+  id: string;
+  sidebarBg: string;
+  sidebarText: string;
+  sidebarActiveText: string;
+  mainBg: string;
+  mainText: string;
+  cardBg: string;
+  cardBorder: string;
+}
+
+export const TEMPLATES: Record<string, TemplateConfig> = {
+  clean: {
+    id: "clean",
+    sidebarBg: "#FFFFFF",
+    sidebarText: "#374151",
+    sidebarActiveText: "#111827",
+    mainBg: "#F8FAFC",
+    mainText: "#0F172A",
+    cardBg: "#FFFFFF",
+    cardBorder: "#E2E8F0",
+  },
+  luxe: {
+    id: "luxe",
+    sidebarBg: "#1C1917",
+    sidebarText: "#A8A29E",
+    sidebarActiveText: "#FAFAF9",
+    mainBg: "#FFFBF5",
+    mainText: "#1C1917",
+    cardBg: "#FFFFFF",
+    cardBorder: "#D6D3D1",
+  },
+  fintech: {
+    id: "fintech",
+    sidebarBg: "#020617",
+    sidebarText: "#64748B",
+    sidebarActiveText: "#F8FAFC",
+    mainBg: "#0F172A",
+    mainText: "#F8FAFC",
+    cardBg: "#1E293B",
+    cardBorder: "#1E293B",
+  },
+  corporate: {
+    id: "corporate",
+    sidebarBg: "#111827",
+    sidebarText: "#9CA3AF",
+    sidebarActiveText: "#F9FAFB",
+    mainBg: "#F9FAFB",
+    mainText: "#111827",
+    cardBg: "#FFFFFF",
+    cardBorder: "#E5E7EB",
+  },
+};
+
+const DEFAULT_TEMPLATE = TEMPLATES.clean;
+
+/* ── Theme values ── */
+
 export interface ThemeValues {
   primary: string;
   secondary: string;
@@ -25,6 +85,7 @@ export interface ThemeValues {
   logoSize: number;
   logoShape: "original" | "square" | "circle";
   logoPosition: "sidebar_top" | "sidebar_center" | "above_nav";
+  template: TemplateConfig;
 }
 
 const defaultTheme: ThemeValues = {
@@ -49,6 +110,7 @@ const defaultTheme: ThemeValues = {
   logoSize: 40,
   logoShape: "original",
   logoPosition: "sidebar_top",
+  template: DEFAULT_TEMPLATE,
 };
 
 interface ThemeContextValue {
@@ -83,10 +145,14 @@ function applyThemeToDOM(t: ThemeValues) {
   root.style.setProperty("--color-primary", t.primary);
   root.style.setProperty("--color-secondary", t.secondary);
   root.style.setProperty("--color-accent", t.accent);
-  root.style.setProperty("--color-background", t.background);
+  root.style.setProperty("--color-background", t.template.mainBg);
   root.style.setProperty("--font-family", t.font + ", sans-serif");
   root.style.setProperty("--border-radius", BORDER_RADIUS_MAP[t.borderRadius]);
   root.style.setProperty("--font-size-base", FONT_SIZE_MAP[t.fontSize]);
+  root.style.setProperty("--sidebar-bg", t.template.sidebarBg);
+  root.style.setProperty("--sidebar-text", t.template.sidebarText);
+  root.style.setProperty("--card-bg", t.template.cardBg);
+  root.style.setProperty("--card-border", t.template.cardBorder);
 
   // Load Google Font
   const fontLink = document.getElementById("theme-font") as HTMLLinkElement | null;
@@ -101,19 +167,20 @@ function applyThemeToDOM(t: ThemeValues) {
     document.head.appendChild(link);
   }
 
-  // TODO: Dark mode bude implementován později
-  // Vždy light mode — odstraň dark class pokud existuje
   root.classList.remove("dark");
 }
 
-const ADVISOR_BRAND_COLUMNS = "company_name, app_name, logo_url, logo_icon_url, brand_primary, brand_secondary, brand_accent_color, brand_background, brand_font, brand_font_size, brand_border_radius, brand_mode, client_layout, advisor_layout, custom_welcome_text, login_slug, custom_login_title, custom_login_subtitle, logo_size, logo_shape, logo_position";
+const ADVISOR_BRAND_COLUMNS = "company_name, app_name, logo_url, logo_icon_url, brand_primary, brand_secondary, brand_accent_color, brand_background, brand_font, brand_font_size, brand_border_radius, brand_mode, client_layout, advisor_layout, custom_welcome_text, login_slug, custom_login_title, custom_login_subtitle, logo_size, logo_shape, logo_position, brand_template";
 
 function advisorToTheme(advisor: Record<string, unknown>): ThemeValues {
+  const templateId = (advisor.brand_template as string) || "clean";
+  const template = TEMPLATES[templateId] || DEFAULT_TEMPLATE;
+
   return {
     primary: (advisor.brand_primary as string) || defaultTheme.primary,
     secondary: (advisor.brand_secondary as string) || defaultTheme.secondary,
     accent: (advisor.brand_accent_color as string) || defaultTheme.accent,
-    background: (advisor.brand_background as string) || defaultTheme.background,
+    background: template.mainBg,
     font: (advisor.brand_font as string) || defaultTheme.font,
     fontSize: (advisor.brand_font_size as ThemeValues["fontSize"]) || defaultTheme.fontSize,
     borderRadius: (advisor.brand_border_radius as ThemeValues["borderRadius"]) || defaultTheme.borderRadius,
@@ -131,6 +198,7 @@ function advisorToTheme(advisor: Record<string, unknown>): ThemeValues {
     logoSize: (advisor.logo_size as number) || 40,
     logoShape: (advisor.logo_shape as ThemeValues["logoShape"]) || "original",
     logoPosition: (advisor.logo_position as ThemeValues["logoPosition"]) || "sidebar_top",
+    template,
   };
 }
 
@@ -139,11 +207,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const advisorIdRef = useRef<string | null>(null);
 
-  const loadTheme = useCallback(async (showLoading = true) => {
+  const loadTheme = useCallback(async () => {
     try {
       const supabase = createClient();
 
-      // If we already know advisorId, skip the lookup
       let advisorId = advisorIdRef.current;
 
       if (!advisorId) {
@@ -181,11 +248,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         .select(ADVISOR_BRAND_COLUMNS)
         .eq("id", advisorId)
         .single();
-      if (!advisor) { console.log("[Theme] No advisor found for id:", advisorId); setIsLoading(false); return; }
+      if (!advisor) { setIsLoading(false); return; }
 
-      console.log("[Theme] DB read — brand_primary:", advisor.brand_primary, "accent:", advisor.brand_accent_color);
       const t = advisorToTheme(advisor);
-      console.log("[Theme] Applied theme — primary:", t.primary, "accent:", t.accent);
       setTheme(t);
       applyThemeToDOM(t);
     } finally {
@@ -202,7 +267,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [loadTheme]);
 
   const refreshTheme = useCallback(async () => {
-    await loadTheme(false);
+    await loadTheme();
   }, [loadTheme]);
 
   return (

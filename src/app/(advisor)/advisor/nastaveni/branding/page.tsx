@@ -560,40 +560,21 @@ export default function BrandingPage() {
       custom_login_subtitle: state.custom_login_subtitle || null,
     };
 
-    console.log("[Branding] Saving to advisorId:", advisorId);
-    console.log("[Branding] Payload brand_primary:", payload.brand_primary, "accent:", payload.brand_accent_color);
-
     try {
       const supabase = createClient();
-      const res = await supabase
+      const { error } = await supabase
         .from("advisors")
         .update(payload)
-        .eq("id", advisorId)
-        .select();
+        .eq("id", advisorId);
 
-      console.log("[Branding] Response status:", res.status);
-      console.log("[Branding] Response error:", res.error);
-      console.log("[Branding] Saved row brand_primary:", res.data?.[0]?.brand_primary, "accent:", res.data?.[0]?.brand_accent_color);
-
-      if (res.error) {
-        console.error("[Branding] SAVE ERROR:", res.error);
-        toast.error("Chyba: " + res.error.message);
+      if (error) {
+        toast.error("Chyba: " + error.message);
         return;
       }
 
-      if (!res.data || res.data.length === 0) {
-        console.warn("[Branding] Update returned 0 rows — possible RLS issue");
-        toast.error("Uložení selhalo — zkontrolujte oprávnění (RLS).");
-        return;
-      }
-
-      console.log("[Branding] Save successful, reloading page...");
-      console.log("[Branding] Saved row brand_primary:", res.data?.[0]?.brand_primary, "accent:", res.data?.[0]?.brand_accent_color);
+      await refreshTheme();
       toast.success("Branding uložen.");
-      // Force full reload so ThemeProvider re-reads from DB
-      setTimeout(() => window.location.reload(), 500);
-    } catch (err) {
-      console.error("[Branding] EXCEPTION:", err);
+    } catch {
       toast.error("Nepodařilo se uložit.");
     } finally {
       setSaving(false);
