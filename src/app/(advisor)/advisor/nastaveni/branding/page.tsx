@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useRefreshTheme } from "@/lib/theme/ThemeProvider";
 import { toast } from "sonner";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
@@ -497,6 +498,7 @@ function LivePreview({ state }: { state: BrandingState }) {
 /* ── Main Page ── */
 
 export default function BrandingPage() {
+  const refreshTheme = useRefreshTheme();
   const [state, setState] = useState<BrandingState>(DEFAULTS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -563,11 +565,8 @@ export default function BrandingPage() {
 
       if (error) { toast.error("Chyba: " + error.message); return; }
 
-      const root = document.documentElement;
-      root.style.setProperty("--color-primary", state.brand_primary);
-      root.style.setProperty("--color-secondary", state.brand_secondary);
-      root.style.setProperty("--color-accent", state.brand_accent_color);
-      root.style.setProperty("--font-family", state.brand_font + ", sans-serif");
+      // Reload theme in context + DOM so sidebar/layout updates immediately
+      await refreshTheme();
       toast.success("Branding uložen.");
     } catch { toast.error("Nepodařilo se uložit."); }
     finally { setSaving(false); }

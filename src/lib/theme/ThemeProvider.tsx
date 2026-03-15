@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, createContext, useContext } from "react";
+import { useEffect, useState, useCallback, useRef, createContext, useContext } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export interface ThemeValues {
@@ -54,9 +54,14 @@ const defaultTheme: ThemeValues = {
 interface ThemeContextValue {
   theme: ThemeValues;
   isLoading: boolean;
+  refreshTheme: () => Promise<void>;
 }
 
-const ThemeContext = createContext<ThemeContextValue>({ theme: defaultTheme, isLoading: true });
+const ThemeContext = createContext<ThemeContextValue>({
+  theme: defaultTheme,
+  isLoading: true,
+  refreshTheme: async () => {},
+});
 
 export function useTheme() {
   return useContext(ThemeContext).theme;
@@ -64,6 +69,10 @@ export function useTheme() {
 
 export function useThemeLoading() {
   return useContext(ThemeContext).isLoading;
+}
+
+export function useRefreshTheme() {
+  return useContext(ThemeContext).refreshTheme;
 }
 
 const BORDER_RADIUS_MAP = { sharp: "4px", medium: "8px", rounded: "16px" };
@@ -97,18 +106,47 @@ function applyThemeToDOM(t: ThemeValues) {
   root.classList.remove("dark");
 }
 
+const ADVISOR_BRAND_COLUMNS = "company_name, app_name, logo_url, logo_icon_url, brand_primary, brand_secondary, brand_accent_color, brand_background, brand_font, brand_font_size, brand_border_radius, brand_mode, client_layout, advisor_layout, custom_welcome_text, login_slug, custom_login_title, custom_login_subtitle, logo_size, logo_shape, logo_position";
+
+function advisorToTheme(advisor: Record<string, unknown>): ThemeValues {
+  return {
+    primary: (advisor.brand_primary as string) || defaultTheme.primary,
+    secondary: (advisor.brand_secondary as string) || defaultTheme.secondary,
+    accent: (advisor.brand_accent_color as string) || defaultTheme.accent,
+    background: (advisor.brand_background as string) || defaultTheme.background,
+    font: (advisor.brand_font as string) || defaultTheme.font,
+    fontSize: (advisor.brand_font_size as ThemeValues["fontSize"]) || defaultTheme.fontSize,
+    borderRadius: (advisor.brand_border_radius as ThemeValues["borderRadius"]) || defaultTheme.borderRadius,
+    mode: "light",
+    logoUrl: (advisor.logo_url as string) || null,
+    logoIconUrl: (advisor.logo_icon_url as string) || null,
+    companyName: (advisor.company_name as string) || "FinAdvisor",
+    appName: (advisor.app_name as string) || (advisor.company_name as string) || "FinAdvisor",
+    clientLayout: (advisor.client_layout as ThemeValues["clientLayout"]) || defaultTheme.clientLayout,
+    advisorLayout: (advisor.advisor_layout as ThemeValues["advisorLayout"]) || defaultTheme.advisorLayout,
+    customWelcomeText: (advisor.custom_welcome_text as string) || null,
+    loginSlug: (advisor.login_slug as string) || null,
+    customLoginTitle: (advisor.custom_login_title as string) || null,
+    customLoginSubtitle: (advisor.custom_login_subtitle as string) || null,
+    logoSize: (advisor.logo_size as number) || 40,
+    logoShape: (advisor.logo_shape as ThemeValues["logoShape"]) || "original",
+    logoPosition: (advisor.logo_position as ThemeValues["logoPosition"]) || "sidebar_top",
+  };
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeValues>(defaultTheme);
   const [isLoading, setIsLoading] = useState(true);
+  const advisorIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    // Immediately ensure light mode is the default — remove any stale "dark" class
-    document.documentElement.classList.remove("dark");
+  const loadTheme = useCallback(async (showLoading = true) => {
+    try {
+      const supabase = createClient();
 
-    async function loadTheme() {
-      try {
-        const supabase = createClient();
+      // If we already know advisorId, skip the lookup
+      let advisorId = advisorIdRef.current;
 
+      if (!advisorId) {
         const userResult = await Promise.race([
           supabase.auth.getUser(),
           new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
@@ -117,14 +155,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const user = userResult.data.user;
         if (!user) { setIsLoading(false); return; }
 
-        // Try client first, then advisor
         const { data: client } = await supabase
           .from("clients")
           .select("advisor_id")
           .eq("user_id", user.id)
           .single();
 
-        let advisorId: string | null = null;
         if (client) {
           advisorId = client.advisor_id;
         } else {
@@ -137,52 +173,38 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (!advisorId) { setIsLoading(false); return; }
-
-        const { data: advisor } = await supabase
-          .from("advisors")
-          .select("company_name, app_name, logo_url, logo_icon_url, brand_primary, brand_secondary, brand_accent_color, brand_background, brand_font, brand_font_size, brand_border_radius, brand_mode, client_layout, advisor_layout, custom_welcome_text, login_slug, custom_login_title, custom_login_subtitle, logo_size, logo_shape, logo_position")
-          .eq("id", advisorId)
-          .single();
-        if (!advisor) { setIsLoading(false); return; }
-
-        const t: ThemeValues = {
-          primary: advisor.brand_primary || defaultTheme.primary,
-          secondary: advisor.brand_secondary || defaultTheme.secondary,
-          accent: advisor.brand_accent_color || defaultTheme.accent,
-          background: advisor.brand_background || defaultTheme.background,
-          font: advisor.brand_font || defaultTheme.font,
-          fontSize: (advisor.brand_font_size as ThemeValues["fontSize"]) || defaultTheme.fontSize,
-          borderRadius: (advisor.brand_border_radius as ThemeValues["borderRadius"]) || defaultTheme.borderRadius,
-          mode: "light", // TODO: dark mode bude implementován později
-          logoUrl: advisor.logo_url || null,
-          logoIconUrl: advisor.logo_icon_url || null,
-          companyName: advisor.company_name || "FinAdvisor",
-          appName: advisor.app_name || advisor.company_name || "FinAdvisor",
-          clientLayout: (advisor.client_layout as ThemeValues["clientLayout"]) || defaultTheme.clientLayout,
-          advisorLayout: (advisor.advisor_layout as ThemeValues["advisorLayout"]) || defaultTheme.advisorLayout,
-          customWelcomeText: advisor.custom_welcome_text || null,
-          loginSlug: advisor.login_slug || null,
-          customLoginTitle: advisor.custom_login_title || null,
-          customLoginSubtitle: advisor.custom_login_subtitle || null,
-          logoSize: advisor.logo_size || 40,
-          logoShape: (advisor.logo_shape as ThemeValues["logoShape"]) || "original",
-          logoPosition: (advisor.logo_position as ThemeValues["logoPosition"]) || "sidebar_top",
-        };
-        setTheme(t);
-        applyThemeToDOM(t);
-      } finally {
-        setIsLoading(false);
+        advisorIdRef.current = advisorId;
       }
-    }
-    loadTheme();
 
-    // Safety timeout — never show loading spinner for more than 3 seconds
-    const safetyTimeout = setTimeout(() => setIsLoading(false), 3000);
-    return () => clearTimeout(safetyTimeout);
+      const { data: advisor } = await supabase
+        .from("advisors")
+        .select(ADVISOR_BRAND_COLUMNS)
+        .eq("id", advisorId)
+        .single();
+      if (!advisor) { setIsLoading(false); return; }
+
+      const t = advisorToTheme(advisor);
+      setTheme(t);
+      applyThemeToDOM(t);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    loadTheme();
+
+    const safetyTimeout = setTimeout(() => setIsLoading(false), 3000);
+    return () => clearTimeout(safetyTimeout);
+  }, [loadTheme]);
+
+  const refreshTheme = useCallback(async () => {
+    await loadTheme(false);
+  }, [loadTheme]);
+
   return (
-    <ThemeContext.Provider value={{ theme, isLoading }}>
+    <ThemeContext.Provider value={{ theme, isLoading, refreshTheme }}>
       {children}
     </ThemeContext.Provider>
   );
