@@ -73,7 +73,7 @@ export default function PlansPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const { data } = await supabase.from("pricing_plans").select("id,name,tier,max_clients,price_monthly,features,is_active,description,perks,sort_order,badge,trial_days").order("price_monthly");
+      const { data } = await supabase.from("subscription_plans").select("id,name,tier,max_clients,price_monthly,features,is_active,description,perks,sort_order,badge,trial_days").order("price_monthly");
       setPlans(data || []);
       setLoading(false);
     }
@@ -124,20 +124,20 @@ export default function PlansPage() {
     };
 
     if (editPlan) {
-      await supabase.from("pricing_plans").update(payload).eq("id", editPlan.id);
+      await supabase.from("subscription_plans").update(payload).eq("id", editPlan.id);
     } else {
-      await supabase.from("pricing_plans").insert(payload);
+      await supabase.from("subscription_plans").insert(payload);
     }
 
     setSaving(false);
     setDialogOpen(false);
     toast.success(editPlan ? "Plán aktualizován." : "Plán vytvořen.");
-    const { data } = await supabase.from("pricing_plans").select("id,name,tier,max_clients,price_monthly,features,is_active,description,perks,sort_order,badge,trial_days").order("price_monthly");
+    const { data } = await supabase.from("subscription_plans").select("id,name,tier,max_clients,price_monthly,features,is_active,description,perks,sort_order,badge,trial_days").order("price_monthly");
     setPlans(data || []);
   }
 
   async function handleDelete(id: string) {
-    await supabase.from("pricing_plans").delete().eq("id", id);
+    await supabase.from("subscription_plans").delete().eq("id", id);
     setPlans((prev) => prev.filter((p) => p.id !== id));
     toast.success("Plán smazán.");
   }

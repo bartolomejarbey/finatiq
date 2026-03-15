@@ -9,7 +9,7 @@ const supabase = createClient(
 export async function GET() {
   try {
     const { data, error } = await supabase
-      .from("pricing_plans")
+      .from("subscription_plans")
       .select("id, name, tier, price_monthly, max_clients, features, is_active, description, perks, sort_order, badge, trial_days")
       .eq("is_active", true)
       .order("sort_order", { ascending: true });

@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   // Get plan prices
   const planIds = [...new Set(advisors.map((a) => a.selected_plan_id).filter(Boolean))];
   const { data: plans } = await supabase
-    .from("pricing_plans")
+    .from("subscription_plans")
     .select("id, name, price_monthly")
     .in("id", planIds.length > 0 ? planIds : ["_none_"]);
   const planMap = Object.fromEntries((plans || []).map((p) => [p.id, p]));

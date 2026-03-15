@@ -56,7 +56,7 @@ export default function SuperadminDashboard() {
         supabase.from("advisors").select("id, company_name, created_at, subscription_tier, subscription_status, is_active, email"),
         supabase.from("clients").select("id, advisor_id"),
         supabase.from("deals").select("id", { count: "exact", head: true }),
-        supabase.from("pricing_plans").select("tier, price_monthly"),
+        supabase.from("subscription_plans").select("tier, price_monthly"),
         supabase
           .from("tickets")
           .select("id, subject, status, created_at, advisors(company_name)")
