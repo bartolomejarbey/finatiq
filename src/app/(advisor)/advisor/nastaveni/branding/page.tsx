@@ -541,35 +541,61 @@ export default function BrandingPage() {
   async function handleSave() {
     if (!advisorId) { toast.error("Poradce nebyl načten."); return; }
     setSaving(true);
+
+    const payload = {
+      app_name: state.app_name,
+      logo_url: state.logo_url || null,
+      logo_icon_url: state.logo_icon_url || null,
+      logo_size: state.logo_size,
+      logo_shape: state.logo_shape,
+      logo_position: state.logo_position,
+      login_slug: state.login_slug || null,
+      brand_primary: state.brand_primary,
+      brand_secondary: state.brand_secondary,
+      brand_accent_color: state.brand_accent_color,
+      brand_background: state.brand_background,
+      brand_font: state.brand_font,
+      brand_template: state.brand_template,
+      custom_login_title: state.custom_login_title || null,
+      custom_login_subtitle: state.custom_login_subtitle || null,
+    };
+
+    console.log("[Branding] Saving to advisorId:", advisorId);
+    console.log("[Branding] Payload:", payload);
+
     try {
       const supabase = createClient();
-      const { error } = await supabase.from("advisors").update({
-        app_name: state.app_name,
-        logo_url: state.logo_url || null,
-        logo_icon_url: state.logo_icon_url || null,
-        logo_size: state.logo_size,
-        logo_shape: state.logo_shape,
-        logo_position: state.logo_position,
-        login_slug: state.login_slug || null,
-        brand_primary: state.brand_primary,
-        brand_secondary: state.brand_secondary,
-        brand_color_primary: state.brand_primary,
-        brand_color_secondary: state.brand_secondary,
-        brand_accent_color: state.brand_accent_color,
-        brand_background: state.brand_background,
-        brand_font: state.brand_font,
-        brand_template: state.brand_template,
-        custom_login_title: state.custom_login_title || null,
-        custom_login_subtitle: state.custom_login_subtitle || null,
-      }).eq("id", advisorId);
+      const res = await supabase
+        .from("advisors")
+        .update(payload)
+        .eq("id", advisorId)
+        .select();
 
-      if (error) { toast.error("Chyba: " + error.message); return; }
+      console.log("[Branding] Response status:", res.status);
+      console.log("[Branding] Response error:", res.error);
+      console.log("[Branding] Response data:", res.data);
 
-      // Reload theme in context + DOM so sidebar/layout updates immediately
+      if (res.error) {
+        console.error("[Branding] SAVE ERROR:", res.error);
+        toast.error("Chyba: " + res.error.message);
+        return;
+      }
+
+      if (!res.data || res.data.length === 0) {
+        console.warn("[Branding] Update returned 0 rows — possible RLS issue");
+        toast.error("Uložení selhalo — zkontrolujte oprávnění (RLS).");
+        return;
+      }
+
+      console.log("[Branding] Save successful, refreshing theme...");
       await refreshTheme();
       toast.success("Branding uložen.");
-    } catch { toast.error("Nepodařilo se uložit."); }
-    finally { setSaving(false); }
+    } catch (err) {
+      console.error("[Branding] EXCEPTION:", err);
+      toast.error("Nepodařilo se uložit.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function update<K extends keyof BrandingState>(key: K, value: BrandingState[K]) {
