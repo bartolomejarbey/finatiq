@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { LogOut, Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 function hexToRgba(hex: string, alpha: number) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -112,7 +111,6 @@ export function ClassicLayout({
   sidebarActiveText,
   accentColor,
   mainBg,
-  mainText,
   onLogout,
   bottomContent,
   logoSize = 40,
@@ -125,11 +123,11 @@ export function ClassicLayout({
   const dark = isDark(sidebarBg);
   const textColor = sidebarText || (dark ? "#9CA3AF" : "#374151");
   const activeTextColor = sidebarActiveText || (dark ? "#F9FAFB" : "#111827");
-  const borderColor = dark ? "rgba(255,255,255,0.08)" : "#F3F4F6";
-  const hoverBg = dark ? "rgba(255,255,255,0.05)" : "#F9FAFB";
-  const sectionLabelColor = dark ? "rgba(255,255,255,0.3)" : "#9CA3AF";
-  const logoutColor = dark ? "rgba(255,255,255,0.4)" : "#6B7280";
-  const logoutHoverBg = dark ? "rgba(255,255,255,0.05)" : "#F9FAFB";
+  const borderColor = dark ? "rgba(255,255,255,0.08)" : "var(--card-border, #E2E8F0)";
+  const hoverBg = dark ? "rgba(255,255,255,0.05)" : "var(--table-hover, #F9FAFB)";
+  const sectionLabelColor = dark ? "rgba(255,255,255,0.3)" : "var(--card-text-dim, #9CA3AF)";
+  const logoutColor = dark ? "rgba(255,255,255,0.4)" : "var(--card-text-muted, #6B7280)";
+  const logoutHoverBg = dark ? "rgba(255,255,255,0.05)" : "var(--table-hover, #F9FAFB)";
   const contentBg = mainBg || "var(--color-background, #f8fafc)";
 
   const logoStyle: React.CSSProperties = {
@@ -144,7 +142,7 @@ export function ClassicLayout({
     return logoUrl ? (
       <img src={logoUrl} alt={appName} style={style} />
     ) : (
-      <span className="text-xl font-bold" style={{ color: dark ? "#fff" : "#111827" }}>{appName}</span>
+      <span className="text-xl font-bold" style={{ color: primaryColor }}>{appName}</span>
     );
   }
 
@@ -172,13 +170,12 @@ export function ClassicLayout({
                 key={item.href}
                 href={item.href}
                 onClick={closeSidebar}
-                className="flex items-center gap-3 mx-3 px-3 py-2 rounded-lg text-sm transition-colors duration-150"
+                className="flex items-center gap-3 mx-3 px-3 py-2.5 rounded-md text-sm transition-colors duration-150"
                 style={
                   active
                     ? {
                         backgroundColor: hexToRgba(primaryColor, dark ? 0.2 : 0.1),
                         color: dark ? activeTextColor : primaryColor,
-                        borderLeft: `3px solid ${primaryColor}`,
                         fontWeight: 500,
                       }
                     : {
@@ -247,10 +244,10 @@ export function ClassicLayout({
               {renderNav(() => setSidebarOpen(false))}
             </nav>
             {bottomContent && <div className="px-3 pb-2">{bottomContent}</div>}
-            <div style={{ borderTop: `1px solid ${borderColor}` }} className="p-3">
+            <div style={{ borderTop: `1px solid ${borderColor}` }} className="pt-4 mt-4 px-3 pb-3">
               <button
                 onClick={onLogout}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer"
                 style={{ color: logoutColor }}
                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = logoutHoverBg; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
@@ -286,10 +283,10 @@ export function ClassicLayout({
           </div>
         )}
         {bottomContent && <div className="px-3 pb-2">{bottomContent}</div>}
-        <div style={{ borderTop: `1px solid ${borderColor}` }} className="p-3">
+        <div style={{ borderTop: `1px solid ${borderColor}` }} className="pt-4 mt-4 px-3 pb-3">
           <button
             onClick={onLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer"
             style={{ color: logoutColor }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = logoutHoverBg; }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}

@@ -26,12 +26,12 @@ export function DealCard({ deal, tags, isDragging, stageColor, onClick, onDelete
   return (
     <div
       onClick={onClick}
-      className={`group relative cursor-grab rounded-xl border bg-[var(--card-bg)] p-4 mb-2 transition-all duration-150 ${
+      className={`group relative cursor-grab rounded-md border border-[var(--card-border)] bg-[var(--card-bg)] p-3 mb-2 transition-all duration-150 ${
         isDragging
           ? "shadow-xl opacity-90 rotate-1 scale-[1.03]"
-          : "border-[var(--card-border)]/50 shadow-sm hover:shadow-md hover:border-[var(--card-border)]"
+          : "shadow-sm hover:shadow-md"
       }`}
-      style={{ borderLeftWidth: 3, borderLeftColor: stageColor || "#e5e7eb" }}
+      style={{ borderLeftWidth: 3, borderLeftColor: stageColor || "var(--card-border)" }}
     >
       {/* Three dots menu */}
       <div className="absolute right-3 top-3 opacity-0 transition-opacity group-hover:opacity-100">
