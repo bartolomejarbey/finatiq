@@ -785,7 +785,7 @@ export default function AdvisorOnboardingPage() {
                             <div className="h-5 w-5 rounded-full border-2 border-white" style={{ backgroundColor: palette.accent }} />
                           </div>
                           <span className="text-[11px] text-[var(--card-text-muted,#6b7280)] font-medium truncate">{palette.name}</span>
-                          {isActive && <Check className="h-3 w-3 text-gray-900 absolute top-1 right-1" />}
+                          {isActive && <Check className="h-3 w-3 text-[var(--card-text)] absolute top-1 right-1" />}
                         </button>
                       );
                     })}

@@ -185,10 +185,20 @@ export default function CampaignsPage() {
       </div>
 
       {campaigns.length === 0 ? (
-        <div className="flex flex-col items-center py-16">
+        <div className="flex flex-col items-center py-16 max-w-md mx-auto text-center">
           <Megaphone className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
-          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné kampaně</p>
-          <p className="mt-1 text-sm text-[var(--card-text-dim)]">Propojte Meta Ads účet v Nastavení pro zobrazení kampaní</p>
+          <p className="text-lg font-medium text-[var(--card-text)]">Meta Ads na klíč</p>
+          <p className="mt-2 text-sm text-[var(--card-text-muted)] leading-relaxed">
+            Pro napojení Meta Ads kampaní kontaktujte náš tým. Nastavíme vám vše na klíč — kreativy, videa, cílení i optimalizaci.
+          </p>
+          <a
+            href="/kontakt?predmet=meta-ads"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-colors duration-150 cursor-pointer"
+            style={{ backgroundColor: "var(--color-primary, #2563EB)" }}
+          >
+            Domluvit konzultaci
+            <ArrowLeft className="h-4 w-4 rotate-180" />
+          </a>
         </div>
       ) : (
         <>

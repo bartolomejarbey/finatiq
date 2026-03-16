@@ -252,7 +252,7 @@ export default function PipelinePage() {
                 placeholder="Hledat deal..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 rounded-full border border-[var(--input-border)] bg-[var(--input-bg)] py-2 pl-10 pr-4 text-sm text-[var(--input-text)] shadow-sm outline-none transition placeholder:text-[var(--input-placeholder)] focus:border-gray-300 focus:ring-2 focus:ring-gray-100"
+                className="w-64 rounded-full border border-[var(--input-border)] bg-[var(--input-bg)] py-2 pl-10 pr-4 text-sm text-[var(--input-text)] shadow-sm outline-none transition placeholder:text-[var(--input-placeholder)] focus:border-[var(--input-border)] focus:ring-2 focus:ring-[var(--card-border)]"
               />
             </div>
             <Select value={sourceFilter} onValueChange={setSourceFilter}>

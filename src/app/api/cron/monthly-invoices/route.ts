@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
           period,
           dueDate.toLocaleDateString("cs-CZ")
         );
-        await sendEmail(advisor.email, tpl.subject, tpl.html).catch(() => {});
+        await sendEmail({ to: advisor.email, subject: tpl.subject, html: tpl.html }).catch(() => {});
       }
     }
   }

@@ -4,37 +4,27 @@ import * as templates from "@/lib/email/templates";
 
 const SUPERADMIN_EMAIL = "bartolomej@arbey.cz";
 
-const layout = (body: string) => {
-  return templates.automationNotification("", "", "").html.replace(
-    /<h1[^>]*>.*?<\/h1>/,
-    ""
-  );
-};
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
     if (body.type === "new_ticket") {
       const tpl = templates.newTicketAlert(body.subject, body.advisorName);
-      await sendEmail(SUPERADMIN_EMAIL, tpl.subject, tpl.html);
+      await sendEmail({ to: SUPERADMIN_EMAIL, subject: tpl.subject, html: tpl.html });
     } else if (body.type === "reply") {
       if (body.advisorEmail) {
         const tpl = templates.ticketReply(body.advisorName, body.message);
-        await sendEmail(body.advisorEmail, tpl.subject, tpl.html);
+        await sendEmail({ to: body.advisorEmail, subject: tpl.subject, html: tpl.html });
       }
     } else if (body.type === "dm") {
       if (body.advisorEmail) {
         const tpl = templates.newDirectMessage(body.advisorName, body.message);
-        await sendEmail(body.advisorEmail, tpl.subject, tpl.html);
+        await sendEmail({ to: body.advisorEmail, subject: tpl.subject, html: tpl.html });
       }
     } else if (body.type === "bulk") {
       if (body.email) {
-        const tpl = {
-          subject: body.subject,
-          html: templates.automationNotification(body.name, body.subject, body.body).html,
-        };
-        await sendEmail(body.email, tpl.subject, tpl.html);
+        const tpl = templates.automationNotification(body.name, body.subject, body.body);
+        await sendEmail({ to: body.email, subject: tpl.subject, html: tpl.html });
       }
     }
 

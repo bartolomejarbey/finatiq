@@ -307,6 +307,22 @@ export function featureTrialExpired(advisorName: string, featureName: string): {
   };
 }
 
+// --- Contact form template ---
+
+export function contactForm(name: string, email: string, type: string, message: string): { subject: string; html: string } {
+  return {
+    subject: `Nový dotaz z Finatiq: ${type}`,
+    html: layout("Nový dotaz z webu", [
+      p(`<strong>Jméno:</strong> ${name}`),
+      p(`<strong>Email:</strong> <a href="mailto:${email}" style="color:${BRAND.accent};">${email}</a>`),
+      p(`<strong>Typ dotazu:</strong> ${type}`),
+      p(`<strong>Zpráva:</strong>`),
+      p(message.replace(/\n/g, "<br>")),
+      muted("Tento email byl odeslán z kontaktního formuláře na finatiq.cz."),
+    ].join("")),
+  };
+}
+
 // --- Ticket/DM templates ---
 
 export function newTicketAlert(ticketSubject: string, advisorName: string): { subject: string; html: string } {
