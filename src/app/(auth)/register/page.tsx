@@ -30,6 +30,7 @@ const PLAN_ICONS: Record<string, typeof Shield> = {
 };
 
 const PLAN_SLUG_MAP: Record<string, string> = {
+  zdarma: "Zdarma",
   zaklad: "Základ",
   profesional: "Profesionál",
   expert: "Expert",
@@ -458,14 +459,16 @@ function RegisterForm() {
                           className="text-2xl font-bold text-white"
                           style={{ fontFamily: "Oswald, sans-serif" }}
                         >
-                          {plan.price_monthly}
+                          {plan.price_monthly === 0 ? "Zdarma" : plan.price_monthly}
                         </div>
+                        {plan.price_monthly > 0 && (
                         <div
                           className="text-xs text-white/30"
                           style={{ fontFamily: "DM Sans, sans-serif" }}
                         >
                           Kč/měs.
                         </div>
+                        )}
                       </div>
                     </div>
                     {selected && plan.features && (

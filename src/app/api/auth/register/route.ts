@@ -98,13 +98,33 @@ export async function POST(request: Request) {
   const trialEnds = new Date();
   trialEnds.setDate(trialEnds.getDate() + 14);
 
+  // Check if selected plan is free (price=0) and load features
+  let isFree = false;
+  let planFeatures: Record<string, boolean> | null = null;
+  if (selectedPlanId) {
+    const { data: plan } = await supabaseAdmin
+      .from("subscription_plans")
+      .select("features, price_monthly")
+      .eq("id", selectedPlanId)
+      .single();
+    if (plan?.price_monthly === 0) isFree = true;
+    if (plan?.features && typeof plan.features === "object") {
+      planFeatures = plan.features as Record<string, boolean>;
+    }
+  }
+
   const advisorData: Record<string, unknown> = {
     user_id: userId,
     company_name: companyName,
-    trial_started_at: new Date().toISOString(),
-    trial_ends_at: trialEnds.toISOString(),
-    subscription_status: "trial",
+    subscription_status: isFree ? "active" : "trial",
   };
+
+  // Only set trial dates for paid plans
+  if (!isFree) {
+    advisorData.trial_started_at = new Date().toISOString();
+    advisorData.trial_ends_at = trialEnds.toISOString();
+  }
+
   if (ico) advisorData.ico = ico;
   if (dic) advisorData.dic = dic;
   if (billingStreet) advisorData.billing_street = billingStreet;
@@ -114,15 +134,9 @@ export async function POST(request: Request) {
   if (phone) advisorData.phone = phone;
   if (selectedPlanId) {
     advisorData.selected_plan_id = selectedPlanId;
-    // Load plan features and set enabled_modules accordingly
-    const { data: plan } = await supabaseAdmin
-      .from("subscription_plans")
-      .select("features")
-      .eq("id", selectedPlanId)
-      .single();
-    if (plan?.features && typeof plan.features === "object") {
+    if (planFeatures) {
       const modules: Record<string, boolean> = {};
-      for (const [key, val] of Object.entries(plan.features as Record<string, boolean>)) {
+      for (const [key, val] of Object.entries(planFeatures)) {
         modules[key] = !!val;
       }
       advisorData.enabled_modules = modules;
