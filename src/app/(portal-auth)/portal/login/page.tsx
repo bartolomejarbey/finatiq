@@ -16,6 +16,7 @@ interface AdvisorBrand {
   custom_login_title: string | null;
   custom_login_subtitle: string | null;
   login_slug: string | null;
+  allow_client_registration: boolean | null;
 }
 
 function useCustomDomainBrand() {
@@ -181,7 +182,19 @@ export default function PortalLoginPage() {
         </div>
 
         {/* Links */}
-        <div className="mt-6 text-center">
+        <div className="mt-6 space-y-2 text-center">
+          {isCustomDomain && brand?.allow_client_registration && brand?.login_slug && (
+            <p className="text-sm text-gray-600">
+              Nemáte účet?{" "}
+              <Link
+                href={`/portal/register?advisor=${encodeURIComponent(brand.login_slug)}`}
+                className="font-medium transition-colors"
+                style={{ color: accent }}
+              >
+                Zaregistrujte se
+              </Link>
+            </p>
+          )}
           <p className="text-sm text-gray-600">
             Jste poradce?{" "}
             <Link

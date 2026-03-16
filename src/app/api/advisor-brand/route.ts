@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const fields = "app_name, logo_url, brand_primary, brand_accent_color, custom_login_title, custom_login_subtitle, company_name, login_slug";
+  const fields = "id, app_name, logo_url, brand_primary, brand_accent_color, custom_login_title, custom_login_subtitle, company_name, login_slug, allow_client_registration";
 
   let query;
   if (domain) {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { LogIn, User, Loader2 } from "lucide-react";
+import { LogIn, User, UserPlus, Loader2 } from "lucide-react";
 
 interface AdvisorBrand {
   app_name: string | null;
@@ -13,6 +13,7 @@ interface AdvisorBrand {
   company_name: string | null;
   custom_login_title: string | null;
   custom_login_subtitle: string | null;
+  allow_client_registration: boolean | null;
 }
 
 export default function AdvisorLandingPage() {
@@ -156,6 +157,17 @@ export default function AdvisorLandingPage() {
             <User className="h-4 w-4" />
             Jsem klient
           </Link>
+
+          {advisor.allow_client_registration && (
+            <Link
+              href={`/portal/register?advisor=${encodeURIComponent(slug)}`}
+              className="flex w-full items-center justify-center gap-3 py-3 text-sm text-white/60 transition-all hover:text-white/90"
+              style={{ fontFamily: "DM Sans, sans-serif" }}
+            >
+              <UserPlus className="h-4 w-4" />
+              Nemáte účet? Zaregistrujte se
+            </Link>
+          )}
         </div>
 
         {/* Footer */}

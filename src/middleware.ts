@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 const alwaysPublicPaths = ["/", "/funkce", "/cenik", "/kontakt", "/proc-my", "/podminky", "/gdpr", "/fakturace", "/p/", "/ref/"];
 
 /* Login/register paths — public for guests, redirect logged-in users to dashboard */
-const authPaths = ["/login", "/portal/login", "/register", "/forgot-password", "/reset-password", "/verify-2fa"];
+const authPaths = ["/login", "/portal/login", "/portal/register", "/register", "/forgot-password", "/reset-password", "/verify-2fa"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
