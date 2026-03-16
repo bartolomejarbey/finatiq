@@ -56,8 +56,8 @@ export function MinimalLayout({
   return (
     <div className="flex h-screen">
       {/* Mobile top bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b bg-white px-4 md:hidden">
-        <button onClick={() => setMobileOpen(true)} className="text-slate-600">
+      <div className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b px-4 md:hidden" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
+        <button onClick={() => setMobileOpen(true)} style={{ color: "var(--card-text-muted, #475569)" }}>
           <Menu className="h-6 w-6" />
         </button>
         {logoUrl ? (
@@ -71,14 +71,14 @@ export function MinimalLayout({
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex h-full w-64 flex-col bg-white shadow-xl">
+          <aside className="relative flex h-full w-64 flex-col shadow-xl" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
             <div className="flex h-14 items-center justify-between px-4 border-b">
               {logoUrl ? (
                 <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto" }} />
               ) : (
                 <span className="text-lg font-bold" style={{ color: primaryColor }}>{appName}</span>
               )}
-              <button onClick={() => setMobileOpen(false)} className="text-slate-400 hover:text-slate-900">
+              <button onClick={() => setMobileOpen(false)} style={{ color: "var(--card-text-dim, #94a3b8)" }}>
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -92,11 +92,11 @@ export function MinimalLayout({
                     onClick={() => setMobileOpen(false)}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                      active ? "font-medium" : "text-slate-600 hover:bg-slate-100"
+                      active ? "font-medium" : "hover:bg-[var(--table-hover)]"
                     )}
-                    style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : undefined}
+                    style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : { color: "var(--card-text-muted, #475569)" }}
                   >
-                    <span style={active ? { color: primaryColor } : { color: "#9ca3af" }}><item.icon className="h-5 w-5" /></span>
+                    <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }}><item.icon className="h-5 w-5" /></span>
                     {item.label}
                   </Link>
                 );
@@ -104,7 +104,7 @@ export function MinimalLayout({
             </nav>
             {bottomContent}
             <div className="border-t p-3">
-              <button onClick={onLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-100">
+              <button onClick={onLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-[var(--table-hover)]" style={{ color: "var(--card-text-muted, #64748b)" }}>
                 <LogOut className="h-5 w-5" />Odhlásit se
               </button>
             </div>
@@ -115,9 +115,10 @@ export function MinimalLayout({
       {/* Desktop minimal sidebar */}
       <aside
         className={cn(
-          "hidden md:flex shrink-0 flex-col bg-white/95 backdrop-blur-sm border-r transition-all duration-200 shadow-sm",
+          "hidden md:flex shrink-0 flex-col backdrop-blur-sm border-r transition-all duration-200 shadow-sm",
           expanded ? "w-60" : "w-[72px]"
         )}
+        style={{ backgroundColor: "color-mix(in srgb, var(--card-bg, #fff) 95%, transparent)" }}
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
       >
@@ -150,11 +151,11 @@ export function MinimalLayout({
                 className={cn(
                   "flex items-center rounded-lg transition-colors relative",
                   expanded ? "gap-3 px-3 py-2.5" : "justify-center px-2 py-2.5",
-                  active ? "font-medium" : "text-gray-600 hover:bg-slate-100"
+                  active ? "font-medium" : "hover:bg-[var(--table-hover)]"
                 )}
-                style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : undefined}
+                style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : { color: "var(--card-text-muted, #475569)" }}
               >
-                <span style={active ? { color: primaryColor } : { color: "#9ca3af" }}><item.icon className="h-5 w-5 shrink-0" /></span>
+                <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }}><item.icon className="h-5 w-5 shrink-0" /></span>
                 {expanded && (
                   <span className="text-sm font-medium truncate">{item.label}</span>
                 )}
@@ -181,9 +182,10 @@ export function MinimalLayout({
             onClick={onLogout}
             title={!expanded ? "Odhlásit se" : undefined}
             className={cn(
-              "flex w-full items-center rounded-lg text-sm font-medium text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600",
+              "flex w-full items-center rounded-lg text-sm font-medium transition-colors hover:bg-[var(--table-hover)]",
               expanded ? "gap-3 px-3 py-2.5" : "justify-center px-2 py-2.5"
             )}
+            style={{ color: "var(--card-text-dim, #94a3b8)" }}
           >
             <LogOut className="h-5 w-5 shrink-0" />
             {expanded && "Odhlásit se"}

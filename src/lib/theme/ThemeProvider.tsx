@@ -228,6 +228,21 @@ function applyThemeToDOM(t: ThemeValues) {
   // Template: skeleton
   root.style.setProperty("--skeleton-bg", tpl.skeletonBg);
 
+  // Override shadcn vars so dialogs/popovers/dropdowns match the template
+  root.style.setProperty("--popover", tpl.cardBg);
+  root.style.setProperty("--popover-foreground", tpl.cardText);
+  root.style.setProperty("--background", tpl.mainBg);
+  root.style.setProperty("--foreground", tpl.mainText);
+  root.style.setProperty("--border", tpl.cardBorder);
+  root.style.setProperty("--input", tpl.inputBorder);
+  root.style.setProperty("--ring", t.primary);
+  root.style.setProperty("--muted", tpl.tableHover);
+  root.style.setProperty("--muted-foreground", tpl.cardTextMuted);
+  root.style.setProperty("--accent", tpl.tableHover);
+  root.style.setProperty("--accent-foreground", tpl.cardText);
+  root.style.setProperty("--card", tpl.cardBg);
+  root.style.setProperty("--card-foreground", tpl.cardText);
+
   // Load Google Font
   const fontLink = document.getElementById("theme-font") as HTMLLinkElement | null;
   const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(t.font)}:wght@400;500;600;700&display=swap`;

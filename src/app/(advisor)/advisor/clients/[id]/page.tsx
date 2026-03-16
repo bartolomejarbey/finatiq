@@ -494,7 +494,7 @@ function SimpleTable({ headers, rows, empty }: { headers: string[]; rows: string
     <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
       <table className="w-full">
         <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]">{headers.map((h) => <th key={h} className="px-6 py-3">{h}</th>)}</tr></thead>
-        <tbody>{rows.map((row, i) => <tr key={i} className="border-b last:border-0 hover:bg-[var(--table-hover)] even:bg-[var(--table-hover)]/50">{row.map((cell, j) => <td key={j} className="px-6 py-3 text-sm text-[var(--card-text)]">{cell}</td>)}</tr>)}</tbody>
+        <tbody>{rows.map((row, i) => <tr key={i} className="border-b last:border-0 hover:bg-[var(--table-hover)] even:bg-[var(--table-header)]">{row.map((cell, j) => <td key={j} className="px-6 py-3 text-sm text-[var(--card-text)]">{cell}</td>)}</tr>)}</tbody>
       </table>
     </div>
   );

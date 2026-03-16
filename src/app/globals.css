@@ -117,7 +117,8 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--card-border, var(--border));
+    outline-color: var(--card-border, var(--border));
   }
   body {
     @apply bg-background text-foreground;
@@ -128,22 +129,35 @@
 
 /* ── Form utility classes (use on components, no !important) ── */
 .form-label {
-  @apply text-sm font-medium text-gray-700;
+  @apply text-sm font-medium;
+  color: var(--card-text, #374151);
 }
 .form-input {
-  @apply bg-white border border-gray-300 text-gray-900 rounded-lg;
+  @apply rounded-lg;
+  background-color: var(--input-bg, #fff);
+  border: 1px solid var(--input-border, #D1D5DB);
+  color: var(--input-text, #111827);
 }
 .form-input::placeholder {
-  @apply text-gray-400;
+  color: var(--input-placeholder, #9CA3AF);
 }
 .section-card {
-  @apply bg-white p-6 rounded-xl shadow-sm border border-gray-100;
+  @apply p-6 rounded-xl;
+  background-color: var(--card-bg, #fff);
+  border: 1px solid var(--card-border, #E2E8F0);
 }
 .page-title {
-  @apply text-2xl font-bold text-gray-900;
+  @apply text-2xl font-bold;
+  color: var(--card-text, #111827);
 }
 .page-subtitle {
-  @apply text-gray-500;
+  color: var(--card-text-muted, #6B7280);
+}
+
+/* Override shadcn popover/dialog colors with template vars */
+:root {
+  --popover: var(--card-bg);
+  --popover-foreground: var(--card-text);
 }
 
 /* Branding overrides via CSS custom properties */
@@ -277,7 +291,7 @@
 
 /* Skeleton shimmer */
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, var(--skeleton-bg, #f1f5f9) 25%, var(--table-hover, #e2e8f0) 50%, var(--skeleton-bg, #f1f5f9) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -295,7 +309,7 @@
 
 /* Glassmorphism */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
+  background: color-mix(in srgb, var(--card-bg, #fff) 80%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }

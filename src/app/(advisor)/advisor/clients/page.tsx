@@ -31,11 +31,11 @@ interface Client {
 }
 
 const SEGMENT_PILLS: Record<string, { bg: string; text: string }> = {
-  vip: { bg: "bg-amber-50", text: "text-amber-600" },
-  active: { bg: "bg-green-50", text: "text-green-600" },
-  standard: { bg: "bg-blue-50", text: "text-blue-600" },
-  sleeping: { bg: "bg-gray-50", text: "text-gray-500" },
-  new: { bg: "bg-violet-50", text: "text-violet-600" },
+  vip: { bg: "bg-amber-500/10", text: "text-amber-600" },
+  active: { bg: "bg-green-500/10", text: "text-green-600" },
+  standard: { bg: "bg-blue-500/10", text: "text-blue-600" },
+  sleeping: { bg: "bg-gray-500/10", text: "text-gray-500" },
+  new: { bg: "bg-violet-500/10", text: "text-violet-600" },
 };
 
 const FILTER_SEGMENTS = [
@@ -169,7 +169,7 @@ export default function ClientsPage() {
         <div className="bg-[var(--card-bg)] rounded-xl border border-[var(--card-border)] overflow-hidden shadow-sm">
           <table className="w-full">
             <thead>
-              <tr className="bg-[var(--table-hover)]/50 border-b border-[var(--card-border)]">
+              <tr className="bg-[var(--table-header)] border-b border-[var(--card-border)]">
                 <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium">Jméno</th>
                 <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium">Email</th>
                 <th className="px-6 py-3 text-left text-xs text-[var(--card-text-dim)] uppercase tracking-wide font-medium hidden md:table-cell">Telefon</th>
@@ -186,7 +186,7 @@ export default function ClientsPage() {
                   <tr
                     key={c.id}
                     onClick={() => router.push(`/advisor/clients/${c.id}`)}
-                    className="cursor-pointer border-b border-[var(--table-hover)] last:border-0 transition-colors hover:bg-[var(--table-hover)]/50"
+                    className="cursor-pointer border-b border-[var(--card-border)] last:border-0 transition-colors hover:bg-[var(--table-hover)]"
                   >
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-3">

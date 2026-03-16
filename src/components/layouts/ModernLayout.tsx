@@ -60,10 +60,10 @@ export function ModernLayout({
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--color-background, #F8FAFC)" }}>
       {/* Top bar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm" style={{ borderBottom: `2px solid ${primaryColor}` }}>
+      <header className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: "color-mix(in srgb, var(--card-bg, #fff) 95%, transparent)", borderBottom: `2px solid ${primaryColor}` }}>
         <div className="flex h-14 items-center gap-4 px-4 md:px-6">
           {/* Mobile hamburger */}
-          <button onClick={() => setMobileOpen(true)} className="md:hidden text-slate-600">
+          <button onClick={() => setMobileOpen(true)} className="md:hidden" style={{ color: "var(--card-text-muted, #475569)" }}>
             <Menu className="h-6 w-6" />
           </button>
 
@@ -88,11 +88,11 @@ export function ModernLayout({
                     "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap",
                     active
                       ? "font-medium"
-                      : "text-slate-600 hover:bg-slate-100"
+                      : "hover:bg-[var(--table-hover)]"
                   )}
-                  style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : undefined}
+                  style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : { color: "var(--card-text-muted, #475569)" }}
                 >
-                  <span style={active ? { color: primaryColor } : { color: "#9ca3af" }}><item.icon className="h-4 w-4" /></span>
+                  <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }}><item.icon className="h-4 w-4" /></span>
                   {item.label}
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
@@ -108,7 +108,7 @@ export function ModernLayout({
           </nav>
 
           {/* Logout */}
-          <button onClick={onLogout} className="hidden md:flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 ml-auto">
+          <button onClick={onLogout} className="hidden md:flex items-center gap-1.5 text-sm ml-auto" style={{ color: "var(--card-text-muted, #64748b)" }}>
             <LogOut className="h-4 w-4" />Odhlásit
           </button>
         </div>
@@ -118,14 +118,14 @@ export function ModernLayout({
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex h-full w-72 flex-col bg-white shadow-xl">
+          <aside className="relative flex h-full w-72 flex-col shadow-xl" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
             <div className="flex h-14 items-center justify-between px-4 border-b">
               {logoUrl ? (
                 <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto" }} />
               ) : (
                 <span className="text-lg font-bold" style={{ color: primaryColor }}>{appName}</span>
               )}
-              <button onClick={() => setMobileOpen(false)} className="text-slate-400 hover:text-slate-900">
+              <button onClick={() => setMobileOpen(false)} style={{ color: "var(--card-text-dim, #94a3b8)" }}>
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -141,11 +141,11 @@ export function ModernLayout({
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       active
                         ? "font-medium"
-                        : "text-slate-600 hover:bg-slate-100"
+                        : "hover:bg-[var(--table-hover)]"
                     )}
-                    style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : undefined}
+                    style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : { color: "var(--card-text-muted, #475569)" }}
                   >
-                    <span style={active ? { color: primaryColor } : { color: "#9ca3af" }}><item.icon className="h-5 w-5" /></span>
+                    <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }}><item.icon className="h-5 w-5" /></span>
                     {item.label}
                     {item.badge !== undefined && item.badge > 0 && (
                       <span
@@ -161,7 +161,7 @@ export function ModernLayout({
             </nav>
             {bottomContent}
             <div className="border-t p-3">
-              <button onClick={onLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-100">
+              <button onClick={onLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-[var(--table-hover)]" style={{ color: "var(--card-text-muted, #64748b)" }}>
                 <LogOut className="h-5 w-5" />Odhlásit se
               </button>
             </div>
@@ -170,11 +170,11 @@ export function ModernLayout({
       )}
 
       {/* Breadcrumb */}
-      <div className="px-4 md:px-8 py-2 flex items-center gap-1 text-xs text-slate-500">
+      <div className="px-4 md:px-8 py-2 flex items-center gap-1 text-xs" style={{ color: "var(--card-text-muted, #64748b)" }}>
         {breadcrumb.map((b, i) => (
           <span key={b.href} className="flex items-center gap-1">
             {i > 0 && <ChevronRight className="h-3 w-3" />}
-            <Link href={b.href} className="hover:text-slate-600">{b.label}</Link>
+            <Link href={b.href} className="hover:opacity-80">{b.label}</Link>
           </span>
         ))}
       </div>

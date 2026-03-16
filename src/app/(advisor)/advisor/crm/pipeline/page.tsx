@@ -309,7 +309,7 @@ export default function PipelinePage() {
               const stageDeals = filteredDeals.filter((d) => d.stage_id === stage.id);
               const stageTotal = stageDeals.reduce((s, d) => s + (d.value ?? 0), 0);
               return (
-                <div key={stage.id} className="flex min-w-[280px] w-[280px] shrink-0 flex-col rounded-lg bg-[var(--card-bg)]/50 border border-[var(--card-border)] p-2">
+                <div key={stage.id} className="flex min-w-[280px] w-[280px] shrink-0 flex-col rounded-lg border border-[var(--card-border)] p-2" style={{ backgroundColor: "color-mix(in srgb, var(--card-bg) 50%, transparent)" }}>
                   {/* Column header */}
                   <div className="flex items-center justify-between mb-2 px-2 py-1.5">
                     <div className="flex items-center gap-2">
@@ -328,8 +328,8 @@ export default function PipelinePage() {
                       <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
-                        className={`flex-1 space-y-0 transition-colors duration-150 rounded-lg ${snapshot.isDraggingOver ? "bg-[var(--table-hover)]/40" : ""}`}
-                        style={{ minHeight: 60 }}
+                        className="flex-1 space-y-0 transition-colors duration-150 rounded-lg"
+                        style={{ minHeight: 60, backgroundColor: snapshot.isDraggingOver ? "color-mix(in srgb, var(--table-hover) 40%, transparent)" : undefined }}
                       >
                         {stageDeals.length === 0 && !snapshot.isDraggingOver && (
                           <div className="flex h-16 items-center justify-center rounded-md border-2 border-dashed border-[var(--card-border)]">
@@ -384,7 +384,7 @@ function PipelineSkeleton() {
       </div>
       <div className="flex flex-1 gap-3 px-6 pb-6">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="w-[280px] shrink-0 space-y-2 rounded-lg bg-[var(--card-bg)]/50 border border-[var(--card-border)] p-2">
+          <div key={i} className="w-[280px] shrink-0 space-y-2 rounded-lg border border-[var(--card-border)] p-2" style={{ backgroundColor: "color-mix(in srgb, var(--card-bg) 50%, transparent)" }}>
             <Skeleton className="h-5 w-28 mx-2 mt-1" />
             {[1, 2].map((j) => <Skeleton key={j} className="h-28 w-full rounded-xl" />)}
           </div>

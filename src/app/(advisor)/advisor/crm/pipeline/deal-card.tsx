@@ -6,9 +6,9 @@ import type { Deal, DealTag } from "./page";
 import { formatCZK, relativeTime } from "./page";
 
 const sourceBadge: Record<string, { label: string; bg: string; text: string }> = {
-  meta: { label: "Meta Ads", bg: "bg-blue-50", text: "text-blue-600" },
-  manual: { label: "Manuální", bg: "bg-gray-50", text: "text-gray-500" },
-  referral: { label: "Doporučení", bg: "bg-emerald-50", text: "text-emerald-600" },
+  meta: { label: "Meta Ads", bg: "bg-blue-500/10", text: "text-blue-600" },
+  manual: { label: "Manuální", bg: "bg-gray-500/10", text: "text-gray-500" },
+  referral: { label: "Doporučení", bg: "bg-emerald-500/10", text: "text-emerald-600" },
 };
 
 interface Props {
