@@ -12,7 +12,7 @@ import {
   LayoutDashboard, FileText, CreditCard, TrendingUp, Target,
   FolderOpen, CalendarDays, Calculator, Bell, Gauge, Heart,
   CalculatorIcon, GitBranch, Shield, Share2, Star, BookOpen,
-  Newspaper, Award, Lock, HeartHandshake, Users,
+  Newspaper, Award, Lock, HeartHandshake, Users, Settings,
 } from "lucide-react";
 
 interface NavDef {
@@ -47,6 +47,7 @@ const NAV_DEFS: NavDef[] = [
   { href: "/portal/kalendar", label: "Kalendář", icon: CalendarDays, moduleKey: "calendar" },
   { href: "/portal/evidence", label: "Evidence", icon: Calculator, osvcOnly: true, moduleKey: "osvc" },
   { href: "/portal/notifications", label: "Oznámení", icon: Bell, badge: "notifications" },
+  { href: "/portal/nastaveni", label: "Nastavení", icon: Settings },
 ];
 
 function LoadingScreen() {

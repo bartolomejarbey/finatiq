@@ -1,8 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  // Rate limit: 30 per hour per IP
+  const ip = getClientIp(request);
+  const limited = checkRateLimit(`${ip}:ai-generate`, 30, 60 * 60 * 1000);
+  if (limited) return limited;
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

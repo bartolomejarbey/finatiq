@@ -55,8 +55,10 @@ const TABS = [
   { key: "branding", label: "Branding", icon: Palette, href: "/advisor/nastaveni/branding" },
   { key: "moduly", label: "Moduly", icon: Boxes },
   { key: "ai", label: "AI pravidla", icon: Brain, href: "/advisor/nastaveni/ai-pravidla" },
+  { key: "upsell", label: "Upsell pravidla", icon: Zap, href: "/advisor/nastaveni/upsell-pravidla" },
   { key: "automatizace", label: "Automatizace", icon: Zap, href: "/advisor/automatizace" },
   { key: "sablony", label: "Šablony", icon: FileText, href: "/advisor/sablony" },
+  { key: "bezpecnost", label: "Bezpečnost", icon: Lock },
   { key: "propojeni", label: "Propojení", icon: Link2 },
 ];
 
@@ -82,6 +84,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("obecne");
   const [planFeatures, setPlanFeatures] = useState<Record<string, boolean> | null>(null);
   const [planName, setPlanName] = useState("");
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -102,6 +105,7 @@ export default function SettingsPage() {
         setMetaAccessToken(adv.meta_access_token_encrypted || "");
         setInterestThreshold(String(adv.interest_rate_threshold || 5.0));
         setEnabledModules(adv.enabled_modules || {});
+        setTwoFactorEnabled(!!adv.two_factor_enabled);
 
         // Load plan features for module restrictions
         if (adv.selected_plan_id) {
@@ -414,6 +418,45 @@ export default function SettingsPage() {
       )}
 
       {/* Propojení tab */}
+      {activeTab === "bezpecnost" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+            <div className="mb-4 flex items-center gap-2">
+              <Lock className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
+                Dvoufaktorové ověření (2FA)
+              </h2>
+            </div>
+            <p className="mb-4 text-xs text-[var(--card-text-muted)]">
+              Po zapnutí budete při přihlášení potřebovat ověřovací kód zaslaný na váš email.
+            </p>
+            <div className="flex items-center justify-between rounded-lg border border-[var(--card-border)] p-4">
+              <div>
+                <p className="text-sm font-medium text-[var(--card-text)]">
+                  {twoFactorEnabled ? "2FA je zapnuté" : "2FA je vypnuté"}
+                </p>
+                <p className="text-xs text-[var(--card-text-muted)]">
+                  {twoFactorEnabled
+                    ? "Při přihlášení budete muset zadat kód z emailu"
+                    : "Přihlášení pouze pomocí emailu a hesla"}
+                </p>
+              </div>
+              <Switch
+                checked={twoFactorEnabled}
+                onCheckedChange={async (checked) => {
+                  setTwoFactorEnabled(checked);
+                  await supabase
+                    .from("advisors")
+                    .update({ two_factor_enabled: checked })
+                    .eq("id", advisor?.id);
+                  toast.success(checked ? "2FA zapnuto." : "2FA vypnuto.");
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTab === "propojeni" && (
         <div className="space-y-6">
           {/* Meta Ads */}

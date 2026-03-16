@@ -74,6 +74,31 @@ function LoginForm() {
       return;
     }
 
+    const user = data.user;
+
+    // Check if 2FA is enabled for this advisor
+    if (user) {
+      const { data: adv } = await supabase
+        .from("advisors")
+        .select("id, two_factor_enabled")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (adv?.two_factor_enabled) {
+        // Sign out temporarily — user must verify 2FA first
+        await supabase.auth.signOut();
+        // Send 2FA code
+        await fetch("/api/auth/send-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: user.id, type: "2fa", email }),
+        });
+        // Redirect to 2FA page
+        router.push(`/verify-2fa?uid=${user.id}&email=${encodeURIComponent(email)}`);
+        return;
+      }
+    }
+
     const roleRes = await fetch("/api/auth/me");
     const { role } = await roleRes.json() as { role: UserRole };
     window.location.href = getRoleRedirectPath(role);

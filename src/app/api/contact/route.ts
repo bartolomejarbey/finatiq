@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/resend";
 import { contactForm } from "@/lib/email/templates";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const CONTACT_EMAIL = "bartolomej@arbey.cz";
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 5 per hour per IP
+  const ip = getClientIp(req);
+  const limited = checkRateLimit(`${ip}:contact`, 5, 60 * 60 * 1000);
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const { name, email, type, message } = body;

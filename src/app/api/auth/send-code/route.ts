@@ -2,9 +2,16 @@ import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/resend";
 import { verificationCode as verificationCodeTemplate } from "@/lib/email/templates";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   const { user_id, type, phone, email } = await request.json();
+
+  // Rate limit: 3 per 10 minutes per email
+  if (email) {
+    const limited = checkRateLimit(`${email}:send-code`, 3, 10 * 60 * 1000);
+    if (limited) return limited;
+  }
 
   if (!user_id || !type) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });

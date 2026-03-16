@@ -1017,6 +1017,26 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#060d1a] text-[#f0f4f8] overflow-x-hidden -mt-20 pt-20">
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "Finatiq",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            description: "Komplexní CRM a klientský portál pro finanční poradce. Správa klientů, pipeline, automatizace a AI doporučení.",
+            url: "https://www.finatiq.cz",
+            offers: [
+              { "@type": "Offer", name: "Start", price: "0", priceCurrency: "CZK", description: "Zdarma — základní funkce" },
+              { "@type": "Offer", name: "Professional", price: "990", priceCurrency: "CZK", description: "Pro profesionální poradce" },
+              { "@type": "Offer", name: "Business", price: "1990", priceCurrency: "CZK", description: "Pro velké týmy a firmy" },
+            ],
+          }),
+        }}
+      />
       {/* ── Fonts ── */}
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");

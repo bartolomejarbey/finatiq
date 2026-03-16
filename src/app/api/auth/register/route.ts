@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/resend";
 import { welcomeAdvisor, verificationCode as verificationCodeTemplate } from "@/lib/email/templates";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const DEFAULT_STAGES = [
   { name: "Nový lead", position: 0, color: "#6366F1" },
@@ -54,6 +55,11 @@ const DEFAULT_TEMPLATES = [
 ];
 
 export async function POST(request: Request) {
+  // Rate limit: 5 per hour per IP
+  const ip = getClientIp(request);
+  const limited = checkRateLimit(`${ip}:register`, 5, 60 * 60 * 1000);
+  if (limited) return limited;
+
   const {
     email,
     password,
@@ -230,7 +236,29 @@ export async function POST(request: Request) {
     },
   ]);
 
-  // 7. Generate verification code and send via Resend
+  // 7. Create default upsell rules
+  await supabaseAdmin.from("upsell_rules").insert([
+    // Úvěry/Hypotéky
+    { advisor_id: advisor.id, category: "loans", rule_type: "interest_rate_high", threshold_value: 5, threshold_unit: "%", message_template: "Klient má úvěr se sazbou {actual}%, průměr trhu je nižší. Refinancování může ušetřit.", priority: "high", is_active: true },
+    { advisor_id: advisor.id, category: "loans", rule_type: "fixation_ending", threshold_value: 6, threshold_unit: "months", message_template: "Fixace hypotéky končí za {actual} měsíců. Čas nabídnout refinancování.", priority: "high", is_active: true },
+    { advisor_id: advisor.id, category: "loans", rule_type: "payment_ratio_high", threshold_value: 40, threshold_unit: "%", message_template: "Splátky tvoří {actual}% příjmu. Riziko. Nabídněte konsolidaci.", priority: "critical", is_active: true },
+    { advisor_id: advisor.id, category: "loans", rule_type: "loan_no_insurance", threshold_value: null, threshold_unit: null, message_template: "Úvěr bez pojištění schopnosti splácet. Nabídněte rizikové životní pojištění.", priority: "medium", is_active: true },
+    // Pojištění
+    { advisor_id: advisor.id, category: "insurance", rule_type: "policy_old", threshold_value: 5, threshold_unit: "years", message_template: "Smlouva z roku {year}, pravděpodobně zastaralé podmínky. Nabídněte revizi.", priority: "medium", is_active: true },
+    { advisor_id: advisor.id, category: "insurance", rule_type: "coverage_low", threshold_value: 3, threshold_unit: "x_income", message_template: "Pojistná částka {actual} Kč je méně než {threshold}× roční příjem. Nedostatečné krytí.", priority: "high", is_active: true },
+    { advisor_id: advisor.id, category: "insurance", rule_type: "missing_accident", threshold_value: null, threshold_unit: null, message_template: "Klient nemá úrazové pojištění.", priority: "medium", is_active: true },
+    { advisor_id: advisor.id, category: "insurance", rule_type: "missing_property", threshold_value: null, threshold_unit: null, message_template: "Klient vlastní nemovitost ale nemá pojištění majetku.", priority: "medium", is_active: true },
+    // Investice
+    { advisor_id: advisor.id, category: "investments", rule_type: "savings_high", threshold_value: 500000, threshold_unit: "CZK", message_template: "Na účtu leží {actual} Kč. Nabídněte investiční řešení.", priority: "medium", is_active: true },
+    { advisor_id: advisor.id, category: "investments", rule_type: "no_regular_saving", threshold_value: null, threshold_unit: null, message_template: "Jednorázová investice bez pravidelného spoření. Nabídněte DIP.", priority: "low", is_active: true },
+    // Životní události
+    { advisor_id: advisor.id, category: "life_events", rule_type: "near_retirement", threshold_value: 10, threshold_unit: "years", message_template: "Klientovi je {age} let. Nabídněte důchodové poradenství.", priority: "medium", is_active: true },
+    // Smlouvy
+    { advisor_id: advisor.id, category: "contracts", rule_type: "contract_expiring", threshold_value: 30, threshold_unit: "days", message_template: "Smlouva expiruje za {actual} dní. Nabídněte obnovu.", priority: "high", is_active: true },
+    { advisor_id: advisor.id, category: "contracts", rule_type: "no_review", threshold_value: 2, threshold_unit: "years", message_template: "Smlouva nebyla revidována {years} let.", priority: "low", is_active: true },
+  ]);
+
+  // 8. Generate verification code and send via Resend
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 

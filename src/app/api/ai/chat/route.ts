@@ -1,12 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  // Rate limit: 20 per hour per IP
+  const ip = getClientIp(request);
+  const limited = checkRateLimit(`${ip}:ai-chat`, 20, 60 * 60 * 1000);
+  if (limited) return limited;
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   try {
     const { client_id, message } = await request.json();
 

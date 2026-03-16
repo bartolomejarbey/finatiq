@@ -641,9 +641,20 @@ export default function AdvisorDashboard() {
 
         {/* Upsell alerts */}
         <Section>
-          <div className="mb-4 flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5" style={{ color: accent }} />
-            <SectionTitle>Příležitosti</SectionTitle>
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-3.5 w-3.5" style={{ color: accent }} />
+              <SectionTitle>Příležitosti</SectionTitle>
+            </div>
+            {upsellAlerts.length > 0 && (
+              <button
+                onClick={() => router.push("/advisor/upsell")}
+                className="text-xs font-medium hover:opacity-80"
+                style={{ color: primary }}
+              >
+                Zobrazit vše →
+              </button>
+            )}
           </div>
           {upsellAlerts.length === 0 ? (
             <p className="text-sm text-[var(--card-text-dim)] py-4 text-center">
@@ -675,6 +686,7 @@ export default function AdvisorDashboard() {
                             .from("upsell_alerts")
                             .update({ status: "viewed" })
                             .eq("id", alert.id);
+                          if (alert.client_id) router.push(`/advisor/clients/${alert.client_id}`);
                         }}
                         className="rounded-md px-2 py-1 text-xs font-medium transition-colors duration-150 cursor-pointer hover:bg-[var(--table-header)]"
                         style={{ color: primary }}

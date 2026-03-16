@@ -12,7 +12,7 @@ import { TicketModal } from "@/components/ticket-modal";
 import {
   LayoutDashboard, Kanban, Users, ClipboardList, Bell, Zap,
   FileText, Megaphone, CalendarDays, Settings, BookOpen,
-  Newspaper, CalendarClock, Upload, Star, HelpCircle,
+  Newspaper, CalendarClock, Upload, Star, HelpCircle, Sparkles,
 } from "lucide-react";
 
 interface NavDef {
@@ -29,6 +29,7 @@ const NAV_DEFS: NavDef[] = [
   { href: "/advisor/clients", label: "Klienti", icon: Users },
   { href: "/advisor/smlouvy-klientu", label: "Nové smlouvy", icon: ClipboardList, badge: "contracts" },
   { href: "/advisor/pripominky", label: "Připomínky", icon: Bell, badge: "reminder" },
+  { href: "/advisor/upsell", label: "Příležitosti", icon: Sparkles },
   { href: "/advisor/automatizace", label: "Automatizace", icon: Zap, moduleKey: "automations" },
   { href: "/advisor/sablony", label: "Šablony", icon: FileText, moduleKey: "templates" },
   { href: "/advisor/campaigns", label: "Kampaně", icon: Megaphone, moduleKey: "meta_ads" },
@@ -39,6 +40,7 @@ const NAV_DEFS: NavDef[] = [
   { href: "/advisor/import", label: "Import klientů", icon: Upload },
   { href: "/advisor/kalendar", label: "Kalendář", icon: CalendarDays, moduleKey: "calendar" },
   { href: "/advisor/settings", label: "Nastavení", icon: Settings },
+  { href: "/advisor/podpora", label: "Podpora", icon: HelpCircle },
 ];
 
 function LoadingScreen() {

@@ -3,9 +3,16 @@ import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/resend";
 import { passwordReset } from "@/lib/email/templates";
 import { randomUUID } from "crypto";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   const { email } = await request.json();
+
+  // Rate limit: 3 per hour per email
+  if (email) {
+    const limited = checkRateLimit(`${email}:forgot-password`, 3, 60 * 60 * 1000);
+    if (limited) return limited;
+  }
 
   if (!email) {
     return NextResponse.json({ error: "Email je povinný." }, { status: 400 });

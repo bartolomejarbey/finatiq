@@ -93,7 +93,10 @@ const SECTIONS = [
       "Vercel Inc. — poskytovatel hostingu webové aplikace.",
       "Poskytovatel platební brány — pro zpracování plateb (pouze fakturační údaje).",
       "Státní orgány — pokud je to vyžadováno zákonem (finanční úřad, soudy).",
+      "Anthropic (Claude AI) — automatická analýza nahraných dokumentů a generování doporučení. Dokumenty nejsou těmito službami ukládány ani používány k trénování modelů.",
+      "Google Cloud (Vision OCR) — optické rozpoznávání textu v nahraných dokumentech. Data jsou zpracovávána dočasně a nejsou ukládána.",
       "Osobní údaje nejsou předávány do třetích zemí mimo EU/EHP bez odpovídajících záruk dle GDPR.",
+      "Nahrané dokumenty mohou být zpracovány AI službami třetích stran (Anthropic, Google) za účelem automatické extrakce dat. Dokumenty nejsou těmito službami ukládány ani používány k trénování modelů.",
     ],
   },
   {
