@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getRoleRedirectPath } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/auth/roles";
-import { Loader2 } from "lucide-react";
+import { Loader2, Briefcase } from "lucide-react";
 
 interface AdvisorBrand {
   app_name: string | null;
@@ -21,7 +21,7 @@ interface AdvisorBrand {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-white/30" /></div>}>
       <LoginForm />
     </Suspense>
   );
@@ -85,15 +85,12 @@ function LoginForm() {
         .maybeSingle();
 
       if (adv?.two_factor_enabled) {
-        // Sign out temporarily — user must verify 2FA first
         await supabase.auth.signOut();
-        // Send 2FA code
         await fetch("/api/auth/send-code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user_id: user.id, type: "2fa", email }),
         });
-        // Redirect to 2FA page
         router.push(`/verify-2fa?uid=${user.id}&email=${encodeURIComponent(email)}`);
         return;
       }
@@ -104,7 +101,7 @@ function LoginForm() {
     window.location.href = getRoleRedirectPath(role);
   }
 
-  // ── Custom domain: full-screen branded login ──
+  // ── Custom domain: full-screen branded login for ADVISOR ──
   if (isCustomDomain) {
     const accent = brand?.brand_primary || brand?.brand_accent_color || "#22d3ee";
     const displayName = brand?.app_name || brand?.company_name || "Finanční poradce";
@@ -122,10 +119,10 @@ function LoginForm() {
         />
 
         <div className="relative z-10 w-full max-w-md">
-          {/* Header */}
+          {/* Header — branded */}
           <div className="mb-8 text-center">
             {brand?.logo_url ? (
-              <img src={brand.logo_url} alt={displayName} className="mx-auto mb-4 h-14 w-auto object-contain" />
+              <img src={brand.logo_url} alt={displayName} className="mx-auto mb-4 h-16 w-auto object-contain bg-transparent" />
             ) : (
               <div
                 className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl border text-2xl font-bold"
@@ -135,11 +132,21 @@ function LoginForm() {
               </div>
             )}
             <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "Oswald, sans-serif" }}>
-              {brand?.custom_login_title || displayName}
+              Přihlášení pro poradce
             </h1>
             <p className="mt-2 text-sm text-white/40" style={{ fontFamily: "DM Sans, sans-serif" }}>
-              {brand?.custom_login_subtitle || "Přihlášení pro poradce"}
+              Správa klientů a obchodních příležitostí
             </p>
+          </div>
+
+          {/* Briefcase icon accent */}
+          <div className="mb-6 flex justify-center">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-xl"
+              style={{ backgroundColor: `${accent}15` }}
+            >
+              <Briefcase className="h-6 w-6" style={{ color: accent }} />
+            </div>
           </div>
 
           {confirmed && (
@@ -156,7 +163,7 @@ function LoginForm() {
                 <input
                   id="email" type="email" placeholder="vas@email.cz" value={email}
                   onChange={(e) => setEmail(e.target.value)} required
-                  className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:ring-2 focus:ring-white/20"
                 />
               </div>
               <div>
@@ -164,7 +171,7 @@ function LoginForm() {
                 <input
                   id="password" type="password" value={password}
                   onChange={(e) => setPassword(e.target.value)} required
-                  className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:ring-2 focus:ring-white/20"
                 />
               </div>
 
@@ -211,42 +218,42 @@ function LoginForm() {
     );
   }
 
-  // ── Default Finatiq login ──
+  // ── Default Finatiq login (dark theme to match layout) ──
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900">Přihlášení pro poradce</h2>
-      <p className="mt-2 text-gray-500">Zadejte své přihlašovací údaje</p>
+      <h2 className="text-2xl font-bold text-white" style={{ fontFamily: "Oswald, sans-serif" }}>Přihlášení pro poradce</h2>
+      <p className="mt-2 text-white/40">Zadejte své přihlašovací údaje</p>
 
       {confirmed && (
-        <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="mt-4 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400">
           Email byl úspěšně ověřen! Nyní se můžete přihlásit.
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+          <label htmlFor="email" className="block text-sm font-medium text-white/60">Email</label>
           <input
             id="email" type="email" placeholder="vas@email.cz" value={email}
             onChange={(e) => setEmail(e.target.value)} required
-            className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-200"
+            className="mt-1.5 w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:ring-2 focus:ring-cyan-500/30"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">Heslo</label>
+          <label htmlFor="password" className="block text-sm font-medium text-white/60">Heslo</label>
           <input
             id="password" type="password" value={password}
             onChange={(e) => setPassword(e.target.value)} required
-            className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-200"
+            className="mt-1.5 w-full rounded-xl border border-white/[.08] bg-white/[.04] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:ring-2 focus:ring-cyan-500/30"
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <button
           type="submit" disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 font-medium text-white transition hover:bg-gray-800 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-3 font-medium text-white transition hover:opacity-90 disabled:opacity-50"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           Přihlásit se
@@ -254,25 +261,25 @@ function LoginForm() {
       </form>
 
       <div className="mt-4 text-center">
-        <Link href="/forgot-password" className="text-sm text-gray-500 transition hover:text-gray-700">
+        <Link href="/forgot-password" className="text-sm text-white/30 transition hover:text-white/50">
           Zapomněli jste heslo?
         </Link>
       </div>
 
       <div className="mt-6 flex items-center gap-4">
-        <div className="h-px flex-1 bg-gray-200" />
-        <span className="text-xs text-gray-400">nebo</span>
-        <div className="h-px flex-1 bg-gray-200" />
+        <div className="h-px flex-1 bg-white/10" />
+        <span className="text-xs text-white/20">nebo</span>
+        <div className="h-px flex-1 bg-white/10" />
       </div>
 
       <div className="mt-4 space-y-2 text-center text-sm">
-        <p className="text-gray-500">
+        <p className="text-white/40">
           Jste klient?{" "}
-          <Link href="/portal/login" className="font-medium text-blue-600 hover:underline">Přihlaste se zde</Link>
+          <Link href="/portal/login" className="font-medium text-cyan-400 hover:text-cyan-300">Přihlaste se zde</Link>
         </p>
-        <p className="text-gray-500">
+        <p className="text-white/40">
           Nemáte účet?{" "}
-          <Link href="/register" className="font-medium text-blue-600 hover:underline">Zaregistrujte se</Link>
+          <Link href="/register" className="font-medium text-cyan-400 hover:text-cyan-300">Zaregistrujte se</Link>
         </p>
       </div>
     </div>

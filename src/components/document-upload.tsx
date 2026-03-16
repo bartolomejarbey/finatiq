@@ -109,14 +109,15 @@ export function DocumentUpload({ clientId, advisorId, category = "other", onUplo
   return (
     <div>
       <div
-        className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 p-6 transition-colors hover:border-blue-300"
+        className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 transition-colors"
+        style={{ borderColor: "var(--card-border, #e2e8f0)" }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
       >
-        <Upload className="mb-2 h-8 w-8 text-slate-300" />
-        <p className="text-sm text-slate-500">Přetáhněte soubor sem</p>
-        <p className="mt-0.5 text-xs text-slate-500">PDF, JPG, PNG — max 10 MB</p>
-        <label className="mt-3 cursor-pointer rounded-lg bg-slate-100 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200">
+        <Upload className="mb-2 h-8 w-8" style={{ color: "var(--card-text-dim, #94a3b8)" }} />
+        <p className="text-sm" style={{ color: "var(--card-text-muted, #64748b)" }}>Přetáhněte soubor sem</p>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--card-text-muted, #64748b)" }}>PDF, JPG, PNG — max 10 MB</p>
+        <label className="mt-3 cursor-pointer rounded-lg px-4 py-2 text-xs font-medium" style={{ backgroundColor: "var(--table-hover, #f1f5f9)", color: "var(--card-text-muted, #475569)" }}>
           Vybrat soubor
           <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={handleSelect} />
         </label>

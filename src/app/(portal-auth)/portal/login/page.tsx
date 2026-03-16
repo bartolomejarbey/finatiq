@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 interface AdvisorBrand {
@@ -100,7 +100,7 @@ export default function PortalLoginPage() {
         {/* Logo */}
         <div className="mb-8 text-center">
           {isCustomDomain && brand?.logo_url ? (
-            <img src={brand.logo_url} alt={displayName} className="mx-auto mb-4 h-14 w-auto object-contain" />
+            <img src={brand.logo_url} alt={displayName} className="mx-auto mb-4 h-16 w-auto object-contain bg-transparent" />
           ) : (
             <div
               className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border"
@@ -109,20 +109,23 @@ export default function PortalLoginPage() {
                 borderColor: `${accent}20`,
               }}
             >
-              <Lock className="h-6 w-6" style={{ color: accent }} />
+              <Shield className="h-6 w-6" style={{ color: accent }} />
             </div>
           )}
           <h1
             className="text-2xl font-bold text-white"
-            style={{ fontFamily: isCustomDomain ? "Oswald, sans-serif" : "'Syne', sans-serif" }}
+            style={{ fontFamily: "Oswald, sans-serif" }}
           >
-            {isCustomDomain ? (brand?.custom_login_title || displayName) : "Klientský portál"}
+            Klientský portál
           </h1>
-          <p className="mt-2 text-sm text-gray-500">
-            {isCustomDomain && brand?.custom_login_subtitle
-              ? brand.custom_login_subtitle
-              : "Přihlaste se do svého portálu"}
+          <p className="mt-2 text-sm text-white/40" style={{ fontFamily: "DM Sans, sans-serif" }}>
+            Přehled vašich smluv, plateb a dokumentů
           </p>
+          {isCustomDomain && (
+            <p className="mt-1 text-xs text-white/25" style={{ fontFamily: "DM Sans, sans-serif" }}>
+              {displayName}
+            </p>
+          )}
         </div>
 
         {/* Form card */}

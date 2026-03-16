@@ -70,7 +70,7 @@ export default function AdvisorLoginPage() {
 
   if (notFound) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-[#060d1a]">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Stránka nenalezena</CardTitle>

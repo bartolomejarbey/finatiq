@@ -40,7 +40,6 @@ export default function NotificationBell({
     }
     fetch();
 
-    // Real-time subscription
     const channel = supabase
       .channel(`${table}_${entityId}`)
       .on(
@@ -55,7 +54,6 @@ export default function NotificationBell({
     return () => { supabase.removeChannel(channel); };
   }, [table, idColumn, entityId]);
 
-  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -89,10 +87,10 @@ export default function NotificationBell({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative rounded-lg p-2 hover:bg-gray-100 transition-colors"
+        className="relative rounded-lg p-2 transition-colors hover:bg-[var(--table-hover,#f1f5f9)]"
         aria-label="Notifikace"
       >
-        <Bell className="h-5 w-5 text-gray-600" />
+        <Bell className="h-5 w-5" style={{ color: "var(--card-text-dim, #6b7280)" }} />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -101,13 +99,25 @@ export default function NotificationBell({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <span className="text-sm font-semibold text-gray-900">Oznámení</span>
+        <div
+          className="absolute right-0 top-full mt-2 w-80 rounded-xl border shadow-xl z-50 overflow-hidden"
+          style={{
+            backgroundColor: "var(--card-bg, #ffffff)",
+            borderColor: "var(--card-border, #e2e8f0)",
+          }}
+        >
+          <div
+            className="flex items-center justify-between border-b px-4 py-3"
+            style={{ borderColor: "var(--card-border, #e2e8f0)" }}
+          >
+            <span className="text-sm font-semibold" style={{ color: "var(--card-text, #0f172a)" }}>
+              Oznámení
+            </span>
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                className="text-xs transition-colors"
+                style={{ color: "var(--color-primary, #2563eb)" }}
               >
                 Označit vše jako přečtené
               </button>
@@ -116,22 +126,28 @@ export default function NotificationBell({
 
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-gray-400">Žádná oznámení</p>
+              <p className="px-4 py-8 text-center text-sm" style={{ color: "var(--card-text-dim, #9ca3af)" }}>
+                Žádná oznámení
+              </p>
             ) : (
               notifications.map((n) => (
                 <button
                   key={n.id}
                   onClick={() => markRead(n.id)}
-                  className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 ${
-                    !n.read ? "bg-blue-50/50" : ""
-                  }`}
+                  className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors"
+                  style={{
+                    backgroundColor: !n.read ? "var(--table-hover, #f8fafc)" : "transparent",
+                  }}
                 >
                   <div className={`mt-1 h-2 w-2 shrink-0 rounded-full ${typeColors[n.type] || "bg-gray-400"}`} />
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm truncate ${!n.read ? "font-medium text-gray-900" : "text-gray-600"}`}>
+                    <p
+                      className={`text-sm truncate ${!n.read ? "font-medium" : ""}`}
+                      style={{ color: !n.read ? "var(--card-text, #0f172a)" : "var(--card-text-muted, #6b7280)" }}
+                    >
                       {n.title}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs" style={{ color: "var(--card-text-dim, #9ca3af)" }}>
                       {new Date(n.created_at).toLocaleDateString("cs-CZ", {
                         day: "numeric",
                         month: "short",
@@ -140,7 +156,7 @@ export default function NotificationBell({
                       })}
                     </p>
                   </div>
-                  {!n.read && <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500" />}
+                  {!n.read && <div className="mt-2 h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: "var(--color-primary, #2563eb)" }} />}
                 </button>
               ))
             )}

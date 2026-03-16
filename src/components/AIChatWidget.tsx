@@ -55,7 +55,8 @@ export default function AIChatWidget({ clientId }: { clientId: string }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+        style={{ background: "linear-gradient(135deg, var(--color-primary, #06b6d4), var(--color-secondary, #3b82f6))" }}
         aria-label="Otevřít chat"
       >
         <MessageCircle className="h-6 w-6" />
@@ -64,11 +65,20 @@ export default function AIChatWidget({ clientId }: { clientId: string }) {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex w-[360px] max-w-[calc(100vw-2rem)] flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
-      style={{ height: "min(500px, calc(100vh - 6rem))" }}
+    <div
+      className="fixed bottom-6 right-6 z-50 flex w-[360px] max-w-[calc(100vw-2rem)] flex-col rounded-2xl border overflow-hidden"
+      style={{
+        height: "min(500px, calc(100vh - 6rem))",
+        backgroundColor: "var(--card-bg, #ffffff)",
+        borderColor: "var(--card-border, #e2e8f0)",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-white">
+      <div
+        className="flex items-center justify-between px-4 py-3 text-white"
+        style={{ background: "linear-gradient(135deg, var(--color-primary, #06b6d4), var(--color-secondary, #3b82f6))" }}
+      >
         <div className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5" />
           <span className="text-sm font-semibold">Finanční asistent</span>
@@ -85,9 +95,14 @@ export default function AIChatWidget({ clientId }: { clientId: string }) {
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-blue-600 text-white rounded-br-md"
-                  : "bg-gray-100 text-gray-800 rounded-bl-md"
+                  ? "text-white rounded-br-md"
+                  : "rounded-bl-md"
               }`}
+              style={
+                msg.role === "user"
+                  ? { backgroundColor: "var(--color-primary, #2563eb)" }
+                  : { backgroundColor: "var(--table-hover, #f1f5f9)", color: "var(--card-text, #1e293b)" }
+              }
             >
               {msg.content}
             </div>
@@ -95,8 +110,8 @@ export default function AIChatWidget({ clientId }: { clientId: string }) {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="rounded-2xl rounded-bl-md bg-gray-100 px-4 py-2.5">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+            <div className="rounded-2xl rounded-bl-md px-4 py-2.5" style={{ backgroundColor: "var(--table-hover, #f1f5f9)" }}>
+              <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--card-text-dim, #9ca3af)" }} />
             </div>
           </div>
         )}
@@ -106,19 +121,26 @@ export default function AIChatWidget({ clientId }: { clientId: string }) {
       {/* Input */}
       <form
         onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-        className="flex items-center gap-2 border-t border-gray-100 p-3"
+        className="flex items-center gap-2 border-t p-3"
+        style={{ borderColor: "var(--card-border, #e2e8f0)" }}
       >
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Napište svůj dotaz..."
-          className="flex-1 rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+          className="flex-1 rounded-full border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2"
+          style={{
+            backgroundColor: "var(--table-hover, #f8fafc)",
+            borderColor: "var(--card-border, #e2e8f0)",
+            color: "var(--card-text, #1e293b)",
+          }}
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white disabled:opacity-40 hover:bg-blue-700 transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-white disabled:opacity-40 transition-colors"
+          style={{ backgroundColor: "var(--color-primary, #2563eb)" }}
         >
           <Send className="h-4 w-4" />
         </button>
