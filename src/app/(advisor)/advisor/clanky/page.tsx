@@ -50,7 +50,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   pojisteni: "bg-purple-100 text-purple-800",
   investice: "bg-green-100 text-green-800",
   dane: "bg-orange-100 text-orange-800",
-  obecne: "bg-slate-100 text-slate-800",
+  obecne: "bg-[var(--table-hover)] text-[var(--card-text)]",
 };
 
 export default function AdvisorArticlesPage() {
@@ -244,7 +244,7 @@ export default function AdvisorArticlesPage() {
                     <Badge
                       className={`text-[10px] shrink-0 ${
                         CATEGORY_COLORS[article.category] ||
-                        "bg-slate-100 text-slate-800"
+                        "bg-[var(--table-hover)] text-[var(--card-text)]"
                       }`}
                     >
                       {CATEGORY_LABELS[article.category] || article.category}
@@ -253,7 +253,7 @@ export default function AdvisorArticlesPage() {
                       className={`text-[10px] shrink-0 ${
                         article.is_published
                           ? "bg-green-100 text-green-800"
-                          : "bg-slate-100 text-slate-600"
+                          : "bg-[var(--table-hover)] text-[var(--card-text-muted)]"
                       }`}
                     >
                       {article.is_published ? "Publikováno" : "Koncept"}

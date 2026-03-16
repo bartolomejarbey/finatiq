@@ -33,7 +33,7 @@ function StarRating({ rating }: { rating: number }) {
           className={`h-4 w-4 ${
             star <= rating
               ? "fill-yellow-400 text-yellow-400"
-              : "text-gray-300"
+              : "text-[var(--card-text-dim)]"
           }`}
         />
       ))}

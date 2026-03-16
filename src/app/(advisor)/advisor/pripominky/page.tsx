@@ -60,7 +60,7 @@ function getDueStatus(dueDate: string, isCompleted: boolean) {
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   if (diffDays < 0) return { label: "Po termínu", className: "bg-red-100 text-red-700", icon: AlertTriangle };
   if (diffDays === 0) return { label: "Dnes", className: "bg-amber-100 text-amber-700", icon: Clock };
-  return { label: `Za ${diffDays} dní`, className: "bg-slate-100 text-slate-600", icon: Calendar };
+  return { label: `Za ${diffDays} dní`, className: "bg-[var(--table-hover)] text-[var(--card-text-muted)]", icon: Calendar };
 }
 
 export default function RemindersPage() {
@@ -140,8 +140,8 @@ export default function RemindersPage() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Připomínky</h1>
-          <p className="mt-0.5 text-sm text-slate-500">{filtered.length} připomínek</p>
+          <h1 className="text-2xl font-bold text-[var(--card-text)]">Připomínky</h1>
+          <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{filtered.length} připomínek</p>
         </div>
         <div className="flex items-center gap-3">
           <Select value={filter} onValueChange={setFilter}>
@@ -159,9 +159,9 @@ export default function RemindersPage() {
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <Bell className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádné připomínky</p>
-          <p className="text-sm text-slate-300">Vytvořte první připomínku</p>
+          <Bell className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné připomínky</p>
+          <p className="text-sm text-[var(--card-text-dim)]">Vytvořte první připomínku</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -172,23 +172,23 @@ export default function RemindersPage() {
               <div key={r.id} className="flex items-center gap-4 rounded-xl border bg-[var(--card-bg)] p-4 shadow-sm">
                 <button
                   onClick={() => !r.is_completed && handleComplete(r.id)}
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${r.is_completed ? "border-emerald-500 bg-emerald-500" : "border-slate-300 hover:border-blue-400"}`}
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${r.is_completed ? "border-emerald-500 bg-emerald-500" : "border-[var(--card-border)] hover:border-blue-400"}`}
                 >
                   {r.is_completed && <Check className="h-4 w-4 text-white" />}
                 </button>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${r.is_completed ? "text-slate-400 line-through" : "text-slate-900"}`}>{r.title}</p>
-                  {r.description && <p className="mt-0.5 text-xs text-slate-500 truncate">{r.description}</p>}
+                  <p className={`text-sm font-medium ${r.is_completed ? "text-[var(--card-text-dim)] line-through" : "text-[var(--card-text)]"}`}>{r.title}</p>
+                  {r.description && <p className="mt-0.5 text-xs text-[var(--card-text-muted)] truncate">{r.description}</p>}
                   <div className="mt-1 flex items-center gap-2">
                     <Badge variant="outline" className="text-[10px]">{typeLabels[r.type] || r.type}</Badge>
-                    <span className="text-[10px] text-slate-400">{new Date(r.due_date).toLocaleDateString("cs-CZ")}</span>
+                    <span className="text-[10px] text-[var(--card-text-dim)]">{new Date(r.due_date).toLocaleDateString("cs-CZ")}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${status.className}`}>
                     <StatusIcon className="h-3 w-3" />{status.label}
                   </span>
-                  <button onClick={() => handleDelete(r.id)} className="text-xs text-slate-500 hover:text-red-500">Smazat</button>
+                  <button onClick={() => handleDelete(r.id)} className="text-xs text-[var(--card-text-muted)] hover:text-red-500">Smazat</button>
                 </div>
               </div>
             );

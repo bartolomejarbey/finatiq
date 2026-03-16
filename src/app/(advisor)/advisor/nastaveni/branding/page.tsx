@@ -430,7 +430,7 @@ function LivePreview({ state }: { state: BrandingState }) {
 
   return (
     <div
-      className="w-full h-[420px] rounded-lg border border-gray-200 overflow-hidden flex"
+      className="w-full h-[420px] rounded-lg border border-[var(--card-border)] overflow-hidden flex"
       style={{ fontFamily: state.brand_font + ", sans-serif", fontSize: "10px" }}
     >
       {/* Mini sidebar */}

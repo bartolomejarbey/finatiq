@@ -139,8 +139,8 @@ export function NewDealSheet({ open, onOpenChange, stages, onCreated }: Props) {
           {/* Section: Contact */}
           <div>
             <div className="mb-3 flex items-center gap-2">
-              <User className="h-4 w-4 text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-700">Kontakt</h3>
+              <User className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h3 className="text-sm font-semibold text-[var(--card-text)]">Kontakt</h3>
             </div>
             <div className="space-y-3">
               <div className="space-y-1">
@@ -185,8 +185,8 @@ export function NewDealSheet({ open, onOpenChange, stages, onCreated }: Props) {
           {/* Section: Deal */}
           <div>
             <div className="mb-3 flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-700">Deal</h3>
+              <Briefcase className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h3 className="text-sm font-semibold text-[var(--card-text)]">Deal</h3>
             </div>
             <div className="space-y-3">
               <div className="space-y-1">
@@ -262,9 +262,9 @@ export function NewDealSheet({ open, onOpenChange, stages, onCreated }: Props) {
           {/* Section: Note */}
           <div>
             <div className="mb-3 flex items-center gap-2">
-              <StickyNote className="h-4 w-4 text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-700">
-                Poznámka <span className="font-normal text-slate-400">(volitelná)</span>
+              <StickyNote className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h3 className="text-sm font-semibold text-[var(--card-text)]">
+                Poznámka <span className="font-normal text-[var(--card-text-dim)]">(volitelná)</span>
               </h3>
             </div>
             <Textarea

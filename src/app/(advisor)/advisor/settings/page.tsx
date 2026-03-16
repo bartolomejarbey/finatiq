@@ -218,8 +218,8 @@ export default function SettingsPage() {
             }}
             className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === t.key
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-slate-400 hover:text-slate-600"
+                ? "border-[var(--color-primary)] text-[var(--color-primary)]"
+                : "border-transparent text-[var(--card-text-dim)] hover:text-[var(--card-text-muted)]"
             }`}
           >
             <t.icon className="h-4 w-4" />
@@ -241,18 +241,18 @@ export default function SettingsPage() {
                 <Palette className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Branding a personalizace</h2>
-                <p className="text-xs text-slate-500">Logo, barvy, fonty, rozložení</p>
+                <h2 className="text-sm font-semibold text-[var(--card-text)]">Branding a personalizace</h2>
+                <p className="text-xs text-[var(--card-text-muted)]">Logo, barvy, fonty, rozložení</p>
               </div>
             </div>
-            <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
+            <ArrowRight className="h-4 w-4 text-[var(--card-text-dim)] group-hover:text-[var(--card-text-muted)] transition-colors" />
           </button>
 
           {/* Profil firmy */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <Sliders className="h-4 w-4 text-slate-400" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+              <Sliders className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
                 Profil firmy
               </h2>
             </div>
@@ -310,8 +310,8 @@ export default function SettingsPage() {
           {/* Správa tagů */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <Tag className="h-4 w-4 text-slate-400" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+              <Tag className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
                 Správa tagů
               </h2>
             </div>
@@ -340,7 +340,7 @@ export default function SettingsPage() {
                   </span>
                   <button
                     onClick={() => handleDeleteTag(tag.id)}
-                    className="text-slate-400 hover:text-red-500"
+                    className="text-[var(--card-text-dim)] hover:text-red-500"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -373,10 +373,10 @@ export default function SettingsPage() {
       {activeTab === "moduly" && (
         <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
-            <Boxes className="h-4 w-4 text-slate-400" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">Moduly</h2>
+            <Boxes className="h-4 w-4 text-[var(--card-text-dim)]" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Moduly</h2>
           </div>
-          <p className="mb-6 text-xs text-slate-500">
+          <p className="mb-6 text-xs text-[var(--card-text-muted)]">
             Zapněte nebo vypněte moduly podle potřeby. Vypnuté moduly se skryjí z navigace.
           </p>
           <div className="space-y-4">
@@ -386,20 +386,20 @@ export default function SettingsPage() {
               return (
                 <div
                   key={key}
-                  className={`flex items-center justify-between rounded-lg border p-4 transition-all ${isLockedByPlan ? "opacity-60 bg-slate-50" : "hover:shadow-sm"}`}
+                  className={`flex items-center justify-between rounded-lg border p-4 transition-all ${isLockedByPlan ? "opacity-60 bg-[var(--table-hover)]" : "hover:shadow-sm"}`}
                 >
                   <div className="flex items-center gap-3">
-                    {isLockedByPlan && <Lock className="h-4 w-4 text-slate-400 shrink-0" />}
+                    {isLockedByPlan && <Lock className="h-4 w-4 text-[var(--card-text-dim)] shrink-0" />}
                     <div>
-                      <p className="text-sm font-medium text-slate-900">{label}</p>
-                      <p className="text-xs text-slate-500">{description}</p>
+                      <p className="text-sm font-medium text-[var(--card-text)]">{label}</p>
+                      <p className="text-xs text-[var(--card-text-muted)]">{description}</p>
                       {isLockedByPlan && (
                         <p className="text-xs text-amber-600 mt-0.5">Dostupné v plánu {upgradeTo}</p>
                       )}
                     </div>
                   </div>
                   {isLockedByPlan ? (
-                    <span className="text-xs text-slate-400 font-medium">Zamčeno</span>
+                    <span className="text-xs text-[var(--card-text-dim)] font-medium">Zamčeno</span>
                   ) : (
                     <Switch
                       checked={enabledModules[key] ?? true}
@@ -419,8 +419,8 @@ export default function SettingsPage() {
           {/* Meta Ads */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <Megaphone className="h-4 w-4 text-slate-400" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+              <Megaphone className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
                 Meta Ads propojení
               </h2>
               {advisor?.meta_ad_account_id ? (
@@ -429,13 +429,13 @@ export default function SettingsPage() {
                   Propojeno
                 </span>
               ) : (
-                <span className="ml-auto flex items-center gap-1 text-xs font-medium text-slate-400">
+                <span className="ml-auto flex items-center gap-1 text-xs font-medium text-[var(--card-text-dim)]">
                   <XCircle className="h-3 w-3" />
                   Nepropojeno
                 </span>
               )}
             </div>
-            <p className="mb-4 text-xs text-slate-500">
+            <p className="mb-4 text-xs text-[var(--card-text-muted)]">
               Pro propojení potřebujete Meta Business účet a přístupový token z Meta Business Suite.
             </p>
             <div className="space-y-4">
@@ -481,20 +481,20 @@ export default function SettingsPage() {
           {/* Google Calendar */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-slate-400" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+              <Calendar className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
                 Google Calendar
               </h2>
-              <span className="ml-auto flex items-center gap-1 text-xs font-medium text-slate-400">
+              <span className="ml-auto flex items-center gap-1 text-xs font-medium text-[var(--card-text-dim)]">
                 <XCircle className="h-3 w-3" />
                 Nepropojeno
               </span>
             </div>
-            <p className="mb-1 text-sm text-slate-600">
+            <p className="mb-1 text-sm text-[var(--card-text-muted)]">
               Funkce bude brzy dostupná — po připojení se vaše schůzky automaticky synchronizují
               s Google Calendar.
             </p>
-            <p className="mb-4 text-xs text-slate-500">
+            <p className="mb-4 text-xs text-[var(--card-text-muted)]">
               Po kliknutí budete přesměrováni na Google pro udělení přístupu ke kalendáři.
             </p>
             <Button
@@ -510,12 +510,12 @@ export default function SettingsPage() {
           {/* Messaging webhook */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <Link2 className="h-4 w-4 text-slate-400" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+              <Link2 className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
                 Messaging Webhook
               </h2>
             </div>
-            <p className="mb-3 text-xs text-slate-500">
+            <p className="mb-3 text-xs text-[var(--card-text-muted)]">
               Tuto URL nastavte jako webhook ve vašem messaging botu (Messenger, Instagram, WhatsApp).
             </p>
             <div className="flex items-center gap-2">
@@ -551,12 +551,12 @@ export default function SettingsPage() {
           {/* Webhook URL */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <Link2 className="h-4 w-4 text-slate-400" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+              <Link2 className="h-4 w-4 text-[var(--card-text-dim)]" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
                 Webhook URL
               </h2>
             </div>
-            <p className="mb-3 text-xs text-slate-500">
+            <p className="mb-3 text-xs text-[var(--card-text-muted)]">
               Tuto URL nastavte v Meta Business Suite jako Webhook endpoint pro Lead Ads.
             </p>
             <div className="flex items-center gap-2">

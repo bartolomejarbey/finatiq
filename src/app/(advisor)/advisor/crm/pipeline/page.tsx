@@ -235,7 +235,7 @@ export default function PipelinePage() {
 
   return (
     <ModuleGate moduleKey="crm" moduleName="Obchodní příležitosti" moduleDescription="Kanban board pro správu obchodních případů — sledujte každý deal od prvního kontaktu po uzavření.">
-    <div className="flex h-full flex-col bg-[#FAFBFC]">
+    <div className="flex h-full flex-col bg-[var(--color-background)]">
       {/* Header — clean, no box */}
       <div className="px-6 md:px-8 pt-6 pb-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -268,7 +268,7 @@ export default function PipelinePage() {
             </Select>
             <button
               onClick={() => setSheetOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-800"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
             >
               <Plus className="h-4 w-4" />
               Nový deal
@@ -287,7 +287,7 @@ export default function PipelinePage() {
                 className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-all ${
                   selectedTags.includes(tag.id)
                     ? "border-transparent text-white shadow-sm"
-                    : "border-[var(--card-border)] text-[var(--card-text-muted)] hover:border-gray-300"
+                    : "border-[var(--card-border)] text-[var(--card-text-muted)] hover:border-[var(--card-border)]"
                 }`}
                 style={selectedTags.includes(tag.id) ? { backgroundColor: tag.color } : undefined}
               >
@@ -328,7 +328,7 @@ export default function PipelinePage() {
                       <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
-                        className={`flex-1 space-y-0 transition-colors duration-150 rounded-lg ${snapshot.isDraggingOver ? "bg-blue-50/40" : ""}`}
+                        className={`flex-1 space-y-0 transition-colors duration-150 rounded-lg ${snapshot.isDraggingOver ? "bg-[var(--table-hover)]/40" : ""}`}
                         style={{ minHeight: 60 }}
                       >
                         {stageDeals.length === 0 && !snapshot.isDraggingOver && (
@@ -377,7 +377,7 @@ export default function PipelinePage() {
 
 function PipelineSkeleton() {
   return (
-    <div className="flex h-full flex-col bg-[#FAFBFC]">
+    <div className="flex h-full flex-col bg-[var(--color-background)]">
       <div className="px-8 pt-6 pb-4">
         <Skeleton className="h-7 w-52" />
         <Skeleton className="mt-2 h-4 w-72" />

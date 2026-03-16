@@ -91,7 +91,7 @@ export default function ClientContractsQueue() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold gradient-text">Smlouvy od klientů</h1>
-          <p className="mt-0.5 text-sm text-slate-500">{contracts.filter((c) => c.processing_status === "new").length} nových</p>
+          <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{contracts.filter((c) => c.processing_status === "new").length} nových</p>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export default function ClientContractsQueue() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${filter === f.key ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${filter === f.key ? "bg-blue-600 text-white" : "bg-[var(--table-hover)] text-[var(--card-text-muted)] hover:bg-[var(--table-header)]"}`}
           >
             {f.label}
           </button>
@@ -114,20 +114,20 @@ export default function ClientContractsQueue() {
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center py-16">
-          <FileText className="mb-4 h-12 w-12 text-slate-200" />
-          <p className="text-lg font-medium text-slate-400">Žádné smlouvy</p>
+          <FileText className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné smlouvy</p>
         </div>
       ) : (
         <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
           <table className="w-full">
-            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700"><th className="px-6 py-3">Klient</th><th className="px-6 py-3">Smlouva</th><th className="px-6 py-3">Typ</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Dokument</th><th className="px-6 py-3">Stav</th></tr></thead>
+            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Klient</th><th className="px-6 py-3">Smlouva</th><th className="px-6 py-3">Typ</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Dokument</th><th className="px-6 py-3">Stav</th></tr></thead>
             <tbody>
               {filtered.map((c) => (
-                <tr key={c.id} className="border-b last:border-0 hover:bg-slate-50">
-                  <td className="px-6 py-3 text-sm font-medium text-slate-900">{c.client_name}</td>
-                  <td className="px-6 py-3 text-sm text-slate-700">{c.title}</td>
+                <tr key={c.id} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
+                  <td className="px-6 py-3 text-sm font-medium text-[var(--card-text)]">{c.client_name}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text)]">{c.title}</td>
                   <td className="px-6 py-3"><Badge variant="secondary" className="text-[10px]">{c.type === "uver" ? "Úvěr" : c.type === "pojisteni" ? "Pojištění" : c.type}</Badge></td>
-                  <td className="px-6 py-3 text-sm text-slate-500">{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
                   <td className="px-6 py-3">
                     {(docs[c.client_id] || []).length > 0 ? (
                       <Button size="sm" variant="outline" className="text-xs" onClick={async () => {
@@ -137,7 +137,7 @@ export default function ClientContractsQueue() {
                       }}>
                         <Download className="mr-1 h-3 w-3" />Stáhnout
                       </Button>
-                    ) : <span className="text-xs text-slate-500">—</span>}
+                    ) : <span className="text-xs text-[var(--card-text-muted)]">—</span>}
                   </td>
                   <td className="px-6 py-3">
                     <Select value={c.processing_status} onValueChange={(v) => updateStatus(c.id, v)}>

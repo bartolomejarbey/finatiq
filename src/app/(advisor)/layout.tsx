@@ -43,10 +43,10 @@ const NAV_DEFS: NavDef[] = [
 
 function LoadingScreen() {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+    <div className="flex h-screen w-full items-center justify-center bg-[var(--color-background)]">
       <div className="flex flex-col items-center gap-4">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
-        <p className="text-sm font-medium text-slate-500">Načítání...</p>
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--card-border)] border-t-[var(--color-primary)]" />
+        <p className="text-sm font-medium text-[var(--card-text-muted)]">Načítání...</p>
       </div>
     </div>
   );
@@ -115,7 +115,7 @@ function AdvisorLayoutInner({ children }: { children: React.ReactNode }) {
     <div className="px-3 pb-2">
       <button
         onClick={() => setTicketOpen(true)}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--card-text-dim)] transition-colors hover:bg-[var(--table-hover)] hover:text-[var(--card-text-muted)]"
       >
         <HelpCircle className="h-5 w-5" />
         Potřebuji pomoc

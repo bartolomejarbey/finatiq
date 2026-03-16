@@ -102,7 +102,7 @@ export default function ClientsPage() {
 
   if (loading) {
     return (
-      <div className="bg-[#FAFBFC] min-h-full p-6 md:p-8">
+      <div className="bg-[var(--color-background)] min-h-full p-6 md:p-8">
         <Skeleton className="h-7 w-32" />
         <Skeleton className="mt-2 h-4 w-24" />
         <Skeleton className="mt-6 h-10 w-full rounded-full" />
@@ -112,7 +112,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="bg-[#FAFBFC] min-h-full p-6 md:p-8">
+    <div className="bg-[var(--color-background)] min-h-full p-6 md:p-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -128,12 +128,12 @@ export default function ClientsPage() {
               placeholder="Hledat..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-64 rounded-full border border-[var(--input-border)] bg-[var(--input-bg)] py-2 pl-10 pr-4 text-sm text-[var(--input-text)] shadow-sm outline-none transition placeholder:text-[var(--input-placeholder)] focus:border-gray-300 focus:ring-2 focus:ring-gray-100"
+              className="w-64 rounded-full border border-[var(--input-border)] bg-[var(--input-bg)] py-2 pl-10 pr-4 text-sm text-[var(--input-text)] shadow-sm outline-none transition placeholder:text-[var(--input-placeholder)] focus:border-[var(--card-border)] focus:ring-2 focus:ring-[var(--card-border)]"
             />
           </div>
           <button
             onClick={() => setDialogOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-800"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
           >
             <Plus className="h-4 w-4" />
             Nový klient
@@ -150,7 +150,7 @@ export default function ClientsPage() {
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
               segmentFilter === seg.key
                 ? "bg-black text-white shadow-sm"
-                : "bg-[var(--card-bg)] text-[var(--card-text-muted)] border border-[var(--card-border)] hover:border-gray-300"
+                : "bg-[var(--card-bg)] text-[var(--card-text-muted)] border border-[var(--card-border)] hover:border-[var(--card-border)]"
             }`}
           >
             {seg.label}
@@ -251,7 +251,7 @@ export default function ClientsPage() {
             <div className="space-y-1"><Label className="text-xs">Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
             <div className="space-y-1"><Label className="text-xs">Telefon</Label><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
             <DialogFooter>
-              <Button type="submit" disabled={saving} className="rounded-full bg-black text-white hover:bg-gray-800">
+              <Button type="submit" disabled={saving} className="rounded-full bg-[var(--color-primary)] text-white hover:opacity-90">
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Vytvořit
               </Button>

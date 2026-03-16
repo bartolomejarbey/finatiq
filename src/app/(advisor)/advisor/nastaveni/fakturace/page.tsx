@@ -104,7 +104,7 @@ export default function AdvisorFakturacePage() {
       overdue: "Po splatnosti",
       pending: "Čeká na platbu",
     };
-    return <Badge className={map[s] || "bg-gray-100"}>{labels[s] || s}</Badge>;
+    return <Badge className={map[s] || "bg-[var(--table-hover)]"}>{labels[s] || s}</Badge>;
   };
 
   if (loading)

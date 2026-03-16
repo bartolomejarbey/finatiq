@@ -39,7 +39,7 @@ const ACTIVITY_CONFIG: Record<string, { label: string; icon: typeof Phone; color
   call: { label: "Hovor", icon: Phone, color: "text-emerald-600", bg: "bg-emerald-50" },
   email: { label: "Email", icon: Mail, color: "text-blue-600", bg: "bg-blue-50" },
   meeting: { label: "Schůzka", icon: Calendar, color: "text-violet-600", bg: "bg-violet-50" },
-  note: { label: "Poznámka", icon: FileText, color: "text-slate-600", bg: "bg-slate-100" },
+  note: { label: "Poznámka", icon: FileText, color: "text-[var(--card-text-muted)]", bg: "bg-[var(--table-hover)]" },
   task: { label: "Úkol", icon: CheckSquare, color: "text-amber-600", bg: "bg-amber-50" },
 };
 
@@ -227,7 +227,7 @@ export default function DealDetailPage() {
   }
 
   if (loading) return <DetailSkeleton />;
-  if (!deal) return <div className="flex h-full items-center justify-center"><p className="text-slate-500">Deal nenalezen.</p></div>;
+  if (!deal) return <div className="flex h-full items-center justify-center"><p className="text-[var(--card-text-muted)]">Deal nenalezen.</p></div>;
 
   const currentStage = stages.find((s) => s.id === stageId);
 
@@ -235,7 +235,7 @@ export default function DealDetailPage() {
     <div className="h-full overflow-y-auto">
       {/* Header */}
       <div className="border-b bg-[var(--card-bg)] px-8 py-5">
-        <button onClick={() => router.push("/advisor/crm/pipeline")} className="mb-3 flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900"><ArrowLeft className="h-4 w-4" />Zpět na pipeline</button>
+        <button onClick={() => router.push("/advisor/crm/pipeline")} className="mb-3 flex items-center gap-1.5 text-sm text-[var(--card-text-muted)] hover:text-[var(--card-text)]"><ArrowLeft className="h-4 w-4" />Zpět na pipeline</button>
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -245,14 +245,14 @@ export default function DealDetailPage() {
             </div>
             <div className="mt-1 flex items-center gap-4">
               <span className="text-2xl font-bold text-blue-600">{formatCZK(deal.value)}</span>
-              {currentStage && <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: currentStage.color }} /><span className="text-sm font-medium text-slate-600">{currentStage.name}</span></div>}
+              {currentStage && <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: currentStage.color }} /><span className="text-sm font-medium text-[var(--card-text-muted)]">{currentStage.name}</span></div>}
             </div>
             {/* Tags */}
             <div className="mt-2 flex flex-wrap gap-1">
               {allTags.map((tag) => (
                 <button key={tag.id} onClick={() => toggleTag(tag.id)}
                   className={`rounded-full border px-2 py-0.5 text-[10px] font-medium transition-all ${
-                    dealTagIds.includes(tag.id) ? "border-transparent text-white" : "border-slate-200 text-slate-400 hover:border-slate-300"
+                    dealTagIds.includes(tag.id) ? "border-transparent text-white" : "border-[var(--card-border)] text-[var(--card-text-dim)] hover:border-[var(--card-border)]"
                   }`}
                   style={dealTagIds.includes(tag.id) ? { backgroundColor: tag.color } : undefined}
                 >{tag.name}</button>
@@ -279,7 +279,7 @@ export default function DealDetailPage() {
         <div className="col-span-2 space-y-6">
           {/* Details */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Detaily dealu</h2>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Detaily dealu</h2>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Název"><Input value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
               <Field label="Hodnota (Kč)"><Input type="number" value={value} onChange={(e) => setValue(e.target.value)} /></Field>
@@ -302,8 +302,8 @@ export default function DealDetailPage() {
 
           {/* Documents */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Dokumenty</h2>
-            <label className={`mb-4 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 py-6 text-sm text-slate-500 transition-colors hover:border-blue-300 hover:text-blue-500 ${uploading ? "pointer-events-none opacity-50" : ""}`}>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Dokumenty</h2>
+            <label className={`mb-4 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--card-border)] py-6 text-sm text-[var(--card-text-muted)] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] ${uploading ? "pointer-events-none opacity-50" : ""}`}>
               {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
               {uploading ? "Nahrávání..." : "Klikněte nebo přetáhněte soubor (PDF, JPG, PNG)"}
               <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileUpload} className="hidden" />
@@ -313,13 +313,13 @@ export default function DealDetailPage() {
                 {documents.map((doc) => (
                   <div key={doc.id} className="flex items-center justify-between rounded-lg border px-4 py-2.5">
                     <div className="flex items-center gap-2 min-w-0">
-                      <FileText className="h-4 w-4 shrink-0 text-slate-400" />
-                      <span className="truncate text-sm text-slate-700">{doc.original_filename}</span>
-                      <span className="text-xs text-slate-500">{formatDate(doc.created_at)}</span>
+                      <FileText className="h-4 w-4 shrink-0 text-[var(--card-text-dim)]" />
+                      <span className="truncate text-sm text-[var(--card-text)]">{doc.original_filename}</span>
+                      <span className="text-xs text-[var(--card-text-muted)]">{formatDate(doc.created_at)}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => handleDownloadDoc(doc)} className="rounded p-1.5 hover:bg-slate-100"><Download className="h-4 w-4 text-slate-400" /></button>
-                      <button onClick={() => handleDeleteDoc(doc)} className="rounded p-1.5 hover:bg-red-50"><Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500" /></button>
+                      <button onClick={() => handleDownloadDoc(doc)} className="rounded p-1.5 hover:bg-[var(--table-hover)]"><Download className="h-4 w-4 text-[var(--card-text-dim)]" /></button>
+                      <button onClick={() => handleDeleteDoc(doc)} className="rounded p-1.5 hover:bg-red-50"><Trash2 className="h-4 w-4 text-[var(--card-text-dim)] hover:text-red-500" /></button>
                     </div>
                   </div>
                 ))}
@@ -329,8 +329,8 @@ export default function DealDetailPage() {
 
           {/* Activities */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Aktivity</h2>
-            <form onSubmit={handleAddActivity} className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Aktivity</h2>
+            <form onSubmit={handleAddActivity} className="mb-6 rounded-lg border border-[var(--card-border)] bg-[var(--table-hover)] p-4">
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Typ">
                   <Select value={actType} onValueChange={setActType}><SelectTrigger><SelectValue /></SelectTrigger>
@@ -338,17 +338,17 @@ export default function DealDetailPage() {
                   </Select>
                 </Field>
                 <Field label="Datum"><Input type="datetime-local" value={actDate} onChange={(e) => setActDate(e.target.value)} /></Field>
-                <div className="col-span-2 space-y-1"><Label className="text-xs text-slate-500">Nadpis *</Label><Input value={actTitle} onChange={(e) => setActTitle(e.target.value)} required placeholder="Např. Hovor s klientem" /></div>
-                <div className="col-span-2 space-y-1"><Label className="text-xs text-slate-500">Popis</Label><Textarea value={actDesc} onChange={(e) => setActDesc(e.target.value)} rows={2} /></div>
+                <div className="col-span-2 space-y-1"><Label className="text-xs text-[var(--card-text-muted)]">Nadpis *</Label><Input value={actTitle} onChange={(e) => setActTitle(e.target.value)} required placeholder="Např. Hovor s klientem" /></div>
+                <div className="col-span-2 space-y-1"><Label className="text-xs text-[var(--card-text-muted)]">Popis</Label><Textarea value={actDesc} onChange={(e) => setActDesc(e.target.value)} rows={2} /></div>
               </div>
               <Button type="submit" size="sm" className="mt-3" disabled={addingActivity}>{addingActivity && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}Přidat aktivitu</Button>
             </form>
             <Separator className="mb-5" />
             {activities.length === 0 ? (
-              <div className="flex flex-col items-center py-8"><MessageSquare className="mb-3 h-10 w-10 text-slate-200" /><p className="text-sm text-slate-500">Zatím žádné aktivity</p></div>
+              <div className="flex flex-col items-center py-8"><MessageSquare className="mb-3 h-10 w-10 text-[var(--card-text-dim)]" /><p className="text-sm text-[var(--card-text-muted)]">Zatím žádné aktivity</p></div>
             ) : (
               <div className="relative space-y-0">
-                <div className="absolute left-[15px] top-4 bottom-4 w-px bg-slate-200" />
+                <div className="absolute left-[15px] top-4 bottom-4 w-px bg-[var(--card-text-dim)]" />
                 {activities.map((act) => {
                   const cfg = ACTIVITY_CONFIG[act.type] || ACTIVITY_CONFIG.note;
                   const Icon = cfg.icon;
@@ -356,9 +356,9 @@ export default function DealDetailPage() {
                     <div key={act.id} className="relative flex gap-4 pb-5">
                       <div className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cfg.bg}`}><Icon className={`h-4 w-4 ${cfg.color}`} /></div>
                       <div className="flex-1 pt-0.5">
-                        <div className="flex items-center gap-2"><span className="text-sm font-semibold text-slate-900">{act.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${cfg.bg} ${cfg.color}`}>{cfg.label}</span></div>
-                        {act.description && <p className="mt-1 text-sm text-slate-500">{act.description}</p>}
-                        <p className="mt-1 text-xs text-slate-500">{formatDate(act.created_at)}{act.scheduled_at && ` · Naplánováno: ${formatDate(act.scheduled_at)}`}</p>
+                        <div className="flex items-center gap-2"><span className="text-sm font-semibold text-[var(--card-text)]">{act.title}</span><span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${cfg.bg} ${cfg.color}`}>{cfg.label}</span></div>
+                        {act.description && <p className="mt-1 text-sm text-[var(--card-text-muted)]">{act.description}</p>}
+                        <p className="mt-1 text-xs text-[var(--card-text-muted)]">{formatDate(act.created_at)}{act.scheduled_at && ` · Naplánováno: ${formatDate(act.scheduled_at)}`}</p>
                       </div>
                     </div>
                   );
@@ -372,24 +372,24 @@ export default function DealDetailPage() {
         <div className="space-y-4">
           {/* Contact */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">Kontakt</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Kontakt</h3>
             {deal.contact_name ? (
-              <div className="mb-3 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">{deal.contact_name[0].toUpperCase()}</div><p className="font-semibold text-slate-900">{deal.contact_name}</p></div>
-            ) : <p className="mb-3 text-sm text-slate-500">Žádný kontakt</p>}
+              <div className="mb-3 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">{deal.contact_name[0].toUpperCase()}</div><p className="font-semibold text-[var(--card-text)]">{deal.contact_name}</p></div>
+            ) : <p className="mb-3 text-sm text-[var(--card-text-muted)]">Žádný kontakt</p>}
             {deal.contact_email && <CopyRow icon={Mail} text={deal.contact_email} field="email" copied={copiedField} onCopy={copyToClipboard} />}
             {deal.contact_phone && <CopyRow icon={Phone} text={deal.contact_phone} field="phone" copied={copiedField} onCopy={copyToClipboard} />}
           </div>
 
           {/* Stage progress */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">Průběh</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Průběh</h3>
             <div className="space-y-1">
               {stages.map((s) => {
                 const isActive = s.id === stageId;
                 const currentPos = stages.find((st) => st.id === stageId)?.position ?? 0;
                 const isPast = s.position < currentPos;
                 return (
-                  <button key={s.id} onClick={() => setStageId(s.id)} className={`flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-sm transition-colors ${isActive ? "bg-blue-50 font-semibold text-blue-700" : isPast ? "text-slate-400" : "text-slate-500 hover:bg-slate-50"}`}>
+                  <button key={s.id} onClick={() => setStageId(s.id)} className={`flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-sm transition-colors ${isActive ? "bg-blue-50 font-semibold text-blue-700" : isPast ? "text-[var(--card-text-dim)]" : "text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}>
                     <div className={`h-2 w-2 rounded-full ${isActive ? "ring-2 ring-blue-200" : isPast ? "opacity-50" : ""}`} style={{ backgroundColor: s.color }} />{s.name}
                   </button>
                 );
@@ -399,15 +399,15 @@ export default function DealDetailPage() {
 
           {/* Client */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">Klient</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Klient</h3>
             {clientId && clients.find((c) => c.id === clientId) ? (
-              <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100"><User className="h-4 w-4 text-slate-500" /></div><p className="text-sm font-medium text-slate-900">{clients.find((c) => c.id === clientId)!.first_name} {clients.find((c) => c.id === clientId)!.last_name}</p></div>
-            ) : <div className="text-center"><User className="mx-auto mb-2 h-8 w-8 text-slate-200" /><p className="text-xs text-slate-500">Žádný klient</p></div>}
+              <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--table-hover)]"><User className="h-4 w-4 text-[var(--card-text-muted)]" /></div><p className="text-sm font-medium text-[var(--card-text)]">{clients.find((c) => c.id === clientId)!.first_name} {clients.find((c) => c.id === clientId)!.last_name}</p></div>
+            ) : <div className="text-center"><User className="mx-auto mb-2 h-8 w-8 text-[var(--card-text-dim)]" /><p className="text-xs text-[var(--card-text-muted)]">Žádný klient</p></div>}
           </div>
 
           {/* Info */}
           <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">Informace</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Informace</h3>
             <dl className="space-y-2.5 text-sm">
               <InfoRow label="Vytvořeno" value={formatDate(deal.created_at)} />
               <InfoRow label="Zdroj" value={deal.source === "meta" ? "Meta Ads" : deal.source === "referral" ? "Doporučení" : "Manuální"} />
@@ -435,8 +435,8 @@ export default function DealDetailPage() {
           <DialogHeader><DialogTitle>Náhled emailu: {selectedTemplate?.name}</DialogTitle></DialogHeader>
           {selectedTemplate && (
             <div>
-              <div className="mb-3 rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-500">Předmět:</p><p className="text-sm font-medium">{selectedTemplate.subject.replace(/\{nazev_dealu\}/g, title)}</p></div>
-              <div className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg border p-4 text-sm text-slate-700">{emailPreview}</div>
+              <div className="mb-3 rounded-lg bg-[var(--table-hover)] p-3"><p className="text-xs text-[var(--card-text-muted)]">Předmět:</p><p className="text-sm font-medium">{selectedTemplate.subject.replace(/\{nazev_dealu\}/g, title)}</p></div>
+              <div className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg border p-4 text-sm text-[var(--card-text)]">{emailPreview}</div>
             </div>
           )}
           <DialogFooter>
@@ -450,20 +450,20 @@ export default function DealDetailPage() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="space-y-1.5"><Label className="text-xs text-slate-500">{label}</Label>{children}</div>;
+  return <div className="space-y-1.5"><Label className="text-xs text-[var(--card-text-muted)]">{label}</Label>{children}</div>;
 }
 
 function CopyRow({ icon: Icon, text, field, copied, onCopy }: { icon: typeof Mail; text: string; field: string; copied: string | null; onCopy: (t: string, f: string) => void }) {
   return (
-    <div className="mb-2 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-      <div className="flex items-center gap-2 text-sm text-slate-600 min-w-0"><Icon className="h-3.5 w-3.5 shrink-0 text-slate-400" /><span className="truncate">{text}</span></div>
-      <button onClick={() => onCopy(text, field)} className="shrink-0 text-slate-400 hover:text-slate-600">{copied === field ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}</button>
+    <div className="mb-2 flex items-center justify-between rounded-lg bg-[var(--table-hover)] px-3 py-2">
+      <div className="flex items-center gap-2 text-sm text-[var(--card-text-muted)] min-w-0"><Icon className="h-3.5 w-3.5 shrink-0 text-[var(--card-text-dim)]" /><span className="truncate">{text}</span></div>
+      <button onClick={() => onCopy(text, field)} className="shrink-0 text-[var(--card-text-dim)] hover:text-[var(--card-text-muted)]">{copied === field ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}</button>
     </div>
   );
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between"><dt className="text-slate-500">{label}</dt><dd className="font-medium text-slate-700">{value}</dd></div>;
+  return <div className="flex justify-between"><dt className="text-[var(--card-text-muted)]">{label}</dt><dd className="font-medium text-[var(--card-text)]">{value}</dd></div>;
 }
 
 function DetailSkeleton() {

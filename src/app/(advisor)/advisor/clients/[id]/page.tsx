@@ -215,7 +215,7 @@ export default function ClientDetailPage() {
   }
 
   if (loading) return <div className="p-8"><Skeleton className="mb-4 h-8 w-64" /><Skeleton className="h-64 rounded-xl" /></div>;
-  if (!client) return <div className="p-8"><p className="text-slate-500">Klient nenalezen.</p></div>;
+  if (!client) return <div className="p-8"><p className="text-[var(--card-text-muted)]">Klient nenalezen.</p></div>;
 
   const seg = SEGMENT_CONFIG[client.segment] || SEGMENT_CONFIG.new;
   const portfolioValue = investments.reduce((s, i) => s + i.current_value, 0);
@@ -235,7 +235,7 @@ export default function ClientDetailPage() {
 
   return (
     <div className="">
-      <button onClick={() => router.push("/advisor/clients")} className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900">
+      <button onClick={() => router.push("/advisor/clients")} className="mb-4 flex items-center gap-1.5 text-sm text-[var(--card-text-muted)] hover:text-[var(--card-text)]">
         <ArrowLeft className="h-4 w-4" />Zpět na klienty
       </button>
 
@@ -249,9 +249,9 @@ export default function ClientDetailPage() {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold gradient-text">{client.first_name} {client.last_name}</h1>
               <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${seg.bg} ${seg.color}`}>{seg.label}</span>
-              <span className="text-sm text-slate-500">Skóre: {client.score}/100</span>
+              <span className="text-sm text-[var(--card-text-muted)]">Skóre: {client.score}/100</span>
             </div>
-            <p className="mt-0.5 text-sm text-slate-500">{client.email} {client.phone && `· ${client.phone}`}</p>
+            <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{client.email} {client.phone && `· ${client.phone}`}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -275,12 +275,12 @@ export default function ClientDetailPage() {
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-              tab === t.key ? "border-blue-600 text-blue-600" : "border-transparent text-slate-400 hover:text-slate-600"
+              tab === t.key ? "border-[var(--color-primary)] text-[var(--color-primary)]" : "border-transparent text-[var(--card-text-dim)] hover:text-[var(--card-text-muted)]"
             }`}
           >
             <t.icon className="h-4 w-4" />
             {t.label}
-            {t.count !== undefined && <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px]">{t.count}</span>}
+            {t.count !== undefined && <span className="rounded-full bg-[var(--table-hover)] px-1.5 py-0.5 text-[10px]">{t.count}</span>}
           </button>
         ))}
       </div>
@@ -289,7 +289,7 @@ export default function ClientDetailPage() {
       {tab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="col-span-1 md:col-span-2 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">Kontaktní údaje</h2>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">Kontaktní údaje</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1"><Label className="text-xs">Jméno</Label><Input value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
               <div className="space-y-1"><Label className="text-xs">Příjmení</Label><Input value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
@@ -313,7 +313,7 @@ export default function ClientDetailPage() {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Brain className="h-4 w-4 text-violet-500" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">AI shrnutí</h2>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">AI shrnutí</h2>
               </div>
               <button
                 onClick={generateAiSummary}
@@ -325,9 +325,9 @@ export default function ClientDetailPage() {
               </button>
             </div>
             {aiSummary ? (
-              <p className="text-sm leading-relaxed text-slate-700">{aiSummary}</p>
+              <p className="text-sm leading-relaxed text-[var(--card-text)]">{aiSummary}</p>
             ) : (
-              <p className="text-sm text-slate-500">Klikněte na &quot;Vygenerovat&quot; pro AI analýzu klienta.</p>
+              <p className="text-sm text-[var(--card-text-muted)]">Klikněte na &quot;Vygenerovat&quot; pro AI analýzu klienta.</p>
             )}
           </div>
 
@@ -335,10 +335,10 @@ export default function ClientDetailPage() {
           <div className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-500" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">AI doporučení</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">AI doporučení</h2>
             </div>
             {upsellAlerts.length === 0 ? (
-              <p className="text-sm text-slate-500">Žádná doporučení</p>
+              <p className="text-sm text-[var(--card-text-muted)]">Žádná doporučení</p>
             ) : (
               <div className="space-y-2">
                 {upsellAlerts.map((alert) => (
@@ -365,9 +365,9 @@ export default function ClientDetailPage() {
             <div className="flex-1 overflow-auto p-4 space-y-3">
               {chatMessages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.direction === "outgoing" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${msg.direction === "outgoing" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-900"}`}>
+                  <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${msg.direction === "outgoing" ? "bg-blue-600 text-white" : "bg-[var(--table-hover)] text-[var(--card-text)]"}`}>
                     <p className="text-sm">{msg.message_text}</p>
-                    <div className={`mt-1 flex items-center gap-1.5 text-[10px] ${msg.direction === "outgoing" ? "text-blue-200" : "text-slate-400"}`}>
+                    <div className={`mt-1 flex items-center gap-1.5 text-[10px] ${msg.direction === "outgoing" ? "text-blue-200" : "text-[var(--card-text-dim)]"}`}>
                       <Badge variant="secondary" className="h-4 px-1 text-[9px]">{msg.platform}</Badge>
                       {new Date(msg.created_at).toLocaleString("cs-CZ", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </div>
@@ -437,12 +437,12 @@ export default function ClientDetailPage() {
           ) : (
             <>
               <div className="space-y-4">
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-[var(--card-text-muted)]">
                   Vytvořte přihlašovací údaje pro klienta <strong>{client.first_name} {client.last_name}</strong>.
                 </p>
                 <div className="space-y-1">
                   <Label className="text-xs">Email</Label>
-                  <Input value={client.email || ""} disabled className="bg-slate-50" />
+                  <Input value={client.email || ""} disabled className="bg-[var(--table-hover)]" />
                 </div>
                 {!client.email && (
                   <p className="text-sm text-red-500">Klient nemá nastavený email. Nejprve vyplňte email v kontaktních údajích.</p>
@@ -457,8 +457,8 @@ export default function ClientDetailPage() {
                     disabled={!client.email}
                   />
                 </div>
-                <p className="text-xs text-slate-500">
-                  Klient se bude přihlašovat na: <code className="rounded bg-slate-100 px-1 py-0.5">/portal/login</code>
+                <p className="text-xs text-[var(--card-text-muted)]">
+                  Klient se bude přihlašovat na: <code className="rounded bg-[var(--table-hover)] px-1 py-0.5">/portal/login</code>
                 </p>
               </div>
               <DialogFooter>
@@ -482,19 +482,19 @@ function formatCZK(v: number | null) {
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-l-4 border-l-blue-500 bg-[var(--card-bg)] p-4 shadow-sm hover:shadow-md transition-all">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-slate-900">{value}</p>
+      <p className="text-xs text-[var(--card-text-muted)]">{label}</p>
+      <p className="text-lg font-bold text-[var(--card-text)]">{value}</p>
     </div>
   );
 }
 
 function SimpleTable({ headers, rows, empty }: { headers: string[]; rows: string[][]; empty: string }) {
-  if (rows.length === 0) return <div className="flex flex-col items-center py-16"><p className="text-lg font-medium text-slate-400">{empty}</p></div>;
+  if (rows.length === 0) return <div className="flex flex-col items-center py-16"><p className="text-lg font-medium text-[var(--card-text-dim)]">{empty}</p></div>;
   return (
     <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
       <table className="w-full">
-        <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-slate-700">{headers.map((h) => <th key={h} className="px-6 py-3">{h}</th>)}</tr></thead>
-        <tbody>{rows.map((row, i) => <tr key={i} className="border-b last:border-0 hover:bg-slate-50 even:bg-slate-50/50">{row.map((cell, j) => <td key={j} className="px-6 py-3 text-sm text-slate-700">{cell}</td>)}</tr>)}</tbody>
+        <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]">{headers.map((h) => <th key={h} className="px-6 py-3">{h}</th>)}</tr></thead>
+        <tbody>{rows.map((row, i) => <tr key={i} className="border-b last:border-0 hover:bg-[var(--table-hover)] even:bg-[var(--table-hover)]/50">{row.map((cell, j) => <td key={j} className="px-6 py-3 text-sm text-[var(--card-text)]">{cell}</td>)}</tr>)}</tbody>
       </table>
     </div>
   );
