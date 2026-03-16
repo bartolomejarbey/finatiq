@@ -53,11 +53,11 @@ interface TicketMessage {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  open: "Novy",
-  in_progress: "Resi se",
-  waiting: "Ceka",
-  resolved: "Vyreseno",
-  closed: "Uzavreno",
+  open: "Nový",
+  in_progress: "Řeší se",
+  waiting: "Čeká",
+  resolved: "Vyřešeno",
+  closed: "Uzavřeno",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -69,10 +69,10 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  technical: "Technicky problem",
+  technical: "Technický problém",
   billing: "Fakturace",
   feature_request: "Funkce",
-  question: "Obecny dotaz",
+  question: "Obecný dotaz",
 };
 
 function relativeTime(dateStr: string): string {
@@ -80,12 +80,12 @@ function relativeTime(dateStr: string): string {
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "prave ted";
-  if (diffMin < 60) return `pred ${diffMin} min`;
+  if (diffMin < 1) return "právě teď";
+  if (diffMin < 60) return `před ${diffMin} min`;
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `pred ${diffH} hod`;
+  if (diffH < 24) return `před ${diffH} hod`;
   const diffD = Math.floor(diffH / 24);
-  if (diffD < 30) return `pred ${diffD} dny`;
+  if (diffD < 30) return `před ${diffD} dny`;
   return date.toLocaleDateString("cs-CZ");
 }
 
@@ -160,7 +160,7 @@ export default function PodporaPage() {
 
   async function handleSubmitTicket() {
     if (!subject.trim()) {
-      toast.error("Vyplnte predmet tiketu.");
+      toast.error("Vyplňte předmět tiketu.");
       return;
     }
     setSubmitting(true);
@@ -195,7 +195,7 @@ export default function PodporaPage() {
       .single();
 
     if (error) {
-      toast.error("Chyba pri vytvareni tiketu: " + error.message);
+      toast.error("Chyba při vytváření tiketu: " + error.message);
       setSubmitting(false);
       return;
     }
@@ -217,7 +217,7 @@ export default function PodporaPage() {
     setDescription("");
     setAttachment(null);
     setSubmitting(false);
-    toast.success("Tiket vytvoren, budeme se vam venovat.");
+    toast.success("Tiket vytvořen, budeme se vám věnovat.");
   }
 
   async function handleSendReply() {
@@ -235,7 +235,7 @@ export default function PodporaPage() {
       .single();
 
     if (error) {
-      toast.error("Chyba pri odeslani zpravy.");
+      toast.error("Chyba při odeslání zprávy.");
       setSendingReply(false);
       return;
     }
@@ -266,7 +266,7 @@ export default function PodporaPage() {
           </TabsTrigger>
           <TabsTrigger value="new">
             <MessageCircle className="h-4 w-4" />
-            Novy tiket
+            Nový tiket
           </TabsTrigger>
         </TabsList>
 
@@ -276,10 +276,10 @@ export default function PodporaPage() {
             <div className="flex flex-col items-center py-16">
               <Ticket className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
               <p className="text-lg font-medium text-[var(--card-text-dim)]">
-                Zadne tikety
+                Žádné tikety
               </p>
               <p className="text-sm text-[var(--card-text-muted)]">
-                Zatim jste nevytvorili zadny tiket.
+                Zatím jste nevytvořili žádný tiket.
               </p>
             </div>
           ) : (
@@ -339,7 +339,7 @@ export default function PodporaPage() {
                           </div>
                         ) : messages.length === 0 ? (
                           <p className="py-4 text-center text-xs text-[var(--card-text-dim)]">
-                            Zatim zadne zpravy.
+                            Zatím žádné zprávy.
                           </p>
                         ) : (
                           messages.map((msg) => (
@@ -368,7 +368,7 @@ export default function PodporaPage() {
                       {/* Reply */}
                       <div className="mt-4 flex gap-2">
                         <Textarea
-                          placeholder="Napiste odpoved..."
+                          placeholder="Napište odpověď..."
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
                           className="min-h-[60px] flex-1"
@@ -399,11 +399,11 @@ export default function PodporaPage() {
           <div className="mt-4 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="space-y-5">
               <div className="space-y-1">
-                <Label className="text-xs">Predmet *</Label>
+                <Label className="text-xs">Předmět *</Label>
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Strucny popis problemu"
+                  placeholder="Stručný popis problému"
                 />
               </div>
 
@@ -414,10 +414,10 @@ export default function PodporaPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="technical">Technicky problem</SelectItem>
+                    <SelectItem value="technical">Technický problém</SelectItem>
                     <SelectItem value="billing">Fakturace</SelectItem>
-                    <SelectItem value="feature_request">Pozadavek na funkci</SelectItem>
-                    <SelectItem value="question">Obecny dotaz</SelectItem>
+                    <SelectItem value="feature_request">Požadavek na funkci</SelectItem>
+                    <SelectItem value="question">Obecný dotaz</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -427,13 +427,13 @@ export default function PodporaPage() {
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Podrobnejsi popis vaseho problemu nebo dotazu..."
+                  placeholder="Podrobnější popis vašeho problému nebo dotazu..."
                   rows={5}
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Priloha (volitelne)</Label>
+                <Label className="text-xs">Příloha (volitelné)</Label>
                 <div className="flex items-center gap-2">
                   <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed px-4 py-2 text-sm text-[var(--card-text-muted)] hover:bg-[var(--table-hover)] transition-colors">
                     <Paperclip className="h-4 w-4" />

@@ -51,7 +51,7 @@ interface Permissions {
 
 const ROLE_LABELS: Record<string, string> = {
   assistant: "Asistent",
-  viewer: "\u010Cten\u00e1\u0159",
+  viewer: "Čtenář",
 };
 
 const PERMISSION_LABELS: Record<keyof Permissions, string> = {
@@ -59,7 +59,7 @@ const PERMISSION_LABELS: Record<keyof Permissions, string> = {
   clients_write: "Editovat klienty",
   deals_read: "Zobrazit dealy",
   deals_write: "Editovat dealy",
-  settings: "Nastaven\u00ed",
+  settings: "Nastavení",
 };
 
 const PERMISSION_KEYS = Object.keys(PERMISSION_LABELS) as (keyof Permissions)[];
@@ -126,18 +126,18 @@ export default function TeamPage() {
 
       if (!res.ok) {
         const err = await res.json();
-        toast.error(err.error || "Nepoda\u0159ilo se odeslat pozv\u00e1nku.");
+        toast.error(err.error || "Nepodařilo se odeslat pozvánku.");
         setInviting(false);
         return;
       }
 
-      toast.success("Pozv\u00e1nka odesl\u00e1na.");
+      toast.success("Pozvánka odeslána.");
       setDialogOpen(false);
       setInviteEmail("");
       setInviteRole("assistant");
       fetchMembers();
     } catch {
-      toast.error("Nepoda\u0159ilo se odeslat pozv\u00e1nku.");
+      toast.error("Nepodařilo se odeslat pozvánku.");
     } finally {
       setInviting(false);
     }
@@ -163,7 +163,7 @@ export default function TeamPage() {
       .eq("id", member.id);
 
     if (error) {
-      toast.error("Nepoda\u0159ilo se aktualizovat opr\u00e1vn\u011bn\u00ed.");
+      toast.error("Nepodařilo se aktualizovat oprávnění.");
       fetchMembers();
     }
   }
@@ -172,7 +172,7 @@ export default function TeamPage() {
 
   async function handleRemove(member: TeamMember) {
     const confirmed = window.confirm(
-      `Opravdu chcete odebrat ${member.name || member.email} z t\u00fdmu?`
+      `Opravdu chcete odebrat ${member.name || member.email} z týmu?`
     );
     if (!confirmed) return;
 
@@ -182,9 +182,9 @@ export default function TeamPage() {
       .eq("id", member.id);
 
     if (error) {
-      toast.error("Nepoda\u0159ilo se odebrat \u010dlena.");
+      toast.error("Nepodařilo se odebrat člena.");
     } else {
-      toast.success("\u010Clen byl odebr\u00e1n z t\u00fdmu.");
+      toast.success("Člen byl odebrán z týmu.");
       fetchMembers();
     }
   }
@@ -204,7 +204,7 @@ export default function TeamPage() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            Spr\u00e1va t\u00fdmu
+            Správa týmu
           </h1>
           <p
             className="mt-1 text-sm"

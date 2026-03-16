@@ -74,7 +74,7 @@ export function MinimalLayout({
           <aside className="relative flex h-full w-64 flex-col shadow-xl" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
             <div className="flex h-14 items-center justify-between px-4 border-b">
               {logoUrl ? (
-                <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto" }} />
+                <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto", background: "transparent" }} />
               ) : (
                 <span className="text-lg font-bold" style={{ color: primaryColor }}>{appName}</span>
               )}
@@ -125,13 +125,13 @@ export function MinimalLayout({
         <div className="flex h-16 items-center justify-center px-3">
           {expanded ? (
             logoUrl ? (
-              <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto" }} />
+              <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto", background: "transparent" }} />
             ) : (
               <span className="text-lg font-bold truncate" style={{ color: primaryColor }}>{appName}</span>
             )
           ) : (
             logoIconUrl ? (
-              <img src={logoIconUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, width: `${Math.min(logoSize, 32)}px`, objectFit: "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0" }} />
+              <img src={logoIconUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, width: `${Math.min(logoSize, 32)}px`, objectFit: "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", background: "transparent" }} />
             ) : (
               <span className="text-xl font-bold" style={{ color: primaryColor }}>
                 {appName.charAt(0)}

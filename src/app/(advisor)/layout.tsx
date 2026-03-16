@@ -9,6 +9,7 @@ import { ModernLayout } from "@/components/layouts/ModernLayout";
 import { MinimalLayout } from "@/components/layouts/MinimalLayout";
 import type { LayoutNavItem } from "@/components/layouts/ClassicLayout";
 import { TicketModal } from "@/components/ticket-modal";
+import { CommandPalette, CommandPaletteTrigger } from "@/components/CommandPalette";
 import {
   LayoutDashboard, Kanban, Users, ClipboardList, Bell, Zap,
   FileText, Megaphone, CalendarDays, Settings, BookOpen,
@@ -161,6 +162,10 @@ function AdvisorLayoutInner({ children }: { children: React.ReactNode }) {
   return (
     <>
       {content}
+      <div className="fixed top-3 right-4 z-50 hidden md:block">
+        <CommandPaletteTrigger />
+      </div>
+      <CommandPalette />
       <TicketModal open={ticketOpen} onOpenChange={setTicketOpen} />
     </>
   );

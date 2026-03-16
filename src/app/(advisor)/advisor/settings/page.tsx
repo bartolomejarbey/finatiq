@@ -533,21 +533,39 @@ export default function SettingsPage() {
                 Nepropojeno
               </span>
             </div>
-            <p className="mb-1 text-sm text-[var(--card-text-muted)]">
-              Funkce bude brzy dostupná — po připojení se vaše schůzky automaticky synchronizují
-              s Google Calendar.
-            </p>
-            <p className="mb-4 text-xs text-[var(--card-text-muted)]">
-              Po kliknutí budete přesměrováni na Google pro udělení přístupu ke kalendáři.
-            </p>
-            <Button
-              size="sm"
-              className="mt-1"
-              onClick={() => toast.info("Připojení Google Calendar bude brzy dostupné.")}
-            >
-              <Calendar className="mr-2 h-3 w-3" />
-              Připojit Google účet
-            </Button>
+            {process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_CLIENT_ID ? (
+              <>
+                <p className="mb-1 text-sm text-[var(--card-text-muted)]">
+                  Po připojení se vaše schůzky automaticky synchronizují s Google Calendar.
+                </p>
+                <p className="mb-4 text-xs text-[var(--card-text-muted)]">
+                  Po kliknutí budete přesměrováni na Google pro udělení přístupu ke kalendáři.
+                </p>
+                <Button
+                  size="sm"
+                  className="mt-1"
+                  onClick={() => {
+                    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_CLIENT_ID;
+                    const redirectUri = `${window.location.origin}/api/calendar/callback`;
+                    const scope = encodeURIComponent("https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email");
+                    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`;
+                  }}
+                >
+                  <Calendar className="mr-2 h-3 w-3" />
+                  Připojit Google Calendar
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="mb-4 text-sm text-[var(--card-text-muted)]">
+                  Pro aktivaci propojení s Google Calendar kontaktujte podporu.
+                </p>
+                <Button size="sm" className="mt-1" disabled>
+                  <Calendar className="mr-2 h-3 w-3" />
+                  Připojit Google účet
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Messaging webhook */}

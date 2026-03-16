@@ -23,7 +23,7 @@ function layout(title: string, body: string): string {
 ${body}
 </td></tr>
 <tr><td style="padding-top:24px;text-align:center;">
-<p style="margin:0;font-size:12px;color:${BRAND.muted};">\u00A9 2025 Finatiq | Harotas s.r.o.</p>
+<p style="margin:0;font-size:12px;color:${BRAND.muted};">© 2025 Finatiq | Harotas s.r.o.</p>
 </td></tr>
 </table>
 </td></tr>

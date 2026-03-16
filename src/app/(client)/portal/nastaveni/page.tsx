@@ -34,10 +34,10 @@ const DEFAULT_PREFERENCES: Record<string, boolean> = {
 };
 
 const NOTIFICATION_LABELS: Record<string, string> = {
-  new_documents: "Nove dokumenty",
+  new_documents: "Nové dokumenty",
   payments: "Platby",
-  advisor_messages: "Zpravy od poradce",
-  reminders: "Pripominky",
+  advisor_messages: "Zprávy od poradce",
+  reminders: "Připomínky",
 };
 
 export default function NastaveniPage() {
@@ -106,19 +106,19 @@ export default function NastaveniPage() {
       .eq("id", client.id);
     setSaving(false);
     if (error) {
-      toast.error("Chyba pri ukladani: " + error.message);
+      toast.error("Chyba při ukládání: " + error.message);
     } else {
-      toast.success("Profil ulozen.");
+      toast.success("Profil uložen.");
     }
   }
 
   async function handleChangePassword() {
     if (newPassword.length < 6) {
-      toast.error("Heslo musi mit alespon 6 znaku.");
+      toast.error("Heslo musí mít alespoň 6 znaků.");
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Hesla se neshoduji.");
+      toast.error("Hesla se neshodují.");
       return;
     }
     setChangingPassword(true);
@@ -127,9 +127,9 @@ export default function NastaveniPage() {
     });
     setChangingPassword(false);
     if (error) {
-      toast.error("Chyba pri zmene hesla: " + error.message);
+      toast.error("Chyba při změně hesla: " + error.message);
     } else {
-      toast.success("Heslo bylo zmeneno.");
+      toast.success("Heslo bylo změněno.");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -145,7 +145,7 @@ export default function NastaveniPage() {
       .update({ notification_preferences: updated })
       .eq("id", client.id);
     if (error) {
-      toast.error("Chyba pri ukladani notifikaci.");
+      toast.error("Chyba při ukládání notifikací.");
       // revert
       setPreferences((prev) => ({ ...prev, [key]: !checked }));
     }
@@ -162,7 +162,7 @@ export default function NastaveniPage() {
 
   return (
     <div className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-6 text-2xl font-bold gradient-text">Nastaveni</h1>
+      <h1 className="mb-6 text-2xl font-bold gradient-text">Nastavení</h1>
 
       <Tabs defaultValue="profile">
         <TabsList>
@@ -186,7 +186,7 @@ export default function NastaveniPage() {
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Label className="text-xs">Jmeno</Label>
+                  <Label className="text-xs">Jméno</Label>
                   <Input
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -194,11 +194,11 @@ export default function NastaveniPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Prijmeni</Label>
+                  <Label className="text-xs">Příjmení</Label>
                   <Input
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Novak"
+                    placeholder="Novák"
                   />
                 </div>
               </div>
@@ -216,7 +216,7 @@ export default function NastaveniPage() {
                 <Label className="text-xs">Email</Label>
                 <Input value={userEmail} disabled className="opacity-60" />
                 <p className="text-[10px] text-[var(--card-text-dim)]">
-                  Email nelze zmenit.
+                  Email nelze změnit.
                 </p>
               </div>
 
@@ -228,7 +228,7 @@ export default function NastaveniPage() {
                 {saving && (
                   <Loader2 className="mr-2 h-3 w-3 animate-spin" />
                 )}
-                Ulozit profil
+                Uložit profil
               </Button>
             </div>
           </div>
@@ -239,7 +239,7 @@ export default function NastaveniPage() {
           <div className="mt-4 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="space-y-5">
               <div className="space-y-1">
-                <Label className="text-xs">Soucasne heslo</Label>
+                <Label className="text-xs">Současné heslo</Label>
                 <Input
                   type="password"
                   value={currentPassword}
@@ -249,22 +249,22 @@ export default function NastaveniPage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Nove heslo</Label>
+                <Label className="text-xs">Nové heslo</Label>
                 <Input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Min. 6 znaku"
+                  placeholder="Min. 6 znaků"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Potvrzeni hesla</Label>
+                <Label className="text-xs">Potvrzení hesla</Label>
                 <Input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Zopakujte nove heslo"
+                  placeholder="Zopakujte nové heslo"
                 />
               </div>
 
@@ -276,7 +276,7 @@ export default function NastaveniPage() {
                 {changingPassword && (
                   <Loader2 className="mr-2 h-3 w-3 animate-spin" />
                 )}
-                Zmenit heslo
+                Změnit heslo
               </Button>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function NastaveniPage() {
         <TabsContent value="notifications">
           <div className="mt-4 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <p className="mb-4 text-sm text-[var(--card-text-muted)]">
-              Zvolte, ktera oznameni chcete dostavat.
+              Zvolte, která oznámení chcete dostávat.
             </p>
             <div className="space-y-4">
               {Object.entries(NOTIFICATION_LABELS).map(([key, label]) => (
