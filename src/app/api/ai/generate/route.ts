@@ -3,6 +3,13 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
+const PROMPTS: Record<string, string> = {
+  client_summary: `Jsi finanční poradce. Na základě dodaných dat o klientovi vygeneruj stručné česky psané shrnutí (3-5 vět). Zaměř se na: celkový finanční stav, hlavní rizika, doporučení pro další kroky. Odpovídej pouze textem shrnutí, bez formátování.`,
+  deal_summary: `Jsi finanční poradce. Na základě dat o obchodním případu (dealu) vygeneruj stručné shrnutí a doporučení (2-3 věty). Odpovídej česky, pouze textem.`,
+  email_draft: `Jsi finanční poradce. Napiš profesionální email klientovi v češtině. Email musí být zdvořilý, stručný a konkrétní. Odpovídej pouze textem emailu.`,
+  upsell_suggestion: `Jsi finanční poradce. Na základě dodaného kontextu napiš stručné doporučení (1-2 věty) pro cross-sell nebo upsell příležitost. Odpovídej česky.`,
+};
+
 export async function POST(request: Request) {
   // Rate limit: 30 per hour per IP
   const ip = getClientIp(request);
@@ -29,8 +36,38 @@ export async function POST(request: Request) {
   }
 
   const { type, context } = await request.json();
+  const openaiKey = process.env.OPENAI_API_KEY;
+  const systemPrompt = PROMPTS[type] || "Jsi finanční asistent. Odpovídej česky, stručně a profesionálně.";
 
-  // Mock AI responses based on type
+  if (openaiKey) {
+    try {
+      const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Kontext:\n${JSON.stringify(context, null, 2)}` },
+          ],
+          max_tokens: 1024,
+        }),
+      });
+
+      if (aiResponse.ok) {
+        const aiData = await aiResponse.json();
+        const text = aiData.choices?.[0]?.message?.content || "";
+        if (text) return NextResponse.json({ text });
+      }
+    } catch (err) {
+      console.error("AI generate error:", err);
+    }
+  }
+
+  // Fallback: mock responses
   let text = "";
 
   switch (type) {
@@ -62,9 +99,6 @@ export async function POST(request: Request) {
     default:
       text = "AI asistent je připraven pomoci. Zadejte konkrétní požadavek.";
   }
-
-  // Simulate slight delay for realism
-  await new Promise((resolve) => setTimeout(resolve, 500));
 
   return NextResponse.json({ text });
 }

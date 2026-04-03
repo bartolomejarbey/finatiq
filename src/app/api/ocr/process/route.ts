@@ -70,50 +70,53 @@ export async function POST(request: Request) {
   }
 
   // Update status to processing
-  await supabaseAdmin
+  const { error: processingError } = await supabaseAdmin
     .from("client_documents")
     .update({ ocr_status: "processing" })
     .eq("id", documentId);
+  if (processingError) console.error("Failed to set OCR status to processing:", processingError.message);
 
   try {
     // Step 1: Extract text from document using OCR
     let ocrText = "";
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const openaiKey = process.env.OPENAI_API_KEY;
 
-    if (doc.file_url && anthropicKey) {
-      // Use Claude to analyze the document directly (if text is available)
-      // For now, use any existing ocr_text or file content
+    if (doc.file_url && openaiKey) {
+      // Use existing ocr_text or file content
       ocrText = doc.ocr_text || doc.file_name || "";
     }
 
-    // Step 2: AI analysis with Claude (if API key available)
+    // Step 2: AI analysis with GPT-4o Mini (if API key available)
     let aiAnalysis = null;
-    if (anthropicKey && (ocrText || doc.category)) {
+    if (openaiKey && (ocrText || doc.category)) {
       const textToAnalyze = ocrText || `Dokument typu: ${doc.category || "neznámý"}, název: ${doc.file_name || "neznámý"}`;
 
       try {
-        const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
+        const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": anthropicKey,
-            "anthropic-version": "2023-06-01",
+            "Authorization": `Bearer ${openaiKey}`,
           },
           body: JSON.stringify({
-            model: "claude-haiku-4-5-20251001",
-            max_tokens: 1024,
+            model: "gpt-4o-mini",
             messages: [
               {
+                role: "system",
+                content: AI_ANALYSIS_PROMPT,
+              },
+              {
                 role: "user",
-                content: `${AI_ANALYSIS_PROMPT}\n\nText dokumentu:\n${textToAnalyze}`,
+                content: `Text dokumentu:\n${textToAnalyze}`,
               },
             ],
+            max_tokens: 1024,
           }),
         });
 
         if (aiResponse.ok) {
           const aiData = await aiResponse.json();
-          const content = aiData.content?.[0]?.text || "";
+          const content = aiData.choices?.[0]?.message?.content || "";
           try {
             aiAnalysis = JSON.parse(content);
           } catch {
@@ -152,7 +155,7 @@ export async function POST(request: Request) {
     const ocrTextResult = ocrText || `Typ: ${ocrData.document_type}\nPoskytovatel: ${ocrData.provider || "neznámý"}`;
 
     // Save OCR results + AI analysis
-    await supabaseAdmin
+    const { error: saveError } = await supabaseAdmin
       .from("client_documents")
       .update({
         ocr_text: ocrTextResult,
@@ -161,6 +164,7 @@ export async function POST(request: Request) {
         ai_analysis: aiAnalysis,
       })
       .eq("id", documentId);
+    if (saveError) console.error("Failed to save OCR results:", saveError.message);
 
     return NextResponse.json({
       ok: true,
@@ -171,10 +175,11 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("OCR processing error:", error);
 
-    await supabaseAdmin
+    const { error: statusError } = await supabaseAdmin
       .from("client_documents")
       .update({ ocr_status: "error" })
       .eq("id", documentId);
+    if (statusError) console.error("Failed to set OCR status to error:", statusError.message);
 
     return NextResponse.json({ error: "Chyba při zpracování dokumentu" }, { status: 500 });
   }

@@ -63,9 +63,49 @@ export async function POST(request: Request) {
       (sum, p) => sum + (Number(p.amount) || 0),
       0
     );
-    const _context = `Klient má ${contracts.length} smluv, z toho ${loanContracts.length} úvěrů v celkové výši ${totalLoanAmount} Kč a ${insuranceContracts.length} pojistek. Posledních ${payments.length} plateb v celkové výši ${totalPayments} Kč. Má ${goals.length} finančních cílů.`;
+    const context = `Klient má ${contracts.length} smluv, z toho ${loanContracts.length} úvěrů v celkové výši ${totalLoanAmount} Kč a ${insuranceContracts.length} pojistek. Posledních ${payments.length} plateb v celkové výši ${totalPayments} Kč. Má ${goals.length} finančních cílů.`;
 
-    // TODO: Replace mock with Anthropic API call
+    const openaiKey = process.env.OPENAI_API_KEY;
+
+    if (openaiKey) {
+      // Real AI response via GPT-4o Mini
+      const systemPrompt = `Jsi finanční asistent pro českého klienta. Odpovídej vždy česky, stručně a srozumitelně. Pomáháš klientovi orientovat se v jeho financích — smlouvách, platbách, cílech a investicích. Nenavrhuj konkrétní produkty, ale odkazuj na poradce pro detailní radu.
+
+Kontext klienta:
+${context}
+
+Smlouvy: ${JSON.stringify(contracts.map((c) => ({ name: c.name || c.title, type: c.type, amount: c.amount, status: c.status })))}
+Platby: ${JSON.stringify(payments.map((p) => ({ amount: p.amount, status: p.status, due_date: p.due_date })))}
+Cíle: ${JSON.stringify(goals.map((g) => ({ name: g.name || g.title, target: g.target_amount, current: g.current_amount })))}`;
+
+      try {
+        const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${openaiKey}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: message },
+            ],
+            max_tokens: 512,
+          }),
+        });
+
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json();
+          const reply = aiData.choices?.[0]?.message?.content || "Omlouvám se, nepodařilo se vygenerovat odpověď.";
+          return NextResponse.json({ reply });
+        }
+      } catch (err) {
+        console.error("AI chat error:", err);
+      }
+    }
+
+    // Fallback: keyword-based mock responses
     const lowerMessage = message.toLowerCase();
     let reply = "";
 
