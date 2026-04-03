@@ -218,7 +218,7 @@ export default function ScenarePage() {
   async function handleCTA(scenarioTitle: string, detail: string) {
     if (!clientId || !advisorId) return;
     setSending(true);
-    await supabase.from("notifications").insert({
+    const { error } = await supabase.from("notifications").insert({
       advisor_id: advisorId,
       client_id: clientId,
       title: `Klient chce řešit: ${scenarioTitle}`,
@@ -226,6 +226,10 @@ export default function ScenarePage() {
       type: "scenario_request",
     });
     setSending(false);
+    if (error) {
+      toast.error("Chyba při odesílání požadavku: " + error.message);
+      return;
+    }
     toast.success("Požadavek odeslán vašemu poradci.");
   }
 

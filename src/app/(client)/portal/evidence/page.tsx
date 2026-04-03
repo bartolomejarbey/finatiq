@@ -97,7 +97,7 @@ export default function EvidencePage() {
   async function handleSave() {
     if (!amount || !clientId) return;
     setSaving(true);
-    const { data: rec } = await supabase.from("osvc_records").insert({
+    const { data: rec, error } = await supabase.from("osvc_records").insert({
       client_id: clientId,
       advisor_id: advisorId,
       type: recType,
@@ -107,6 +107,12 @@ export default function EvidencePage() {
       description: description || null,
       document_id: docId,
     }).select().single();
+
+    if (error) {
+      toast.error("Chyba při ukládání dokladu: " + error.message);
+      setSaving(false);
+      return;
+    }
 
     if (rec) setRecords((prev) => [rec, ...prev]);
     setSaving(false);

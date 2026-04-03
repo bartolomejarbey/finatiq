@@ -53,12 +53,14 @@ export default function NotificationsPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function markAsRead(id: string) {
-    await supabase.from("client_notifications").update({ is_read: true }).eq("id", id);
+    const { error } = await supabase.from("client_notifications").update({ is_read: true }).eq("id", id);
+    if (error) { console.error("Chyba při označení oznámení:", error.message); return; }
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n));
   }
 
   async function markAllRead() {
-    await supabase.from("client_notifications").update({ is_read: true }).eq("client_id", clientId).eq("is_read", false);
+    const { error } = await supabase.from("client_notifications").update({ is_read: true }).eq("client_id", clientId).eq("is_read", false);
+    if (error) { console.error("Chyba při označení všech oznámení:", error.message); return; }
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   }
 

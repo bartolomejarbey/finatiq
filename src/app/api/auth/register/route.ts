@@ -164,17 +164,19 @@ export async function POST(request: Request) {
   }
 
   // 3. Create default pipeline stages
-  await supabaseAdmin
+  const { error: stagesError } = await supabaseAdmin
     .from("pipeline_stages")
     .insert(DEFAULT_STAGES.map((s) => ({ ...s, advisor_id: advisor.id })));
+  if (stagesError) console.error("Failed to seed pipeline_stages:", stagesError.message);
 
   // 4. Create default tags
-  await supabaseAdmin
+  const { error: tagsError } = await supabaseAdmin
     .from("deal_tags")
     .insert(DEFAULT_TAGS.map((t) => ({ ...t, advisor_id: advisor.id })));
+  if (tagsError) console.error("Failed to seed deal_tags:", tagsError.message);
 
   // 5. Create default email templates
-  await supabaseAdmin
+  const { error: templatesError } = await supabaseAdmin
     .from("email_templates")
     .insert(
       DEFAULT_TEMPLATES.map((t) => ({
@@ -191,9 +193,10 @@ export async function POST(request: Request) {
         ],
       }))
     );
+  if (templatesError) console.error("Failed to seed email_templates:", templatesError.message);
 
   // 6. Create default automations
-  await supabaseAdmin.from("automations").insert([
+  const { error: automationsError } = await supabaseAdmin.from("automations").insert([
     {
       advisor_id: advisor.id,
       name: "Schůzka → vytvořit aktivitu",
@@ -235,9 +238,10 @@ export async function POST(request: Request) {
       is_system: true,
     },
   ]);
+  if (automationsError) console.error("Failed to seed automations:", automationsError.message);
 
   // 7. Create default upsell rules
-  await supabaseAdmin.from("upsell_rules").insert([
+  const { error: upsellError } = await supabaseAdmin.from("upsell_rules").insert([
     // Úvěry/Hypotéky
     { advisor_id: advisor.id, category: "loans", rule_type: "interest_rate_high", threshold_value: 5, threshold_unit: "%", message_template: "Klient má úvěr se sazbou {actual}%, průměr trhu je nižší. Refinancování může ušetřit.", priority: "high", is_active: true },
     { advisor_id: advisor.id, category: "loans", rule_type: "fixation_ending", threshold_value: 6, threshold_unit: "months", message_template: "Fixace hypotéky končí za {actual} měsíců. Čas nabídnout refinancování.", priority: "high", is_active: true },
@@ -257,17 +261,19 @@ export async function POST(request: Request) {
     { advisor_id: advisor.id, category: "contracts", rule_type: "contract_expiring", threshold_value: 30, threshold_unit: "days", message_template: "Smlouva expiruje za {actual} dní. Nabídněte obnovu.", priority: "high", is_active: true },
     { advisor_id: advisor.id, category: "contracts", rule_type: "no_review", threshold_value: 2, threshold_unit: "years", message_template: "Smlouva nebyla revidována {years} let.", priority: "low", is_active: true },
   ]);
+  if (upsellError) console.error("Failed to seed upsell_rules:", upsellError.message);
 
   // 8. Generate verification code and send via Resend
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  await supabaseAdmin.from("verification_codes").insert({
+  const { error: verificationError } = await supabaseAdmin.from("verification_codes").insert({
     user_id: userId,
     code,
     type: "email",
     expires_at: expiresAt.toISOString(),
   });
+  if (verificationError) console.error("Failed to insert verification_codes:", verificationError.message);
 
   // Send verification code email
   const codeEmail = verificationCodeTemplate(companyName, code);

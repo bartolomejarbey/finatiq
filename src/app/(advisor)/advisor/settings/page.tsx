@@ -168,11 +168,12 @@ export default function SettingsPage() {
 
   async function handleAddTag() {
     if (!newTagName.trim() || !advisor) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("deal_tags")
       .insert({ advisor_id: advisor.id, name: newTagName, color: newTagColor })
       .select()
       .single();
+    if (error) { toast.error("Chyba při přidávání tagu: " + error.message); return; }
     if (data) setTags((prev) => [...prev, data]);
     setNewTagName("");
     setNewTagColor("#3B82F6");
@@ -180,14 +181,17 @@ export default function SettingsPage() {
   }
 
   async function handleDeleteTag(id: string) {
-    await supabase.from("deal_tag_assignments").delete().eq("tag_id", id);
-    await supabase.from("deal_tags").delete().eq("id", id);
+    const { error: assignError } = await supabase.from("deal_tag_assignments").delete().eq("tag_id", id);
+    if (assignError) { toast.error("Chyba při odstraňování přiřazení tagu: " + assignError.message); return; }
+    const { error: tagError } = await supabase.from("deal_tags").delete().eq("id", id);
+    if (tagError) { toast.error("Chyba při mazání tagu: " + tagError.message); return; }
     setTags((prev) => prev.filter((t) => t.id !== id));
     toast.success("Tag smazán.");
   }
 
   async function handleUpdateTag(id: string, name: string, color: string) {
-    await supabase.from("deal_tags").update({ name, color }).eq("id", id);
+    const { error } = await supabase.from("deal_tags").update({ name, color }).eq("id", id);
+    if (error) { toast.error("Chyba při aktualizaci tagu: " + error.message); return; }
     setTags((prev) => prev.map((t) => (t.id === id ? { ...t, name, color } : t)));
   }
 

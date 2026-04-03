@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, User, Briefcase, StickyNote } from "lucide-react";
+import { toast } from "sonner";
 import type { Stage } from "./page";
 
 interface Props {
@@ -96,7 +97,7 @@ export function NewDealSheet({ open, onOpenChange, stages, onCreated }: Props) {
 
     const selectedStage = stageId || stages[0]?.id;
 
-    const { data: deal } = await supabase
+    const { data: deal, error: dealError } = await supabase
       .from("deals")
       .insert({
         advisor_id: advisor.id,
@@ -111,15 +112,22 @@ export function NewDealSheet({ open, onOpenChange, stages, onCreated }: Props) {
       .select("id")
       .single();
 
+    if (dealError) {
+      toast.error("Chyba při vytváření dealu: " + dealError.message);
+      setLoading(false);
+      return;
+    }
+
     // Add initial note if provided
     if (note.trim() && deal) {
-      await supabase.from("deal_activities").insert({
+      const { error: noteError } = await supabase.from("deal_activities").insert({
         deal_id: deal.id,
         advisor_id: advisor.id,
         type: "note",
         title: "Počáteční poznámka",
         description: note,
       });
+      if (noteError) { toast.error("Deal vytvořen, ale nepodařilo se přidat poznámku: " + noteError.message); }
     }
 
     resetForm();

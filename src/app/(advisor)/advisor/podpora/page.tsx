@@ -172,7 +172,7 @@ export default function PodporaPage() {
         .from("ticket-attachments")
         .upload(fileName, attachment);
       if (uploadError) {
-        console.error("Upload error:", uploadError.message);
+        toast.error("Chyba při nahrávání přílohy: " + uploadError.message);
       } else {
         const { data: urlData } = supabase.storage
           .from("ticket-attachments")

@@ -61,11 +61,12 @@ async function sendAdvisorNotification(calcType: string) {
     .single();
   if (!client) return;
 
-  await supabase.from("client_notifications").insert({
+  const { error } = await supabase.from("client_notifications").insert({
     client_id: client.id,
     type: "calculator_cta",
     message: `Klient má zájem o konzultaci – kalkulačka: ${calcType}`,
   });
+  if (error) console.error("Chyba při odesílání notifikace:", error.message);
 }
 
 /* ------------------------------------------------------------------ */

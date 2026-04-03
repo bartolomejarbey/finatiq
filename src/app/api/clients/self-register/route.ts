@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     // 4. Create or update client record
     if (existing) {
       // Client record exists (advisor created it) but no user_id — link it
-      await supabase
+      const { error: updateError } = await supabase
         .from("clients")
         .update({
           user_id: authData.user.id,
@@ -97,9 +97,16 @@ export async function POST(request: Request) {
           phone: phone?.trim() || null,
         })
         .eq("id", existing.id);
+      if (updateError) {
+        console.error("Failed to update client with user_id:", updateError.message);
+        return NextResponse.json(
+          { error: "Nepodařilo se propojit klientský účet." },
+          { status: 500 }
+        );
+      }
     } else {
       // Create new client record
-      await supabase.from("clients").insert({
+      const { error: insertError } = await supabase.from("clients").insert({
         advisor_id: advisor.id,
         user_id: authData.user.id,
         first_name: first_name?.trim() || null,
@@ -107,6 +114,13 @@ export async function POST(request: Request) {
         email: email.toLowerCase().trim(),
         phone: phone?.trim() || null,
       });
+      if (insertError) {
+        console.error("Failed to insert new client:", insertError.message);
+        return NextResponse.json(
+          { error: "Nepodařilo se vytvořit klientský záznam." },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({

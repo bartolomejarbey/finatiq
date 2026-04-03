@@ -172,7 +172,8 @@ export default function PipelinePage() {
     setDeals((prev) => prev.map((d) => d.id === draggableId ? { ...d, stage_id: newStageId } : d));
 
     if (isWonStage(targetStage)) {
-      await supabase.from("deals").update({ stage_id: newStageId, converted_at: new Date().toISOString() }).eq("id", draggableId);
+      const { error } = await supabase.from("deals").update({ stage_id: newStageId, converted_at: new Date().toISOString() }).eq("id", draggableId);
+      if (error) { toast.error("Chyba při označení výhry: " + error.message); setDeals((prev) => prev.map((d) => d.id === draggableId ? { ...d, stage_id: deal.stage_id } : d)); return; }
       confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
       toast.success("Deal označen jako výhra!");
       triggerAutomation(draggableId, "deal_won", { newStageName: targetStage.name });
@@ -189,7 +190,8 @@ export default function PipelinePage() {
       setLostDialog({ open: true, dealId: draggableId, stageId: newStageId });
       return;
     }
-    await supabase.from("deals").update({ stage_id: newStageId }).eq("id", draggableId);
+    const { error: stageError } = await supabase.from("deals").update({ stage_id: newStageId }).eq("id", draggableId);
+    if (stageError) { toast.error("Chyba při přesunu dealu: " + stageError.message); setDeals((prev) => prev.map((d) => d.id === draggableId ? { ...d, stage_id: deal.stage_id } : d)); return; }
     toast.success(`Deal přesunut do "${targetStage.name}"`);
     triggerAutomation(draggableId, "stage_change", { newStageName: targetStage.name });
   }
@@ -208,7 +210,8 @@ export default function PipelinePage() {
 
   async function handleLostConfirm(reason: string) {
     if (!lostDialog.dealId || !lostDialog.stageId) return;
-    await supabase.from("deals").update({ stage_id: lostDialog.stageId, lost_at: new Date().toISOString(), lost_reason: reason }).eq("id", lostDialog.dealId);
+    const { error } = await supabase.from("deals").update({ stage_id: lostDialog.stageId, lost_at: new Date().toISOString(), lost_reason: reason }).eq("id", lostDialog.dealId);
+    if (error) { toast.error("Chyba při označení prohry: " + error.message); fetchData(); setLostDialog({ open: false, dealId: null, stageId: null }); return; }
     triggerAutomation(lostDialog.dealId, "deal_lost", { reason });
     setLostDialog({ open: false, dealId: null, stageId: null });
     toast.info("Deal označen jako prohra.");
@@ -220,8 +223,9 @@ export default function PipelinePage() {
   }
 
   async function handleDeleteDeal(dealId: string) {
+    const { error } = await supabase.from("deals").delete().eq("id", dealId);
+    if (error) { toast.error("Chyba při mazání dealu: " + error.message); return; }
     setDeals((prev) => prev.filter((d) => d.id !== dealId));
-    await supabase.from("deals").delete().eq("id", dealId);
     toast.success("Deal smazán.");
   }
 

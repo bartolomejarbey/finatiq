@@ -12,7 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen, Upload, FileText, Loader2 } from "lucide-react";
+import { FolderOpen, Upload, FileText, Loader2, Brain, Eye } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 interface Doc {
@@ -23,6 +29,8 @@ interface Doc {
   file_size: number;
   uploaded_by: string;
   created_at: string;
+  ocr_status: string | null;
+  ai_analysis: Record<string, unknown> | null;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -42,6 +50,8 @@ export default function DocumentsPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadCategory, setUploadCategory] = useState("other");
+  const [ocrProcessing, setOcrProcessing] = useState<string | null>(null);
+  const [viewingAnalysis, setViewingAnalysis] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -52,7 +62,7 @@ export default function DocumentsPage() {
       setClientId(client.id);
       setAdvisorId(client.advisor_id);
 
-      const { data } = await supabase.from("client_documents").select("*").eq("client_id", client.id).order("created_at", { ascending: false });
+      const { data } = await supabase.from("client_documents").select("id, name, category, file_path, file_size, uploaded_by, created_at, ocr_status, ai_analysis").eq("client_id", client.id).order("created_at", { ascending: false });
       setDocs(data || []);
       setLoading(false);
     }
@@ -64,14 +74,14 @@ export default function DocumentsPage() {
     setUploading(true);
 
     const filePath = `client-docs/${clientId}/${Date.now()}_${uploadFile.name}`;
-    const { error: storageError } = await supabase.storage.from("documents").upload(filePath, uploadFile);
+    const { error: storageError } = await supabase.storage.from("deal-documents").upload(filePath, uploadFile);
     if (storageError) {
       toast.error("Chyba při nahrávání.");
       setUploading(false);
       return;
     }
 
-    const { data: newDoc } = await supabase.from("client_documents").insert({
+    const { data: newDoc, error: insertError } = await supabase.from("client_documents").insert({
       client_id: clientId,
       advisor_id: advisorId,
       name: uploadFile.name,
@@ -79,16 +89,50 @@ export default function DocumentsPage() {
       file_path: filePath,
       file_size: uploadFile.size,
       uploaded_by: "client",
-    }).select().single();
+    }).select("id, name, category, file_path, file_size, uploaded_by, created_at, ocr_status, ai_analysis").single();
 
-    if (newDoc) setDocs((prev) => [newDoc, ...prev]);
+    if (insertError) {
+      toast.error("Chyba při ukládání dokumentu: " + insertError.message);
+      setUploading(false);
+      return;
+    }
+
+    if (newDoc) {
+      setDocs((prev) => [newDoc, ...prev]);
+
+      // Auto-run OCR for PDF/image files
+      const ext = uploadFile.name.toLowerCase().split(".").pop();
+      if (ext && ["pdf", "jpg", "jpeg", "png"].includes(ext)) {
+        runOcr(newDoc.id);
+      }
+    }
+
     setUploadFile(null);
     setUploading(false);
     toast.success("Dokument nahrán.");
   }
 
+  async function runOcr(docId: string) {
+    setOcrProcessing(docId);
+    try {
+      const res = await fetch("/api/ocr/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentId: docId }),
+      });
+      const result = await res.json();
+      if (result.ok) {
+        setDocs((prev) => prev.map((d) => d.id === docId ? { ...d, ocr_status: "done", ai_analysis: result.ai_analysis } : d));
+        toast.success("AI analýza dokončena.");
+      }
+    } catch {
+      // OCR failure is non-critical
+    }
+    setOcrProcessing(null);
+  }
+
   async function handleDownload(filePath: string) {
-    const { data } = await supabase.storage.from("documents").createSignedUrl(filePath, 3600);
+    const { data } = await supabase.storage.from("deal-documents").createSignedUrl(filePath, 3600);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   }
 
@@ -149,26 +193,79 @@ export default function DocumentsPage() {
           <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné dokumenty</p>
         </div>
       ) : (
-        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
-          <table className="w-full">
-            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Název</th><th className="px-6 py-3">Kategorie</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Velikost</th><th className="px-6 py-3">Nahrál</th><th className="px-6 py-3"></th></tr></thead>
-            <tbody>
-              {docs.map((d) => (
-                <tr key={d.id} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
-                  <td className="px-6 py-3 text-sm font-medium text-[var(--card-text)]">{d.name}</td>
-                  <td className="px-6 py-3"><Badge variant="secondary" className="text-[10px]">{CATEGORY_LABELS[d.category] || d.category}</Badge></td>
-                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{new Date(d.created_at).toLocaleDateString("cs-CZ")}</td>
-                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{formatSize(d.file_size)}</td>
-                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{d.uploaded_by === "client" ? "Vy" : "Poradce"}</td>
-                  <td className="px-6 py-3">
-                    <Button size="sm" variant="outline" className="text-xs" onClick={() => handleDownload(d.file_path)}>Stáhnout</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {docs.map((d) => (
+            <div key={d.id} className="rounded-xl border bg-[var(--card-bg)] p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <p className="text-sm font-medium text-[var(--card-text)]">{d.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Badge variant="secondary" className="text-[10px]">{CATEGORY_LABELS[d.category] || d.category}</Badge>
+                      <span className="text-xs text-[var(--card-text-muted)]">{new Date(d.created_at).toLocaleDateString("cs-CZ")}</span>
+                      <span className="text-xs text-[var(--card-text-muted)]">{formatSize(d.file_size)}</span>
+                      <span className="text-xs text-[var(--card-text-muted)]">{d.uploaded_by === "client" ? "Vy" : "Poradce"}</span>
+                      {d.ocr_status === "done" && <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">AI analyzováno</Badge>}
+                      {(d.ocr_status === "processing" || ocrProcessing === d.id) && <Badge className="bg-amber-100 text-amber-700 text-[10px]">Zpracovává se...</Badge>}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {d.ai_analysis && d.ocr_status === "done" && !('parse_error' in (d.ai_analysis as Record<string, unknown>)) && (
+                    <Button size="sm" variant="outline" className="text-xs" onClick={() => setViewingAnalysis(d.ai_analysis)}>
+                      <Eye className="mr-1.5 h-3 w-3" />AI analýza
+                    </Button>
+                  )}
+                  {!d.ocr_status && !ocrProcessing && (
+                    <Button size="sm" variant="outline" className="text-xs" onClick={() => runOcr(d.id)}>
+                      <Brain className="mr-1.5 h-3 w-3" />Analyzovat
+                    </Button>
+                  )}
+                  <Button size="sm" variant="outline" className="text-xs" onClick={() => handleDownload(d.file_path)}>Stáhnout</Button>
+                </div>
+              </div>
+
+              {/* AI Analysis summary */}
+              {d.ai_analysis && d.ocr_status === "done" && !('parse_error' in (d.ai_analysis as Record<string, unknown>)) && (
+                <div className="mt-3 rounded-lg bg-violet-50 p-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    {(d.ai_analysis as Record<string, unknown>).type && <div><span className="text-violet-500">Typ:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).type)}</span></div>}
+                    {(d.ai_analysis as Record<string, unknown>).provider && <div><span className="text-violet-500">Poskytovatel:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).provider)}</span></div>}
+                    {(d.ai_analysis as Record<string, unknown>).total_amount && <div><span className="text-violet-500">Částka:</span> <span className="font-medium text-violet-800">{Number((d.ai_analysis as Record<string, unknown>).total_amount).toLocaleString("cs-CZ")} Kč</span></div>}
+                    {(d.ai_analysis as Record<string, unknown>).interest_rate && <div><span className="text-violet-500">Úrok:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).interest_rate)} %</span></div>}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
+
+      {/* AI Analysis detail dialog */}
+      <Dialog open={!!viewingAnalysis} onOpenChange={(open) => { if (!open) setViewingAnalysis(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>AI analýza dokumentu</DialogTitle>
+          </DialogHeader>
+          {viewingAnalysis && (
+            <div className="space-y-3 text-sm">
+              {Object.entries(viewingAnalysis).map(([key, value]) => {
+                if (!value || key === "parse_error" || key === "raw_response") return null;
+                const label = { type: "Typ", provider: "Poskytovatel", interest_rate: "Úroková sazba", monthly_payment: "Měsíční splátka", total_amount: "Celková částka", insured_amount: "Pojistná částka", start_date: "Začátek", end_date: "Konec", fixation_end: "Konec fixace", has_indexation: "Indexace", has_insurance: "Pojištění", key_findings: "Důležité nálezy", risks: "Rizika", opportunities: "Příležitosti" }[key] || key;
+                return (
+                  <div key={key} className="flex gap-3">
+                    <span className="w-32 shrink-0 text-[var(--card-text-muted)]">{label}:</span>
+                    <span className="text-[var(--card-text)] font-medium">
+                      {Array.isArray(value) ? (value as string[]).join(", ") : typeof value === "boolean" ? (value ? "Ano" : "Ne") : typeof value === "number" ? value.toLocaleString("cs-CZ") : String(value)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

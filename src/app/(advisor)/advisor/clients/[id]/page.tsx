@@ -15,9 +15,36 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Save, Loader2, FileText, CreditCard, TrendingUp, Target, Handshake, User, Brain, Sparkles, Calculator, MessageSquare, Send, UserPlus, CheckCircle2, Copy } from "lucide-react";
+import { ArrowLeft, Save, Loader2, FileText, CreditCard, TrendingUp, Target, Handshake, User, Brain, Sparkles, Calculator, MessageSquare, Send, UserPlus, CheckCircle2, Copy, Upload, FolderOpen, Download, Trash2, Eye } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { SEGMENT_CONFIG } from "@/lib/scoring";
+
+interface ClientDocument {
+  id: string;
+  name: string;
+  category: string;
+  file_path: string;
+  file_size: number;
+  uploaded_by: string;
+  created_at: string;
+  ocr_status: string | null;
+  ai_analysis: Record<string, unknown> | null;
+}
+
+const DOC_CATEGORY_LABELS: Record<string, string> = {
+  contract: "Smlouva",
+  receipt: "Účtenka",
+  invoice: "Faktura",
+  proof: "Doklad",
+  other: "Jiné",
+};
 
 interface Client {
   id: string;
@@ -65,6 +92,12 @@ export default function ClientDetailPage() {
   const [invitePassword, setInvitePassword] = useState("");
   const [inviting, setInviting] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState<{ email: string; password: string } | null>(null);
+  const [clientDocs, setClientDocs] = useState<ClientDocument[]>([]);
+  const [docUploading, setDocUploading] = useState(false);
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docCategory, setDocCategory] = useState("other");
+  const [ocrProcessing, setOcrProcessing] = useState<string | null>(null);
+  const [viewingAnalysis, setViewingAnalysis] = useState<Record<string, unknown> | null>(null);
 
   const fetchData = useCallback(async () => {
     const { data: c } = await supabase.from("clients").select("*").eq("id", clientId).single();
@@ -111,6 +144,14 @@ export default function ClientDetailPage() {
       .order("created_at", { ascending: true });
     setChatMessages(msgs || []);
 
+    // Fetch client documents
+    const { data: docsData } = await supabase
+      .from("client_documents")
+      .select("id, name, category, file_path, file_size, uploaded_by, created_at, ocr_status, ai_analysis")
+      .eq("client_id", clientId)
+      .order("created_at", { ascending: false });
+    setClientDocs(docsData || []);
+
     // Fetch OSVČ records if client is OSVČ
     if (c?.is_osvc) {
       const { data: osvc } = await supabase
@@ -129,8 +170,9 @@ export default function ClientDetailPage() {
 
   async function handleSave() {
     setSaving(true);
-    await supabase.from("clients").update({ first_name: firstName, last_name: lastName, email: email || null, phone: phone || null }).eq("id", clientId);
+    const { error } = await supabase.from("clients").update({ first_name: firstName, last_name: lastName, email: email || null, phone: phone || null }).eq("id", clientId);
     setSaving(false);
+    if (error) { toast.error("Chyba při ukládání klienta: " + error.message); return; }
     toast.success("Klient uložen.");
   }
 
@@ -189,6 +231,82 @@ export default function ClientDetailPage() {
     setSendingMessage(false);
   }
 
+  async function handleDocUpload() {
+    if (!docFile || !clientId) return;
+    setDocUploading(true);
+
+    const filePath = `client-docs/${clientId}/${Date.now()}_${docFile.name}`;
+    const { error: storageError } = await supabase.storage.from("deal-documents").upload(filePath, docFile);
+    if (storageError) {
+      toast.error("Chyba při nahrávání: " + storageError.message);
+      setDocUploading(false);
+      return;
+    }
+
+    const { data: newDoc, error: insertError } = await supabase.from("client_documents").insert({
+      client_id: clientId,
+      advisor_id: client?.id ? (await supabase.auth.getUser()).data.user?.id : null,
+      name: docFile.name,
+      category: docCategory,
+      file_path: filePath,
+      file_size: docFile.size,
+      uploaded_by: "advisor",
+    }).select("id, name, category, file_path, file_size, uploaded_by, created_at, ocr_status, ai_analysis").single();
+
+    if (insertError) {
+      toast.error("Chyba při ukládání: " + insertError.message);
+      setDocUploading(false);
+      return;
+    }
+
+    if (newDoc) {
+      setClientDocs((prev) => [newDoc, ...prev]);
+
+      // Auto-run OCR for PDF/image files
+      const ext = docFile.name.toLowerCase().split(".").pop();
+      if (ext && ["pdf", "jpg", "jpeg", "png"].includes(ext)) {
+        handleRunOcr(newDoc.id);
+      }
+    }
+
+    setDocFile(null);
+    setDocUploading(false);
+    toast.success("Dokument nahrán.");
+  }
+
+  async function handleDocDownload(filePath: string) {
+    const { data } = await supabase.storage.from("deal-documents").createSignedUrl(filePath, 3600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  }
+
+  async function handleDocDelete(docId: string, filePath: string) {
+    await supabase.storage.from("deal-documents").remove([filePath]);
+    await supabase.from("client_documents").delete().eq("id", docId);
+    setClientDocs((prev) => prev.filter((d) => d.id !== docId));
+    toast.success("Dokument smazán.");
+  }
+
+  async function handleRunOcr(docId: string) {
+    setOcrProcessing(docId);
+    try {
+      const res = await fetch("/api/ocr/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentId: docId }),
+      });
+      const result = await res.json();
+      if (result.ok) {
+        setClientDocs((prev) => prev.map((d) => d.id === docId ? { ...d, ocr_status: "done", ai_analysis: result.ai_analysis } : d));
+        toast.success("AI analýza dokončena.");
+      } else {
+        toast.error("Chyba při AI analýze.");
+      }
+    } catch {
+      toast.error("Chyba při AI analýze.");
+    }
+    setOcrProcessing(null);
+  }
+
   async function generateAiSummary() {
     setAiLoading(true);
     try {
@@ -229,6 +347,7 @@ export default function ClientDetailPage() {
     { key: "investments", label: "Investice", icon: TrendingUp, count: investments.length },
     { key: "goals", label: "Cíle", icon: Target, count: goals.length },
     { key: "deals", label: "Dealy", icon: Handshake, count: deals.length },
+    { key: "documents", label: "Dokumenty", icon: FolderOpen, count: clientDocs.length },
     ...(chatMessages.length > 0 ? [{ key: "messages", label: "Zprávy", icon: MessageSquare, count: chatMessages.length }] : []),
     ...(client.is_osvc ? [{ key: "osvc", label: "Evidence OSVČ", icon: Calculator, count: osvcRecords.length }] : []),
   ];
@@ -411,6 +530,145 @@ export default function ClientDetailPage() {
           />
         </div>
       )}
+
+      {tab === "documents" && (
+        <div>
+          {/* Upload zone */}
+          <div className="mb-6 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
+            <h2 className="mb-4 text-sm font-semibold text-[var(--card-text)]">Nahrát dokument</h2>
+            <div
+              className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] p-8 transition-colors hover:border-blue-300"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && f.size <= 10 * 1024 * 1024) setDocFile(f); }}
+            >
+              <Upload className="mb-3 h-8 w-8 text-[var(--card-text-dim)]" />
+              <p className="text-sm text-[var(--card-text-muted)]">Přetáhněte soubor sem nebo</p>
+              <label className="mt-2 cursor-pointer rounded-lg bg-[var(--table-header)] px-4 py-2 text-xs font-medium text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]">
+                Vyberte soubor
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.size <= 10 * 1024 * 1024) setDocFile(f); }} />
+              </label>
+            </div>
+
+            {docFile && (
+              <div className="mt-4 flex items-center gap-3">
+                <div className="flex flex-1 items-center gap-2 rounded-lg bg-blue-50 px-3 py-2">
+                  <FileText className="h-4 w-4 text-blue-500" />
+                  <span className="text-xs text-blue-700">{docFile.name} ({(docFile.size / 1024).toFixed(0)} KB)</span>
+                  <button onClick={() => setDocFile(null)} className="ml-auto text-xs text-blue-400 hover:text-blue-600">Odebrat</button>
+                </div>
+                <Select value={docCategory} onValueChange={setDocCategory}>
+                  <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(DOC_CATEGORY_LABELS).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleDocUpload} disabled={docUploading} size="sm">
+                  {docUploading ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Upload className="mr-2 h-3 w-3" />}Nahrát
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Documents list */}
+          {clientDocs.length === 0 ? (
+            <div className="flex flex-col items-center py-16">
+              <FolderOpen className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
+              <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné dokumenty</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {clientDocs.map((d) => (
+                <div key={d.id} className="rounded-xl border bg-[var(--card-bg)] p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-blue-500" />
+                      <div>
+                        <p className="text-sm font-medium text-[var(--card-text)]">{d.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <Badge variant="secondary" className="text-[10px]">{DOC_CATEGORY_LABELS[d.category] || d.category}</Badge>
+                          <span className="text-xs text-[var(--card-text-muted)]">{new Date(d.created_at).toLocaleDateString("cs-CZ")}</span>
+                          <span className="text-xs text-[var(--card-text-muted)]">{d.uploaded_by === "client" ? "Klient" : "Poradce"}</span>
+                          {d.ocr_status === "done" && <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">AI analyzováno</Badge>}
+                          {d.ocr_status === "processing" && <Badge className="bg-amber-100 text-amber-700 text-[10px]">Zpracovává se...</Badge>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {d.ai_analysis && !('parse_error' in (d.ai_analysis as Record<string, unknown>)) && (
+                        <Button size="sm" variant="outline" className="text-xs" onClick={() => setViewingAnalysis(d.ai_analysis)}>
+                          <Eye className="mr-1.5 h-3 w-3" />AI analýza
+                        </Button>
+                      )}
+                      {!d.ocr_status && (
+                        <Button size="sm" variant="outline" className="text-xs" onClick={() => handleRunOcr(d.id)} disabled={ocrProcessing === d.id}>
+                          {ocrProcessing === d.id ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : <Brain className="mr-1.5 h-3 w-3" />}Analyzovat
+                        </Button>
+                      )}
+                      <Button size="sm" variant="outline" className="text-xs" onClick={() => handleDocDownload(d.file_path)}>
+                        <Download className="mr-1.5 h-3 w-3" />Stáhnout
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-xs text-red-500 hover:text-red-700" onClick={() => handleDocDelete(d.id, d.file_path)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* AI Analysis card */}
+                  {d.ai_analysis && d.ocr_status === "done" && !('parse_error' in (d.ai_analysis as Record<string, unknown>)) && (
+                    <div className="mt-3 rounded-lg bg-violet-50 p-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        {(d.ai_analysis as Record<string, unknown>).type && <div><span className="text-violet-500">Typ:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).type)}</span></div>}
+                        {(d.ai_analysis as Record<string, unknown>).provider && <div><span className="text-violet-500">Poskytovatel:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).provider)}</span></div>}
+                        {(d.ai_analysis as Record<string, unknown>).total_amount && <div><span className="text-violet-500">Částka:</span> <span className="font-medium text-violet-800">{Number((d.ai_analysis as Record<string, unknown>).total_amount).toLocaleString("cs-CZ")} Kč</span></div>}
+                        {(d.ai_analysis as Record<string, unknown>).interest_rate && <div><span className="text-violet-500">Úrok:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).interest_rate)} %</span></div>}
+                      </div>
+                      {Array.isArray((d.ai_analysis as Record<string, unknown>).risks) && ((d.ai_analysis as Record<string, unknown>).risks as string[]).length > 0 && (
+                        <div className="mt-2">
+                          <span className="text-[10px] font-medium text-red-500">Rizika:</span>
+                          <p className="text-xs text-red-700">{((d.ai_analysis as Record<string, unknown>).risks as string[]).join(", ")}</p>
+                        </div>
+                      )}
+                      {Array.isArray((d.ai_analysis as Record<string, unknown>).opportunities) && ((d.ai_analysis as Record<string, unknown>).opportunities as string[]).length > 0 && (
+                        <div className="mt-1">
+                          <span className="text-[10px] font-medium text-emerald-500">Příležitosti:</span>
+                          <p className="text-xs text-emerald-700">{((d.ai_analysis as Record<string, unknown>).opportunities as string[]).join(", ")}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* AI Analysis detail dialog */}
+      <Dialog open={!!viewingAnalysis} onOpenChange={(open) => { if (!open) setViewingAnalysis(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>AI analýza dokumentu</DialogTitle>
+          </DialogHeader>
+          {viewingAnalysis && (
+            <div className="space-y-3 text-sm">
+              {Object.entries(viewingAnalysis).map(([key, value]) => {
+                if (!value || key === "parse_error" || key === "raw_response") return null;
+                const label = { type: "Typ", provider: "Poskytovatel", interest_rate: "Úroková sazba", monthly_payment: "Měsíční splátka", total_amount: "Celková částka", insured_amount: "Pojistná částka", start_date: "Začátek", end_date: "Konec", fixation_end: "Konec fixace", has_indexation: "Indexace", has_insurance: "Pojištění", key_findings: "Důležité nálezy", risks: "Rizika", opportunities: "Příležitosti" }[key] || key;
+                return (
+                  <div key={key} className="flex gap-3">
+                    <span className="w-32 shrink-0 text-[var(--card-text-muted)]">{label}:</span>
+                    <span className="text-[var(--card-text)] font-medium">
+                      {Array.isArray(value) ? (value as string[]).join(", ") : typeof value === "boolean" ? (value ? "Ano" : "Ne") : typeof value === "number" ? value.toLocaleString("cs-CZ") : String(value)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Invite dialog */}
       <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) setInviteSuccess(null); }}>

@@ -99,7 +99,7 @@ export default function TrezorPage() {
 
     const ext = file.name.split(".").pop();
     const path = `vault/${clientId}/${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from("documents").upload(path, file);
+    const { error: uploadError } = await supabase.storage.from("deal-documents").upload(path, file);
 
     if (uploadError) {
       toast.error("Chyba při nahrávání: " + uploadError.message);
@@ -107,11 +107,11 @@ export default function TrezorPage() {
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("documents").getPublicUrl(path);
+    const { data: urlData } = supabase.storage.from("deal-documents").getPublicUrl(path);
 
     const { data: client } = await supabase.from("clients").select("advisor_id").eq("id", clientId).single();
 
-    await supabase.from("documents").insert({
+    const { error: insertError } = await supabase.from("documents").insert({
       client_id: clientId,
       advisor_id: client?.advisor_id,
       name: docName,
@@ -121,6 +121,12 @@ export default function TrezorPage() {
       valid_until: validUntil || null,
       shared_with_advisor: shareWithAdvisor,
     });
+
+    if (insertError) {
+      toast.error("Chyba při ukládání dokumentu: " + insertError.message);
+      setUploading(false);
+      return;
+    }
 
     toast.success("Dokument nahrán do trezoru.");
     setFile(null);
@@ -132,10 +138,14 @@ export default function TrezorPage() {
   }
 
   async function toggleShare(doc: VaultDoc) {
-    await supabase
+    const { error } = await supabase
       .from("documents")
       .update({ shared_with_advisor: !doc.shared_with_advisor })
       .eq("id", doc.id);
+    if (error) {
+      toast.error("Chyba při změně sdílení: " + error.message);
+      return;
+    }
     setDocs((prev) =>
       prev.map((d) => (d.id === doc.id ? { ...d, shared_with_advisor: !d.shared_with_advisor } : d))
     );
@@ -144,7 +154,11 @@ export default function TrezorPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Opravdu smazat tento dokument?")) return;
-    await supabase.from("documents").delete().eq("id", id);
+    const { error } = await supabase.from("documents").delete().eq("id", id);
+    if (error) {
+      toast.error("Chyba při mazání dokumentu: " + error.message);
+      return;
+    }
     setDocs((prev) => prev.filter((d) => d.id !== id));
     toast.success("Dokument smazán.");
   }

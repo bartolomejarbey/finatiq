@@ -56,8 +56,7 @@ function LoadingScreen() {
       <div className="flex flex-col items-center gap-4">
         <div
           className="h-10 w-10 animate-spin rounded-full border-4"
-          style={{ borderColor: "var(--card-border, #e2e8f0)" }}
-          style={{ borderTopColor: "var(--color-primary, #2563EB)" }}
+          style={{ borderColor: "var(--card-border, #e2e8f0)", borderTopColor: "var(--color-primary, #2563EB)" }}
         />
         <p className="text-sm font-medium text-gray-500">Načítání...</p>
       </div>

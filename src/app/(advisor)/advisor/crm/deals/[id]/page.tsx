@@ -124,8 +124,12 @@ export default function DealDetailPage() {
 
   async function handleSave() {
     setSaving(true);
-    await supabase.from("deals").update({ title, contact_name: contactName || null, contact_email: contactEmail || null, contact_phone: contactPhone || null, value: value ? parseFloat(value) : 0, stage_id: stageId, client_id: clientId || null }).eq("id", dealId);
+    const { error } = await supabase.from("deals").update({ title, contact_name: contactName || null, contact_email: contactEmail || null, contact_phone: contactPhone || null, value: value ? parseFloat(value) : 0, stage_id: stageId, client_id: clientId || null }).eq("id", dealId);
     setSaving(false);
+    if (error) {
+      toast.error("Chyba při ukládání dealu: " + error.message);
+      return;
+    }
     toast.success("Deal uložen.");
   }
 
@@ -135,19 +139,25 @@ export default function DealDetailPage() {
     setAddingActivity(true);
     const { data: advisor } = await supabase.from("advisors").select("id").single();
     if (!advisor) { setAddingActivity(false); return; }
-    await supabase.from("deal_activities").insert({ deal_id: dealId, advisor_id: advisor.id, type: actType, title: actTitle, description: actDesc || null, scheduled_at: actDate ? new Date(actDate).toISOString() : null });
+    const { error: actError } = await supabase.from("deal_activities").insert({ deal_id: dealId, advisor_id: advisor.id, type: actType, title: actTitle, description: actDesc || null, scheduled_at: actDate ? new Date(actDate).toISOString() : null });
     setActTitle(""); setActDesc(""); setActDate("");
     setAddingActivity(false);
+    if (actError) {
+      toast.error("Chyba při přidávání aktivity: " + actError.message);
+      return;
+    }
     toast.success("Aktivita přidána.");
     fetchData();
   }
 
   async function toggleTag(tagId: string) {
     if (dealTagIds.includes(tagId)) {
-      await supabase.from("deal_tag_assignments").delete().eq("deal_id", dealId).eq("tag_id", tagId);
+      const { error } = await supabase.from("deal_tag_assignments").delete().eq("deal_id", dealId).eq("tag_id", tagId);
+      if (error) { toast.error("Chyba při odebírání tagu: " + error.message); return; }
       setDealTagIds((prev) => prev.filter((t) => t !== tagId));
     } else {
-      await supabase.from("deal_tag_assignments").insert({ deal_id: dealId, tag_id: tagId });
+      const { error } = await supabase.from("deal_tag_assignments").insert({ deal_id: dealId, tag_id: tagId });
+      if (error) { toast.error("Chyba při přidávání tagu: " + error.message); return; }
       setDealTagIds((prev) => [...prev, tagId]);
     }
     toast.success("Tagy aktualizovány.");
@@ -158,8 +168,10 @@ export default function DealDetailPage() {
     setRemSaving(true);
     const { data: advisor } = await supabase.from("advisors").select("id").single();
     if (!advisor) { setRemSaving(false); return; }
-    await supabase.from("reminders").insert({ advisor_id: advisor.id, deal_id: dealId, type: "follow_up", title: remTitle, due_date: new Date(remDate).toISOString() });
-    setRemTitle(""); setRemDate(""); setRemSaving(false); setReminderOpen(false);
+    const { error } = await supabase.from("reminders").insert({ advisor_id: advisor.id, deal_id: dealId, type: "follow_up", title: remTitle, due_date: new Date(remDate).toISOString() });
+    setRemSaving(false);
+    if (error) { toast.error("Chyba při vytváření připomínky: " + error.message); return; }
+    setRemTitle(""); setRemDate(""); setReminderOpen(false);
     toast.success("Připomínka vytvořena.");
   }
 
@@ -176,7 +188,7 @@ export default function DealDetailPage() {
 
     // We don't have a proper client_id for deal docs, but we store in documents table using contract_id field as deal reference
     const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from("documents").insert({
+    const { error: docError } = await supabase.from("documents").insert({
       advisor_id: advisor.id,
       client_id: clients[0]?.id || advisor.id, // fallback
       contract_id: dealId, // using as deal reference
@@ -187,14 +199,20 @@ export default function DealDetailPage() {
       uploaded_by: user?.id,
     });
     setUploading(false);
+    if (docError) {
+      toast.error("Chyba při ukládání dokumentu: " + docError.message);
+      return;
+    }
     toast.success("Dokument nahrán.");
     fetchData();
     e.target.value = "";
   }
 
   async function handleDeleteDoc(doc: DocFile) {
-    await supabase.storage.from("deal-documents").remove([doc.storage_path]);
-    await supabase.from("documents").delete().eq("id", doc.id);
+    const { error: dbError } = await supabase.from("documents").delete().eq("id", doc.id);
+    if (dbError) { toast.error("Chyba při mazání dokumentu: " + dbError.message); return; }
+    const { error: storageError } = await supabase.storage.from("deal-documents").remove([doc.storage_path]);
+    if (storageError) { toast.error("Dokument smazán z databáze, ale nepodařilo se odstranit soubor ze storage."); }
     setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
     toast.success("Dokument smazán.");
   }

@@ -204,12 +204,13 @@ export default function KlientKalendarPage() {
       minute: "2-digit",
     });
 
-    await supabase.from("client_notifications").insert({
+    const { error: notifError } = await supabase.from("client_notifications").insert({
       advisor_id: client.advisor_id,
       client_id: client.id,
       type: "appointment_booked",
       message: `Klient ${client.first_name} ${client.last_name} si zarezervoval schůzku na ${dateLabel}`,
     });
+    if (notifError) console.error("Chyba při odesílání notifikace:", notifError.message);
 
     setAppointments((prev) => [...prev, appt].sort(
       (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()

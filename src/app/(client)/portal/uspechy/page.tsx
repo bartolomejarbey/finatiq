@@ -74,10 +74,11 @@ export default function MilestonesPage() {
         .filter((m) => !m.seen_by_client)
         .map((m) => m.id);
       if (unseenIds.length > 0) {
-        await supabase
+        const { error } = await supabase
           .from("milestones")
           .update({ seen_by_client: true })
           .in("id", unseenIds);
+        if (error) console.error("Chyba při označení milníků:", error.message);
       }
 
       setLoading(false);

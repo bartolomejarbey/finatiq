@@ -85,13 +85,19 @@ export default function ClientsPage() {
     const { data: advisor } = await supabase.from("advisors").select("id").single();
     if (!advisor) { setSaving(false); return; }
 
-    await supabase.from("clients").insert({
+    const { error: clientError } = await supabase.from("clients").insert({
       advisor_id: advisor.id,
       first_name: firstName,
       last_name: lastName,
       email: email || null,
       phone: phone || null,
     });
+
+    if (clientError) {
+      toast.error("Chyba při vytváření klienta: " + clientError.message);
+      setSaving(false);
+      return;
+    }
 
     setFirstName(""); setLastName(""); setEmail(""); setPhone("");
     setSaving(false);

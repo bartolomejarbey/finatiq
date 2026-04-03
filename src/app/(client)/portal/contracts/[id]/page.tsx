@@ -93,7 +93,7 @@ export default function ContractDetailPage() {
     const principalAmount = Math.round((monthly - interestAmount) * 100) / 100;
     const newBalance = Math.max(0, Math.round((balance - principalAmount) * 100) / 100);
 
-    await supabase.from("loan_payments").insert({
+    const { error: insertError } = await supabase.from("loan_payments").insert({
       contract_id: contract.id,
       advisor_id: contract.advisor_id,
       client_id: contract.client_id,
@@ -104,7 +104,19 @@ export default function ContractDetailPage() {
       remaining_balance: newBalance,
     });
 
-    await supabase.from("contracts").update({ remaining_balance: newBalance }).eq("id", contract.id);
+    if (insertError) {
+      toast.error("Chyba při záznamu splátky: " + insertError.message);
+      setPaying(false);
+      return;
+    }
+
+    const { error: updateError } = await supabase.from("contracts").update({ remaining_balance: newBalance }).eq("id", contract.id);
+
+    if (updateError) {
+      toast.error("Chyba při aktualizaci smlouvy: " + updateError.message);
+      setPaying(false);
+      return;
+    }
 
     setPaying(false);
     toast.success(

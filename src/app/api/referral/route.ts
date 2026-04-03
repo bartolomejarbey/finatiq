@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
 
     if (refError) {
       console.error("Referral insert error:", refError);
+      return NextResponse.json({ error: "Nepodařilo se uložit doporučení." }, { status: 500 });
     }
 
     // Create deal in CRM
@@ -112,7 +113,7 @@ export async function POST(req: NextRequest) {
     const stageId = stages?.[0]?.id;
 
     if (stageId) {
-      await supabase.from("deals").insert({
+      const { error: dealError } = await supabase.from("deals").insert({
         advisor_id: client.advisor_id,
         stage_id: stageId,
         title: `Doporuceni: ${name}`,
@@ -122,6 +123,9 @@ export async function POST(req: NextRequest) {
         source: "referral",
         notes: message ? `Zprava: ${message}` : null,
       });
+      if (dealError) {
+        console.error("Referral deal insert error:", dealError.message);
+      }
     }
 
     return NextResponse.json({ success: true });

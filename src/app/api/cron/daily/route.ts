@@ -49,10 +49,11 @@ export async function GET(request: NextRequest) {
       .lt("trial_ends_at", now);
 
     for (const adv of expired || []) {
-      await supabase
+      const { error: expireError } = await supabase
         .from("advisors")
         .update({ subscription_status: "expired" })
         .eq("id", adv.id);
+      if (expireError) console.error("[CRON] Failed to expire trial for advisor", adv.id, expireError.message);
 
       const { data: userData } = await supabase.auth.admin.getUserById(adv.user_id);
       if (userData?.user?.email) {
@@ -119,11 +120,12 @@ export async function GET(request: NextRequest) {
       .lt("due_date", today);
 
     if (count && count > 0) {
-      await supabase
+      const { error: overdueError } = await supabase
         .from("invoices")
         .update({ status: "overdue" })
         .neq("status", "paid")
         .lt("due_date", today);
+      if (overdueError) console.error("[CRON] Failed to mark invoices overdue:", overdueError.message);
     }
 
     results.overdue_invoices = count || 0;
@@ -153,7 +155,8 @@ export async function GET(request: NextRequest) {
       if (adv?.email) {
         const tpl = templates.invoiceDueSoon(adv.company_name || "Poradce", inv.total_with_vat || inv.amount, new Date(inv.due_date).toLocaleDateString("cs-CZ"));
         await sendEmail({ to: adv.email, subject: tpl.subject, html: tpl.html }).catch(() => {});
-        await supabase.from("invoices").update({ reminder_sent_at: new Date().toISOString() }).eq("id", inv.id);
+        const { error: reminderUpdateError } = await supabase.from("invoices").update({ reminder_sent_at: new Date().toISOString() }).eq("id", inv.id);
+        if (reminderUpdateError) console.error("[CRON] Failed to update reminder_sent_at for invoice", inv.id, reminderUpdateError.message);
       }
     }
 
@@ -174,7 +177,8 @@ export async function GET(request: NextRequest) {
         const tpl = templates.invoiceOverdue(adv.company_name || "Poradce", inv.total_with_vat || inv.amount, new Date(inv.due_date).toLocaleDateString("cs-CZ"));
         await sendEmail({ to: adv.email, subject: tpl.subject, html: tpl.html }).catch(() => {});
       }
-      await supabase.from("invoices").update({ status: "overdue" }).eq("id", inv.id);
+      const { error: overdueUpdateError } = await supabase.from("invoices").update({ status: "overdue" }).eq("id", inv.id);
+      if (overdueUpdateError) console.error("[CRON] Failed to mark invoice overdue", inv.id, overdueUpdateError.message);
     }
 
     // 7 days after due: second reminder
@@ -194,7 +198,8 @@ export async function GET(request: NextRequest) {
       if (adv?.email) {
         const tpl = templates.invoiceSecondReminder(adv.company_name || "Poradce", inv.total_with_vat || inv.amount);
         await sendEmail({ to: adv.email, subject: tpl.subject, html: tpl.html }).catch(() => {});
-        await supabase.from("invoices").update({ second_reminder_sent_at: new Date().toISOString() }).eq("id", inv.id);
+        const { error: secondReminderError } = await supabase.from("invoices").update({ second_reminder_sent_at: new Date().toISOString() }).eq("id", inv.id);
+        if (secondReminderError) console.error("[CRON] Failed to update second_reminder_sent_at for invoice", inv.id, secondReminderError.message);
       }
     }
 
@@ -211,7 +216,8 @@ export async function GET(request: NextRequest) {
 
     for (const inv of toSuspend || []) {
       const adv = (inv as any).advisors;
-      await supabase.from("advisors").update({ subscription_status: "pending_payment" }).eq("id", inv.advisor_id);
+      const { error: suspendError } = await supabase.from("advisors").update({ subscription_status: "pending_payment" }).eq("id", inv.advisor_id);
+      if (suspendError) console.error("[CRON] Failed to suspend advisor", inv.advisor_id, suspendError.message);
       if (adv?.email) {
         const tpl = templates.subscriptionSuspended(adv.company_name || "Poradce");
         await sendEmail({ to: adv.email, subject: tpl.subject, html: tpl.html }).catch(() => {});

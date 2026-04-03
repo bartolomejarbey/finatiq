@@ -119,7 +119,7 @@ export default function ZivotniUdalostiPage() {
     const eventLabel = EVENT_TYPES.find((e) => e.value === eventType)?.label || eventType;
 
     // Insert life event
-    await supabase.from("life_events").insert({
+    const { error: eventError } = await supabase.from("life_events").insert({
       advisor_id: client.advisor_id,
       client_id: client.id,
       event_type: eventType,
@@ -129,8 +129,14 @@ export default function ZivotniUdalostiPage() {
       advisor_action: advisorAction,
     });
 
+    if (eventError) {
+      toast.error("Chyba při ukládání události: " + eventError.message);
+      setSubmitting(false);
+      return;
+    }
+
     // Notify advisor
-    await supabase.from("client_notifications").insert({
+    const { error: notifError } = await supabase.from("client_notifications").insert({
       advisor_id: client.advisor_id,
       client_id: client.id,
       type: "life_event",
@@ -138,6 +144,7 @@ export default function ZivotniUdalostiPage() {
       message: `${client.first_name} ${client.last_name} nahlásil/a: ${eventLabel}. Doporučená akce: ${advisorAction}`,
       is_read: false,
     });
+    if (notifError) console.error("Chyba při odesílání notifikace:", notifError.message);
 
     toast.success("Životní událost nahlášena. Váš poradce bude informován.");
     setShowForm(false);

@@ -264,10 +264,15 @@ export default function ClientOnboardingPage() {
   async function handleFinish() {
     if (!clientId) return;
     setLoading(true);
-    await supabase
+    const { error } = await supabase
       .from("clients")
       .update({ onboarding_completed: true })
       .eq("id", clientId);
+    if (error) {
+      toast.error("Chyba při dokončení onboardingu: " + error.message);
+      setLoading(false);
+      return;
+    }
     setLoading(false);
     confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
     setTimeout(() => router.push("/portal"), 2000);

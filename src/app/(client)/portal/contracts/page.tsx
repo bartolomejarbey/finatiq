@@ -132,23 +132,37 @@ export default function ContractsPage() {
       client_uploaded: true,
     };
 
-    const { data: newContract } = await supabase.from("contracts").insert(payload).select().single();
+    const { data: newContract, error: insertError } = await supabase.from("contracts").insert(payload).select().single();
+
+    if (insertError) {
+      toast.error("Chyba při ukládání smlouvy: " + insertError.message);
+      setSaving(false);
+      return;
+    }
 
     // Upload file if present
     if (uploadFile && newContract) {
       setUploading(true);
       const filePath = `client-docs/${clientId}/${Date.now()}_${uploadFile.name}`;
-      await supabase.storage.from("deal-documents").upload(filePath, uploadFile);
-      await supabase.from("client_documents").insert({
-        client_id: clientId,
-        advisor_id: advisorId,
-        name: uploadFile.name,
-        category: "contract",
-        file_path: filePath,
-        file_size: uploadFile.size,
-        uploaded_by: "client",
-      });
-      setUploading(false);
+      const { error: storageError } = await supabase.storage.from("deal-documents").upload(filePath, uploadFile);
+      if (storageError) {
+        toast.error("Chyba při nahrávání souboru: " + storageError.message);
+        setUploading(false);
+      } else {
+        const { error: docError } = await supabase.from("client_documents").insert({
+          client_id: clientId,
+          advisor_id: advisorId,
+          name: uploadFile.name,
+          category: "contract",
+          file_path: filePath,
+          file_size: uploadFile.size,
+          uploaded_by: "client",
+        });
+        if (docError) {
+          toast.error("Chyba při ukládání dokumentu: " + docError.message);
+        }
+        setUploading(false);
+      }
     }
 
     // Check interest rate for savings alert
