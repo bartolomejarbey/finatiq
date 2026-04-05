@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen, Upload, FileText, Loader2, Brain, Eye } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FolderOpen, Upload, FileText, Loader2, Brain, Eye, Scan } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { DocumentScanner } from "@/components/documents/DocumentScanner";
+import { ScannedDocumentsList } from "@/components/documents/ScannedDocumentsList";
 
 interface Doc {
   id: string;
@@ -148,6 +151,29 @@ export default function DocumentsPage() {
     <div>
       <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Dokumenty</h1>
 
+      <Tabs defaultValue="scan" className="mb-6">
+        <TabsList>
+          <TabsTrigger value="scan" className="gap-1.5">
+            <Scan className="h-4 w-4" />
+            Účtenky a faktury
+          </TabsTrigger>
+          <TabsTrigger value="legacy" className="gap-1.5">
+            <FileText className="h-4 w-4" />
+            Všechny dokumenty
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ===== TAB: Účtenky a faktury (AI Vision) ===== */}
+        <TabsContent value="scan">
+          <div className="space-y-6">
+            <DocumentScanner clientId={clientId} />
+            <ScannedDocumentsList />
+          </div>
+        </TabsContent>
+
+        {/* ===== TAB: Všechny dokumenty (legacy) ===== */}
+        <TabsContent value="legacy">
+
       {/* Upload zone */}
       <div className="mb-6 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold text-[var(--card-text)]">Nahrát dokument</h2>
@@ -266,6 +292,9 @@ export default function DocumentsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
