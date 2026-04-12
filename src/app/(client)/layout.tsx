@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeProvider, useTheme, useThemeLoading } from "@/lib/theme/ThemeProvider";
+import { PortalTitleManager } from "@/components/portal-title-manager";
 import { ClassicLayout } from "@/components/layouts/ClassicLayout";
 import { ModernLayout } from "@/components/layouts/ModernLayout";
 import { MinimalLayout } from "@/components/layouts/MinimalLayout";
@@ -131,12 +132,12 @@ function ClientLayoutInner({ children }: { children: React.ReactNode }) {
   if (themeLoading) return <LoadingScreen />;
 
   if (theme.clientLayout === "modern") {
-    return <ModernLayout {...layoutProps}>{children}</ModernLayout>;
+    return <ModernLayout {...layoutProps}><PortalTitleManager />{children}</ModernLayout>;
   }
   if (theme.clientLayout === "minimal") {
-    return <MinimalLayout {...layoutProps}>{children}</MinimalLayout>;
+    return <MinimalLayout {...layoutProps}><PortalTitleManager />{children}</MinimalLayout>;
   }
-  return <ClassicLayout {...layoutProps}>{children}</ClassicLayout>;
+  return <ClassicLayout {...layoutProps}><PortalTitleManager />{children}</ClassicLayout>;
 }
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {

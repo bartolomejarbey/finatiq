@@ -79,6 +79,20 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+  --color-background: #f8fafc;
+  --main-text: #0f172a;
+  --card-bg: #ffffff;
+  --card-text: #1e293b;
+  --card-text-muted: #64748b;
+  --card-text-dim: #94a3b8;
+  --card-border: #e2e8f0;
+  --table-header: #f8fafc;
+  --table-hover: #f1f5f9;
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-text: #111827;
+  --input-placeholder: #9ca3af;
+  --skeleton-bg: #e5e7eb;
 }
 
 .dark {
@@ -113,6 +127,20 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --color-background: #0f172a;
+  --main-text: #f8fafc;
+  --card-bg: #1e293b;
+  --card-text: #f1f5f9;
+  --card-text-muted: #94a3b8;
+  --card-text-dim: #64748b;
+  --card-border: #334155;
+  --table-header: #0f172a;
+  --table-hover: #334155;
+  --input-bg: #0f172a;
+  --input-border: #334155;
+  --input-text: #f1f5f9;
+  --input-placeholder: #64748b;
+  --skeleton-bg: #334155;
 }
 
 @layer base {

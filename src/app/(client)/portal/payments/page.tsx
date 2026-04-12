@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FilterButton, FilterGroup } from "@/components/ui/filter-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreditCard, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { CreditCard, CheckCircle2, Clock, AlertTriangle, Wallet } from "lucide-react";
 
 function formatCZK(v: number) {
   return new Intl.NumberFormat("cs-CZ", { style: "currency", currency: "CZK", maximumFractionDigits: 0 }).format(v);
@@ -76,28 +80,33 @@ export default function PaymentsPage() {
     <div className="p-4 md:p-8">
       <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Platby</h1>
 
-      <div className="mb-4 flex gap-2">
+      <FilterGroup value={filter} onChange={setFilter} className="mb-4">
         {[
           { key: "all", label: "Vše" },
           { key: "pending", label: "Čekající" },
           { key: "paid", label: "Uhrazené" },
           { key: "overdue", label: "Po splatnosti" },
         ].map((f) => (
-          <button
+          <FilterButton
             key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${filter === f.key ? "bg-[var(--card-text)] text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
+            value={f.key}
           >
             {f.label}
-          </button>
+          </FilterButton>
         ))}
-      </div>
+      </FilterGroup>
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center py-16">
-          <CreditCard className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
-          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné platby</p>
-        </div>
+        <EmptyState
+          icon={<Wallet className="h-12 w-12" />}
+          title="Žádné platby"
+          description="Platby se zobrazí automaticky po přidání smlouvy."
+          action={
+            <Button asChild>
+              <Link href="/portal/contracts">Přidat smlouvu</Link>
+            </Button>
+          }
+        />
       ) : (
         <div className="space-y-2">
           {filtered.map((p) => {

@@ -170,6 +170,7 @@ export function ClassicLayout({
                 key={item.href}
                 href={item.href}
                 onClick={closeSidebar}
+                aria-current={active ? "page" : undefined}
                 className="flex items-center gap-3 mx-3 px-3 py-2.5 rounded-md text-sm transition-colors duration-150"
                 style={
                   active
@@ -216,7 +217,13 @@ export function ClassicLayout({
         className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 px-4 md:hidden"
         style={{ backgroundColor: sidebarBg, borderBottom: `1px solid ${borderColor}` }}
       >
-        <button onClick={() => setSidebarOpen(true)} style={{ color: textColor }} className="cursor-pointer">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Otevřít navigaci"
+          style={{ color: textColor }}
+          className="cursor-pointer"
+        >
           <Menu className="h-6 w-6" />
         </button>
         {renderLogo(32)}
@@ -233,7 +240,9 @@ export function ClassicLayout({
             >
               {renderLogo(40)}
               <button
+                type="button"
                 onClick={() => setSidebarOpen(false)}
+                aria-label="Zavřít navigaci"
                 className="cursor-pointer transition-opacity duration-150 hover:opacity-70"
                 style={{ color: textColor }}
               >

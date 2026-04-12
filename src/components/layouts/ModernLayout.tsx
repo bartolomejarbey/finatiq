@@ -63,7 +63,13 @@ export function ModernLayout({
       <header className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: "color-mix(in srgb, var(--card-bg, #fff) 95%, transparent)", borderBottom: `2px solid ${primaryColor}` }}>
         <div className="flex h-14 items-center gap-4 px-4 md:px-6">
           {/* Mobile hamburger */}
-          <button onClick={() => setMobileOpen(true)} className="md:hidden" style={{ color: "var(--card-text-muted, #475569)" }}>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Otevřít navigaci"
+            className="md:hidden cursor-pointer"
+            style={{ color: "var(--card-text-muted, #475569)" }}
+          >
             <Menu className="h-6 w-6" />
           </button>
 
@@ -84,6 +90,7 @@ export function ModernLayout({
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap",
                     active
@@ -125,7 +132,13 @@ export function ModernLayout({
               ) : (
                 <span className="text-lg font-bold" style={{ color: primaryColor }}>{appName}</span>
               )}
-              <button onClick={() => setMobileOpen(false)} style={{ color: "var(--card-text-dim, #94a3b8)" }}>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Zavřít navigaci"
+                className="cursor-pointer"
+                style={{ color: "var(--card-text-dim, #94a3b8)" }}
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -137,6 +150,7 @@ export function ModernLayout({
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
+                    aria-current={active ? "page" : undefined}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       active
@@ -174,7 +188,7 @@ export function ModernLayout({
         {breadcrumb.map((b, i) => (
           <span key={b.href} className="flex items-center gap-1">
             {i > 0 && <ChevronRight className="h-3 w-3" />}
-            <Link href={b.href} className="hover:opacity-80">{b.label}</Link>
+            <Link href={b.href} aria-current={i === breadcrumb.length - 1 ? "page" : undefined} className="hover:opacity-80">{b.label}</Link>
           </span>
         ))}
       </div>

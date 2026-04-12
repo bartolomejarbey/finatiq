@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { FilterButton, FilterGroup } from "@/components/ui/filter-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -74,6 +76,8 @@ export default function ContractsPage() {
   const [validTo, setValidTo] = useState("");
   const [insuranceType, setInsuranceType] = useState("zivotni");
   const [insurancePremium, setInsurancePremium] = useState("");
+  const [formErrors, setFormErrors] = useState<{ provider?: string }>({});
+  const providerInputRef = useRef<HTMLInputElement>(null);
 
   // Upload
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -104,16 +108,24 @@ export default function ContractsPage() {
     setProvider(""); setLoanAmount(""); setInterestRate(""); setMonthlyPayment("");
     setRemainingBalance(""); setValidFrom(""); setValidTo(""); setInsuranceType("zivotni");
     setInsurancePremium(""); setUploadFile(null);
+    setFormErrors({});
   }
 
   async function handleSaveContract() {
     if (!clientId || !advisorId) return;
+
+    if (!uploadFile && !provider.trim()) {
+      setFormErrors({ provider: "Toto pole je povinné" });
+      providerInputRef.current?.focus();
+      return;
+    }
+
     setSaving(true);
 
     const isLoan = sheetType === "uver";
     const title = isLoan
-      ? `${provider || "Úvěr"} - ${formatCZK(parseFloat(loanAmount) || 0)}`
-      : `${provider || "Pojištění"} - ${insuranceType}`;
+      ? `${provider.trim() || "Úvěr"} - ${formatCZK(parseFloat(loanAmount) || 0)}`
+      : `${provider.trim() || "Pojištění"} - ${insuranceType}`;
 
     const payload = {
       advisor_id: advisorId,
@@ -121,7 +133,7 @@ export default function ContractsPage() {
       title,
       status: "active",
       type: isLoan ? "uver" : "pojisteni",
-      provider: provider || null,
+      provider: provider.trim() || null,
       interest_rate: isLoan ? parseFloat(interestRate) || null : null,
       remaining_balance: isLoan ? parseFloat(remainingBalance) || parseFloat(loanAmount) || null : null,
       monthly_payment: isLoan ? parseFloat(monthlyPayment) || null : parseFloat(insurancePremium) || null,
@@ -186,10 +198,10 @@ export default function ContractsPage() {
 
   const showSavingsAlert = sheetType === "uver" && parseFloat(interestRate) > interestThreshold;
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-48" />{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>;
+  if (loading) return <div className="space-y-4 p-4 md:p-8"><Skeleton className="h-8 w-48" />{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>;
 
   return (
-    <div>
+    <div className="p-4 md:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[var(--card-text)]">Smlouvy</h1>
         <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{contracts.length} smluv</p>
@@ -202,7 +214,7 @@ export default function ContractsPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white mb-3">
             <CreditCard className="h-6 w-6" />
           </div>
-          <h3 className="text-sm font-semibold text-[var(--card-text)]">Přidat úvěr</h3>
+          <span className="text-sm font-semibold text-[var(--card-text)]">Přidat úvěr</span>
           <p className="mt-1 text-xs text-[var(--card-text-muted)]">Hypotéka, spotřebitelský úvěr...</p>
         </button>
         <button onClick={() => { resetForm(); setSheetType("pojisteni"); }}
@@ -210,27 +222,26 @@ export default function ContractsPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-white mb-3">
             <Shield className="h-6 w-6" />
           </div>
-          <h3 className="text-sm font-semibold text-[var(--card-text)]">Přidat pojištění</h3>
+          <span className="text-sm font-semibold text-[var(--card-text)]">Přidat pojištění</span>
           <p className="mt-1 text-xs text-[var(--card-text-muted)]">Životní, majetkové, auto...</p>
         </button>
       </div>
 
       {/* Filter */}
-      <div className="mb-4 flex gap-2">
+      <FilterGroup value={filter} onChange={setFilter} className="mb-4">
         {[
           { key: "all", label: "Vše" },
           { key: "uver", label: "Úvěry" },
           { key: "pojisteni", label: "Pojištění" },
         ].map((f) => (
-          <button
+          <FilterButton
             key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${filter === f.key ? "bg-blue-600 text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
+            value={f.key}
           >
             {f.label}
-          </button>
+          </FilterButton>
         ))}
-      </div>
+      </FilterGroup>
 
       {/* Contract list */}
       {filtered.length === 0 ? (
@@ -274,6 +285,9 @@ export default function ContractsPage() {
         <SheetContent className="w-[500px] sm:w-[600px] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>{sheetType === "uver" ? "Přidat úvěr" : "Přidat pojištění"}</SheetTitle>
+            <SheetDescription>
+              Zadejte údaje o {sheetType === "uver" ? "úvěru" : "pojištění"}. Povinná pole jsou označena hvězdičkou.
+            </SheetDescription>
           </SheetHeader>
 
           <Tabs defaultValue="form" className="mt-6">
@@ -285,7 +299,27 @@ export default function ContractsPage() {
             <TabsContent value="form" className="mt-4 space-y-4">
               {sheetType === "uver" ? (
                 <>
-                  <div className="space-y-1"><Label className="text-xs">Banka / Poskytovatel *</Label><Input value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="např. Česká spořitelna" /></div>
+                  <div className="space-y-1">
+                    <Label className="text-xs" htmlFor="contract-provider">Banka / Poskytovatel *</Label>
+                    <Input
+                      id="contract-provider"
+                      ref={providerInputRef}
+                      value={provider}
+                      onChange={(e) => {
+                        setProvider(e.target.value);
+                        if (formErrors.provider) setFormErrors({});
+                      }}
+                      placeholder="např. Česká spořitelna"
+                      required
+                      aria-invalid={!!formErrors.provider}
+                      aria-describedby={formErrors.provider ? "contract-provider-error" : undefined}
+                    />
+                    {formErrors.provider && (
+                      <p id="contract-provider-error" className="text-xs font-medium text-red-600">
+                        {formErrors.provider}
+                      </p>
+                    )}
+                  </div>
                   <div className="space-y-1"><Label className="text-xs">Výše úvěru (Kč)</Label><Input type="number" value={loanAmount} onChange={(e) => setLoanAmount(e.target.value)} /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1"><Label className="text-xs">Úroková sazba (%)</Label><Input type="number" step="0.01" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} /></div>
@@ -299,7 +333,27 @@ export default function ContractsPage() {
                 </>
               ) : (
                 <>
-                  <div className="space-y-1"><Label className="text-xs">Pojišťovna *</Label><Input value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="např. Allianz" /></div>
+                  <div className="space-y-1">
+                    <Label className="text-xs" htmlFor="contract-provider">Pojišťovna *</Label>
+                    <Input
+                      id="contract-provider"
+                      ref={providerInputRef}
+                      value={provider}
+                      onChange={(e) => {
+                        setProvider(e.target.value);
+                        if (formErrors.provider) setFormErrors({});
+                      }}
+                      placeholder="např. Allianz"
+                      required
+                      aria-invalid={!!formErrors.provider}
+                      aria-describedby={formErrors.provider ? "contract-provider-error" : undefined}
+                    />
+                    {formErrors.provider && (
+                      <p id="contract-provider-error" className="text-xs font-medium text-red-600">
+                        {formErrors.provider}
+                      </p>
+                    )}
+                  </div>
                   <div className="space-y-1">
                     <Label className="text-xs">Typ pojištění</Label>
                     <Select value={insuranceType} onValueChange={setInsuranceType}>

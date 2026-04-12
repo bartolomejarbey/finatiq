@@ -57,7 +57,13 @@ export function MinimalLayout({
     <div className="flex h-screen">
       {/* Mobile top bar */}
       <div className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b px-4 md:hidden" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
-        <button onClick={() => setMobileOpen(true)} style={{ color: "var(--card-text-muted, #475569)" }}>
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Otevřít navigaci"
+          className="cursor-pointer"
+          style={{ color: "var(--card-text-muted, #475569)" }}
+        >
           <Menu className="h-6 w-6" />
         </button>
         {logoUrl ? (
@@ -78,7 +84,13 @@ export function MinimalLayout({
               ) : (
                 <span className="text-lg font-bold" style={{ color: primaryColor }}>{appName}</span>
               )}
-              <button onClick={() => setMobileOpen(false)} style={{ color: "var(--card-text-dim, #94a3b8)" }}>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Zavřít navigaci"
+                className="cursor-pointer"
+                style={{ color: "var(--card-text-dim, #94a3b8)" }}
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -90,6 +102,7 @@ export function MinimalLayout({
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
+                    aria-current={active ? "page" : undefined}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       active ? "font-medium" : "hover:bg-[var(--table-hover)]"
@@ -148,6 +161,7 @@ export function MinimalLayout({
                 key={item.href}
                 href={item.href}
                 title={!expanded ? item.label : undefined}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex items-center rounded-lg transition-colors relative",
                   expanded ? "gap-3 px-3 py-2.5" : "justify-center px-2 py-2.5",
