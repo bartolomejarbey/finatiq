@@ -90,7 +90,7 @@ export default function OchranaPage() {
   if (!data || !data.checks) {
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Ochrana</h1>
+        <h1 className="text-2xl font-bold mb-4">Pojistné krytí</h1>
         <p className="text-muted-foreground">
           Nepodařilo se načíst data o pojistném krytí.
         </p>
@@ -115,7 +115,7 @@ export default function OchranaPage() {
 
   return (
     <div className="space-y-8 p-6">
-      <h1 className="text-2xl font-bold">Ochrana</h1>
+      <h1 className="text-2xl font-bold">Pojistné krytí</h1>
 
       {/* Coverage Score */}
       <div className="flex items-center gap-6">

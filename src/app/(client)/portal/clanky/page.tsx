@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -99,18 +100,18 @@ export default function ClientArticlesPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <PortalPageContainer className="space-y-4">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-10 w-full rounded-lg" />
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-32 rounded-xl" />
         ))}
-      </div>
+      </PortalPageContainer>
     );
   }
 
   return (
-    <div>
+    <PortalPageContainer>
       {/* Header */}
       <div className="mb-6">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-[var(--card-text)]">
@@ -228,6 +229,6 @@ export default function ClientArticlesPage() {
           })}
         </div>
       )}
-    </div>
+    </PortalPageContainer>
   );
 }

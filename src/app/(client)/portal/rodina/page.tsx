@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Users, Wallet, TrendingDown, TrendingUp, UserCircle } from "lucide-react";
@@ -130,20 +131,20 @@ export default function RodinaPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <PortalPageContainer className="space-y-4">
         <Skeleton className="h-8 w-64" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Skeleton className="h-32 rounded-xl" />
           <Skeleton className="h-32 rounded-xl" />
           <Skeleton className="h-32 rounded-xl" />
         </div>
-      </div>
+      </PortalPageContainer>
     );
   }
 
   if (!hasFamily) {
     return (
-      <div>
+      <PortalPageContainer>
         <h1 className="text-2xl font-bold text-[var(--card-text)] mb-6 flex items-center gap-2">
           <Users className="h-6 w-6" /> Rodinný účet
         </h1>
@@ -157,7 +158,7 @@ export default function RodinaPage() {
             o financích celé rodiny — společný majetek, závazky i finanční cíle.
           </p>
         </div>
-      </div>
+      </PortalPageContainer>
     );
   }
 
@@ -166,7 +167,7 @@ export default function RodinaPage() {
   const netWorth = totalFamilyAssets - totalFamilyLiab;
 
   return (
-    <div>
+    <PortalPageContainer>
       <h1 className="text-2xl font-bold gradient-text mb-6 flex items-center gap-2">
         <Users className="h-6 w-6" /> Rodinný účet
       </h1>
@@ -257,6 +258,6 @@ export default function RodinaPage() {
           ))}
         </div>
       </div>
-    </div>
+    </PortalPageContainer>
   );
 }

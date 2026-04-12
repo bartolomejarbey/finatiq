@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { AddInvestmentModal } from "@/components/portal/AddInvestmentModal";
+import { TrendingUp, TrendingDown, Wallet, Plus } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -31,13 +34,17 @@ export default function InvestmentsPage() {
   const [loading, setLoading] = useState(true);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [portfolioHistory, setPortfolioHistory] = useState<{ month: string; value: number }[]>([]);
+  const [clientId, setClientId] = useState("");
+  const [advisorId, setAdvisorId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
-  useEffect(() => {
-    async function fetchData() {
+  async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id").eq("user_id", user.id).single();
+      const { data: client } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
       if (!client) { setLoading(false); return; }
+      setClientId(client.id);
+      setAdvisorId(client.advisor_id);
 
       const { data } = await supabase.from("investments").select("id, instrument_name, type, current_value, purchase_value").eq("client_id", client.id);
       const invs = data || [];
@@ -57,6 +64,7 @@ export default function InvestmentsPage() {
       setPortfolioHistory(history);
       setLoading(false);
     }
+  useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -71,18 +79,23 @@ export default function InvestmentsPage() {
   const totalPurchase = investments.reduce((s, i) => s + (i.purchase_value || i.current_value), 0);
   const totalReturn = totalCurrent - totalPurchase;
   const totalReturnPct = totalPurchase > 0 ? ((totalReturn / totalPurchase) * 100).toFixed(1) : "0";
-  const isPositive = totalReturn >= 0;
+  const changeColorClass =
+    totalReturn > 0 ? "text-green-400" :
+    totalReturn < 0 ? "text-red-400" :
+    "text-gray-400";
 
   return (
     <div className="p-4 md:p-8 animate-fade-in">
+      <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Investice</h1>
+
       {/* Hero card */}
       <div className="rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 md:p-8 text-white mb-6">
         <p className="text-sm text-gray-400">Celková hodnota portfolia</p>
         <p className="mt-1 text-3xl md:text-4xl font-bold">{formatCZK(totalCurrent)}</p>
         <div className="mt-2 flex items-center gap-2">
-          {isPositive ? <TrendingUp className="h-4 w-4 text-green-400" /> : <TrendingDown className="h-4 w-4 text-red-400" />}
-          <span className={`text-sm font-medium ${isPositive ? "text-green-400" : "text-red-400"}`}>
-            {isPositive ? "+" : ""}{formatCZK(totalReturn)} ({isPositive ? "+" : ""}{totalReturnPct}%)
+          {totalReturn > 0 ? <TrendingUp className={`h-4 w-4 ${changeColorClass}`} /> : totalReturn < 0 ? <TrendingDown className={`h-4 w-4 ${changeColorClass}`} /> : null}
+          <span className={`text-sm font-medium ${changeColorClass}`}>
+            {totalReturn > 0 ? "+" : ""}{formatCZK(totalReturn)} ({totalReturn > 0 ? "+" : ""}{totalReturnPct}%)
           </span>
         </div>
       </div>
@@ -111,17 +124,28 @@ export default function InvestmentsPage() {
 
       {/* Investments list as cards */}
       {investments.length === 0 ? (
-        <div className="flex flex-col items-center py-16">
-          <Wallet className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
-          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné investice</p>
-        </div>
+        <EmptyState
+          icon={<Wallet className="h-12 w-12" />}
+          title="Žádné investice"
+          description="Zatím nemáte evidované žádné investice."
+          action={
+            <Button onClick={() => setAddOpen(true)} disabled={!clientId}>
+              <Plus className="mr-2 h-4 w-4" />
+              Přidat investici
+            </Button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {investments.map((inv) => {
             const purchase = inv.purchase_value || inv.current_value;
             const ret = inv.current_value - purchase;
             const retPct = purchase > 0 ? ((ret / purchase) * 100).toFixed(1) : "0";
-            const pos = ret >= 0;
+            const itemColorClass =
+              ret > 0 ? "text-emerald-600" :
+              ret < 0 ? "text-red-600" :
+              "text-gray-400";
+            const sparkColor = ret > 0 ? "#22c55e" : ret < 0 ? "#ef4444" : "#9ca3af";
             // Mini sparkline data
             const sparkData = Array.from({ length: 7 }, (_, i) => ({
               v: purchase + (ret * ((i + 1) / 7)) + (Math.random() * ret * 0.1),
@@ -141,24 +165,33 @@ export default function InvestmentsPage() {
                     <AreaChart data={sparkData}>
                       <defs>
                         <linearGradient id={`spark-${inv.id}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={pos ? "#22c55e" : "#ef4444"} stopOpacity={0.3} />
-                          <stop offset="100%" stopColor={pos ? "#22c55e" : "#ef4444"} stopOpacity={0} />
+                          <stop offset="0%" stopColor={sparkColor} stopOpacity={0.3} />
+                          <stop offset="100%" stopColor={sparkColor} stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <Area type="monotone" dataKey="v" stroke={pos ? "#22c55e" : "#ef4444"} strokeWidth={1.5} fill={`url(#spark-${inv.id})`} dot={false} />
+                      <Area type="monotone" dataKey="v" stroke={sparkColor} strokeWidth={1.5} fill={`url(#spark-${inv.id})`} dot={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-sm font-bold text-[var(--card-text)]">{formatCZK(inv.current_value)}</p>
-                  <p className={`text-xs font-medium ${pos ? "text-emerald-600" : "text-red-600"}`}>
-                    {pos ? "+" : ""}{retPct}%
+                  <p className={`text-xs font-medium ${itemColorClass}`}>
+                    {ret > 0 ? "+" : ""}{retPct}%
                   </p>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+      {clientId && (
+        <AddInvestmentModal
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          clientId={clientId}
+          advisorId={advisorId}
+          onAdded={fetchData}
+        />
       )}
     </div>
   );

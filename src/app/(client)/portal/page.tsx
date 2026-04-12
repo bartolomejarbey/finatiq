@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ContactAdvisorButton } from "@/components/portal/ContactAdvisorButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import {
@@ -60,6 +61,7 @@ export default function ClientDashboard() {
   const [portfolioHistory, setPortfolioHistory] = useState<{ month: string; value: number }[]>([]);
   const [notifications, setNotifications] = useState<{ id: string; title: string; type: string; created_at: string }[]>([]);
   const [advisor, setAdvisor] = useState<AdvisorContact | null>(null);
+  const [clientId, setClientId] = useState("");
   const [totalDebt, setTotalDebt] = useState(0);
   const [financialHealth, setFinancialHealth] = useState(0);
   const [monthlyChange, setMonthlyChange] = useState(0);
@@ -73,6 +75,7 @@ export default function ClientDashboard() {
       if (!client) { setLoading(false); return; }
       if (!client.onboarding_completed) { router.push("/portal/vitejte"); return; }
 
+      setClientId(client.id);
       setClientName(`${client.first_name} ${client.last_name}`);
 
       // Load checklist progress
@@ -154,7 +157,7 @@ export default function ClientDashboard() {
   if (loading) return (
     <div className="p-4 md:p-8 space-y-6">
       <Skeleton className="h-48 rounded-2xl" />
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
       </div>
     </div>
@@ -170,8 +173,8 @@ export default function ClientDashboard() {
           <div>
             <p className="text-sm text-gray-400">Dobrý den, {clientName}</p>
             <p className="mt-2 text-3xl md:text-4xl font-bold">{formatCZK(netWorth)}</p>
-            <p className={`mt-1 text-sm ${monthlyChange >= 0 ? "text-green-400" : "text-red-400"}`}>
-              {monthlyChange >= 0 ? "+" : ""}{formatCZK(monthlyChange)} tento měsíc
+            <p className={`mt-1 text-sm ${monthlyChange > 0 ? "text-green-400" : monthlyChange < 0 ? "text-red-400" : "text-gray-400"}`}>
+              {monthlyChange > 0 ? "+" : ""}{formatCZK(monthlyChange)} tento měsíc
             </p>
           </div>
           {/* Mini sparkline */}
@@ -271,23 +274,32 @@ export default function ClientDashboard() {
       </div>
 
       {/* QUICK ACTIONS */}
-      <div className="mt-6 grid grid-cols-4 gap-4">
+      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { href: "/portal/contracts", label: "Přidat smlouvu", icon: Plus, },
           { href: "/portal/payments", label: "Zaplatit splátku", icon: CreditCard },
-          { href: "#", label: "Kontaktovat poradce", icon: Phone },
+          { href: "contact-advisor", label: "Kontaktovat poradce", icon: Phone },
           { href: "/portal/documents", label: "Nahrát dokument", icon: Upload },
         ].map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            className="flex flex-col items-center gap-2 rounded-2xl p-4 transition-colors hover:bg-blue-50 group"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--table-header)] group-hover:bg-blue-100 transition-colors">
-              <item.icon className="h-5 w-5 text-[var(--card-text-muted)] group-hover:text-blue-600 transition-colors" />
+          item.href === "contact-advisor" ? (
+            <div key={item.label} className="flex flex-col items-center gap-2 rounded-2xl p-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--table-header)]">
+                <item.icon className="h-5 w-5 text-[var(--card-text-muted)]" />
+              </div>
+              <ContactAdvisorButton clientId={clientId} label={item.label} variant="ghost" className="h-auto whitespace-normal p-0 text-center text-xs text-[var(--card-text-muted)] hover:bg-transparent hover:text-blue-600" />
             </div>
-            <span className="text-xs text-[var(--card-text-muted)] text-center">{item.label}</span>
-          </Link>
+          ) : (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex flex-col items-center gap-2 rounded-2xl p-4 transition-colors hover:bg-blue-50 group"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--table-header)] group-hover:bg-blue-100 transition-colors">
+                <item.icon className="h-5 w-5 text-[var(--card-text-muted)] group-hover:text-blue-600 transition-colors" />
+              </div>
+              <span className="text-xs text-[var(--card-text-muted)] text-center">{item.label}</span>
+            </Link>
+          )
         ))}
       </div>
 
@@ -330,7 +342,9 @@ export default function ClientDashboard() {
               <button
                 key={item.key}
                 onClick={() => item.href && !item.done && router.push(item.href)}
-                className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors ${!item.done && item.href ? "hover:bg-[var(--table-hover)] cursor-pointer" : ""}`}
+                disabled={item.done}
+                aria-disabled={item.done || undefined}
+                className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors ${item.done ? "cursor-default opacity-60" : item.href ? "hover:bg-[var(--table-hover)] cursor-pointer" : ""}`}
               >
                 {item.done ? <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> : <Circle className="h-5 w-5 text-[var(--card-text-dim)] shrink-0" />}
                 <span className={`text-sm ${item.done ? "text-[var(--card-text-dim)] line-through" : "text-[var(--card-text)]"}`}>{item.label}</span>

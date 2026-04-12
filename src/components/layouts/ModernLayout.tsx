@@ -83,7 +83,7 @@ export function ModernLayout({
           </div>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto ml-6">
+          <nav aria-label="Hlavní navigace" className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto ml-6">
             {navItems.map((item) => {
               const active = isActive(item.href);
               return (
@@ -142,7 +142,7 @@ export function ModernLayout({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
+            <nav aria-label="Hlavní navigace" className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
               {navItems.map((item) => {
                 const active = isActive(item.href);
                 return (

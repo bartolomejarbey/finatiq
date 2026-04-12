@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/tabs";
 import { User, Lock, BellRing, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { usePortalForm } from "@/lib/forms/use-portal-form";
 
 interface ClientRow {
   id: string;
@@ -57,6 +57,7 @@ export default function NastaveniPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const passwordForm = usePortalForm<"newPassword" | "confirmPassword">();
 
   // Notification preferences
   const [preferences, setPreferences] =
@@ -113,12 +114,16 @@ export default function NastaveniPage() {
   }
 
   async function handleChangePassword() {
+    if (!passwordForm.validateRequired([
+      { name: "newPassword", value: newPassword },
+      { name: "confirmPassword", value: confirmPassword },
+    ])) return;
     if (newPassword.length < 6) {
-      toast.error("Heslo musí mít alespoň 6 znaků.");
+      passwordForm.setFieldError("newPassword", "Heslo musí mít alespoň 6 znaků.");
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Hesla se neshodují.");
+      passwordForm.setFieldError("confirmPassword", "Hesla se neshodují.");
       return;
     }
     setChangingPassword(true);
@@ -185,36 +190,32 @@ export default function NastaveniPage() {
           <div className="mt-4 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-xs">Jméno</Label>
-                  <Input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Jan"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Příjmení</Label>
-                  <Input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Novák"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-xs">Telefon</Label>
-                <Input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+420 ..."
+                <FormField
+                  id="settings-first-name"
+                  label="Jméno"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Jan"
+                />
+                <FormField
+                  id="settings-last-name"
+                  label="Příjmení"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Novák"
                 />
               </div>
 
+              <FormField
+                id="settings-phone"
+                label="Telefon"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+420 ..."
+              />
+
               <div className="space-y-1">
-                <Label className="text-xs">Email</Label>
-                <Input value={userEmail} disabled className="opacity-60" />
+                <FormField id="settings-email" label="Email" value={userEmail} disabled className="opacity-60" />
                 <p className="text-[10px] text-[var(--card-text-dim)]">
                   Email nelze změnit.
                 </p>
@@ -238,39 +239,52 @@ export default function NastaveniPage() {
         <TabsContent value="password">
           <div className="mt-4 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="space-y-5">
-              <div className="space-y-1">
-                <Label className="text-xs">Současné heslo</Label>
-                <Input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="********"
-                />
-              </div>
+              <FormField
+                id="settings-current-password"
+                label="Současné heslo"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="********"
+              />
 
               <div className="space-y-1">
-                <Label className="text-xs">Nové heslo</Label>
-                <Input
+                <FormField
+                  id="settings-new-password"
+                  label="Nové heslo"
+                  requiredLabel
                   type="password"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    passwordForm.clearError("newPassword");
+                  }}
                   placeholder="Min. 6 znaků"
+                  ref={passwordForm.registerRef("newPassword")}
+                  error={passwordForm.errors.newPassword}
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Potvrzení hesla</Label>
-                <Input
+                <FormField
+                  id="settings-confirm-password"
+                  label="Potvrzení hesla"
+                  requiredLabel
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    passwordForm.clearError("confirmPassword");
+                  }}
                   placeholder="Zopakujte nové heslo"
+                  ref={passwordForm.registerRef("confirmPassword")}
+                  error={passwordForm.errors.confirmPassword}
                 />
               </div>
 
               <Button
                 onClick={handleChangePassword}
-                disabled={changingPassword || !newPassword}
+                disabled={changingPassword}
                 size="sm"
               >
                 {changingPassword && (

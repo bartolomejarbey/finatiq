@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
+import { AddVaultItemModal } from "@/components/portal/AddVaultItemModal";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +33,7 @@ import {
   Calculator,
   Folder,
   ArrowLeft,
+  Plus,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -61,8 +65,10 @@ export default function TrezorPage() {
   const [docs, setDocs] = useState<VaultDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientId, setClientId] = useState("");
+  const [advisorId, setAdvisorId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
 
   // Upload form
   const [file, setFile] = useState<File | null>(null);
@@ -78,9 +84,10 @@ export default function TrezorPage() {
   async function fetchDocs() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data: client } = await supabase.from("clients").select("id").eq("user_id", user.id).single();
+    const { data: client } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
     if (!client) return;
     setClientId(client.id);
+    setAdvisorId(client.advisor_id);
 
     const { data } = await supabase
       .from("documents")
@@ -171,14 +178,14 @@ export default function TrezorPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <PortalPageContainer className="space-y-4">
         <Skeleton className="h-8 w-64" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {Array.from({ length: 9 }).map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-xl" />
           ))}
         </div>
-      </div>
+      </PortalPageContainer>
     );
   }
 
@@ -192,14 +199,20 @@ export default function TrezorPage() {
     : docs;
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--card-text)] flex items-center gap-2">
-          <Lock className="h-6 w-6" /> Dokumentový trezor
-        </h1>
-        <p className="text-sm text-[var(--card-text-muted)] mt-1">
-          Bezpečné úložiště vašich důležitých dokumentů
-        </p>
+    <PortalPageContainer>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--card-text)] flex items-center gap-2">
+            <Lock className="h-6 w-6" /> Dokumentový trezor
+          </h1>
+          <p className="text-sm text-[var(--card-text-muted)] mt-1">
+            Bezpečné úložiště vašich důležitých dokumentů
+          </p>
+        </div>
+        <Button onClick={() => setAddOpen(true)} disabled={!clientId}>
+          <Plus className="mr-2 h-4 w-4" />
+          Přidat položku
+        </Button>
       </div>
 
       {/* Upload section */}
@@ -274,7 +287,7 @@ export default function TrezorPage() {
               className="rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm hover:shadow-md transition-all text-left"
             >
               <cat.icon className="h-8 w-8 text-blue-500 mb-2" />
-              <h3 className="font-semibold text-[var(--card-text)]">{cat.label}</h3>
+              <span className="block font-semibold text-[var(--card-text)]">{cat.label}</span>
               <p className="text-sm text-[var(--card-text-muted)]">{cat.count} dokumentů</p>
             </button>
           ))}
@@ -297,9 +310,12 @@ export default function TrezorPage() {
           </h2>
 
           {filteredDocs.length === 0 ? (
-            <p className="text-center text-[var(--card-text-dim)] py-12">
-              Žádné dokumenty v této kategorii
-            </p>
+            <EmptyState
+              icon={<Lock className="h-12 w-12" />}
+              title="Žádné dokumenty v této kategorii"
+              description="Přidejte položku do trezoru nebo nahrajte dokument přes formulář výše."
+              action={{ label: "Přidat položku", onClick: () => setAddOpen(true) }}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredDocs.map((doc) => (
@@ -361,6 +377,7 @@ export default function TrezorPage() {
                       size="sm"
                       className="text-red-500 hover:text-red-700"
                       onClick={() => handleDelete(doc.id)}
+                      aria-label="Smazat položku z trezoru"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -371,6 +388,15 @@ export default function TrezorPage() {
           )}
         </>
       )}
-    </div>
+      {clientId && (
+        <AddVaultItemModal
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          clientId={clientId}
+          advisorId={advisorId}
+          onAdded={fetchDocs}
+        />
+      )}
+    </PortalPageContainer>
   );
 }

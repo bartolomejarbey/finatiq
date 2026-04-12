@@ -3,10 +3,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
+import { ContactAdvisorButton } from "@/components/portal/ContactAdvisorButton";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CreditCard, Shield, Loader2, AlertTriangle, Phone, Mail, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CreditCard, Shield, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   ResponsiveContainer,
@@ -125,8 +127,8 @@ export default function ContractDetailPage() {
     fetchData();
   }
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 rounded-xl" /></div>;
-  if (!contract) return <div><p className="text-[var(--card-text-muted)]">Smlouva nenalezena.</p></div>;
+  if (loading) return <PortalPageContainer className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 rounded-xl" /></PortalPageContainer>;
+  if (!contract) return <PortalPageContainer><p className="text-[var(--card-text-muted)]">Smlouva nenalezena.</p></PortalPageContainer>;
 
   const isLoan = contract.type === "uver";
   const showAlert = isLoan && contract.interest_rate && contract.interest_rate > interestThreshold;
@@ -147,7 +149,7 @@ export default function ContractDetailPage() {
   const lastPayment = payments[0];
 
   return (
-    <div>
+    <PortalPageContainer>
       {/* Header: gradient card */}
       <div className="mb-6 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 text-white">
         <button onClick={() => router.push("/portal/contracts")} className="mb-4 flex items-center gap-1.5 text-sm text-gray-400 hover:text-white">
@@ -177,8 +179,7 @@ export default function ContractDetailPage() {
               <p className="text-sm font-medium text-amber-800">Vaše úroková sazba ({contract.interest_rate}%) je nad {interestThreshold}%.</p>
               <p className="mt-1 text-xs text-amber-700">Je možné, že můžete ušetřit refinancováním.</p>
               <div className="mt-2 flex gap-2">
-                <Button size="sm" variant="outline" className="text-xs" asChild><a href="tel:+420000000000"><Phone className="mr-1 h-3 w-3" />Zavolat</a></Button>
-                <Button size="sm" variant="outline" className="text-xs" asChild><a href="mailto:poradce@example.com"><Mail className="mr-1 h-3 w-3" />Napsat</a></Button>
+                <ContactAdvisorButton clientId={contract.client_id} label="Kontaktovat poradce" className="text-xs" />
               </div>
             </div>
           </div>
@@ -186,7 +187,7 @@ export default function ContractDetailPage() {
       )}
 
       {/* Contract params */}
-      <div className="mb-6 grid grid-cols-4 gap-4">
+      <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         {isLoan ? (
           <>
             <ParamCard label="Výše úvěru" value={formatCZK(contract.value)} />
@@ -216,7 +217,7 @@ export default function ContractDetailPage() {
             <div className="h-4 w-full rounded-full bg-[var(--table-header)]">
               <div className="h-4 rounded-full bg-gradient-to-r from-blue-500 to-green-500 transition-all" style={{ width: `${progress}%` }} />
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-4 text-center text-xs text-[var(--card-text-muted)]">
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-xs text-[var(--card-text-muted)]">
               <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalPaid)}</p><p>Celkem splaceno</p></div>
               <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalInterest)}</p><p>Zaplacené úroky</p></div>
               <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalPrincipal)}</p><p>Splacená jistina</p></div>
@@ -275,6 +276,7 @@ export default function ContractDetailPage() {
           {payments.length > 0 && (
             <div className="rounded-2xl border bg-[var(--card-bg)] shadow-sm">
               <div className="border-b px-6 py-4"><h2 className="text-sm font-semibold text-[var(--card-text)]">Historie splátek</h2></div>
+              <div className="overflow-x-auto">
               <table className="w-full">
                 <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Splátka</th><th className="px-6 py-3">Úrok</th><th className="px-6 py-3">Jistina</th><th className="px-6 py-3">Zůstatek</th></tr></thead>
                 <tbody>
@@ -289,6 +291,7 @@ export default function ContractDetailPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </>
@@ -317,11 +320,10 @@ export default function ContractDetailPage() {
         <h3 className="text-sm font-semibold text-blue-900">Potřebujete poradit?</h3>
         <p className="mt-1 text-xs text-blue-700">Kontaktujte svého finančního poradce pro konzultaci.</p>
         <div className="mt-3 flex gap-2">
-          <Button size="sm" variant="outline" className="text-xs" asChild><a href="tel:+420000000000"><Phone className="mr-1 h-3 w-3" />Zavolat</a></Button>
-          <Button size="sm" variant="outline" className="text-xs" asChild><a href="mailto:poradce@example.com"><Mail className="mr-1 h-3 w-3" />Napsat</a></Button>
+          <ContactAdvisorButton clientId={contract.client_id} label="Kontaktovat poradce" className="text-xs" />
         </div>
       </div>
-    </div>
+    </PortalPageContainer>
   );
 }
 

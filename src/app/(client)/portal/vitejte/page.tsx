@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -26,6 +27,7 @@ import {
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
+import { usePortalForm } from "@/lib/forms/use-portal-form";
 import confetti from "canvas-confetti";
 
 const TOTAL_STEPS = 5;
@@ -79,6 +81,8 @@ export default function ClientOnboardingPage() {
   const [insuranceType, setInsuranceType] = useState("life");
   const [insuranceMonthlyPremium, setInsuranceMonthlyPremium] = useState("");
   const [contractAdded, setContractAdded] = useState(false);
+  const profileForm = usePortalForm<"firstName" | "lastName">();
+  const contractForm = usePortalForm<"provider">();
 
   // Step 5 — Summary
   const [summary, setSummary] = useState<{
@@ -146,10 +150,10 @@ export default function ClientOnboardingPage() {
 
   async function handleSaveProfile() {
     if (!clientId) return;
-    if (!firstName.trim() || !lastName.trim()) {
-      toast.error("Vyplňte jméno a příjmení.");
-      return;
-    }
+    if (!profileForm.validateRequired([
+      { name: "firstName", value: firstName },
+      { name: "lastName", value: lastName },
+    ])) return;
     setLoading(true);
     const { error } = await supabase
       .from("clients")
@@ -192,10 +196,8 @@ export default function ClientOnboardingPage() {
   }
 
   async function handleAddContract() {
-    if (!clientId || !contractProvider.trim()) {
-      toast.error("Vyplňte poskytovatele.");
-      return;
-    }
+    if (!contractForm.validateRequired([{ name: "provider", value: contractProvider }])) return;
+    if (!clientId) return;
     setLoading(true);
 
     if (contractFormMode === "loan") {
@@ -422,22 +424,32 @@ export default function ClientOnboardingPage() {
 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Jméno *</Label>
-                    <Input
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Jan"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Příjmení *</Label>
-                    <Input
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Novák"
-                    />
-                  </div>
+                  <FormField
+                    id="onboarding-first-name"
+                    label="Jméno"
+                    requiredLabel
+                    value={firstName}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      profileForm.clearError("firstName");
+                    }}
+                    placeholder="Jan"
+                    ref={profileForm.registerRef("firstName")}
+                    error={profileForm.errors.firstName}
+                  />
+                  <FormField
+                    id="onboarding-last-name"
+                    label="Příjmení"
+                    requiredLabel
+                    value={lastName}
+                    onChange={(e) => {
+                      setLastName(e.target.value);
+                      profileForm.clearError("lastName");
+                    }}
+                    placeholder="Novák"
+                    ref={profileForm.registerRef("lastName")}
+                    error={profileForm.errors.lastName}
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -661,11 +673,18 @@ export default function ClientOnboardingPage() {
               {!contractAdded && contractFormMode === "loan" && (
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <Label className="text-xs">Poskytovatel *</Label>
-                    <Input
+                    <FormField
+                      id="onboarding-loan-provider"
+                      label="Poskytovatel"
+                      requiredLabel
                       value={contractProvider}
-                      onChange={(e) => setContractProvider(e.target.value)}
+                      onChange={(e) => {
+                        setContractProvider(e.target.value);
+                        contractForm.clearError("provider");
+                      }}
                       placeholder="Např. Česká spořitelna"
+                      ref={contractForm.registerRef("provider")}
+                      error={contractForm.errors.provider}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -708,7 +727,7 @@ export default function ClientOnboardingPage() {
                     </Button>
                     <Button
                       onClick={handleAddContract}
-                      disabled={loading || !contractProvider.trim()}
+                      disabled={loading}
                       className="flex-1"
                     >
                       {loading && (
@@ -724,11 +743,18 @@ export default function ClientOnboardingPage() {
               {!contractAdded && contractFormMode === "insurance" && (
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <Label className="text-xs">Poskytovatel *</Label>
-                    <Input
+                    <FormField
+                      id="onboarding-insurance-provider"
+                      label="Poskytovatel"
+                      requiredLabel
                       value={contractProvider}
-                      onChange={(e) => setContractProvider(e.target.value)}
+                      onChange={(e) => {
+                        setContractProvider(e.target.value);
+                        contractForm.clearError("provider");
+                      }}
                       placeholder="Např. Allianz"
+                      ref={contractForm.registerRef("provider")}
+                      error={contractForm.errors.provider}
                     />
                   </div>
                   <div className="space-y-1">
@@ -772,7 +798,7 @@ export default function ClientOnboardingPage() {
                     </Button>
                     <Button
                       onClick={handleAddContract}
-                      disabled={loading || !contractProvider.trim()}
+                      disabled={loading}
                       className="flex-1"
                     >
                       {loading && (

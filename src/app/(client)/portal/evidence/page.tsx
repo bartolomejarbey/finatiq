@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -23,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Receipt, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { usePortalForm } from "@/lib/forms/use-portal-form";
 import { DocumentUpload } from "@/components/document-upload";
 import {
   ResponsiveContainer,
@@ -77,6 +81,7 @@ export default function EvidencePage() {
   const [category, setCategory] = useState("ostatni");
   const [description, setDescription] = useState("");
   const [docId, setDocId] = useState<string | null>(null);
+  const recordForm = usePortalForm<"amount" | "date">();
 
   useEffect(() => {
     async function fetchData() {
@@ -95,7 +100,11 @@ export default function EvidencePage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSave() {
-    if (!amount || !clientId) return;
+    if (!recordForm.validateRequired([
+      { name: "amount", value: amount },
+      { name: "date", value: date },
+    ])) return;
+    if (!clientId) return;
     setSaving(true);
     const { data: rec, error } = await supabase.from("osvc_records").insert({
       client_id: clientId,
@@ -121,7 +130,7 @@ export default function EvidencePage() {
     toast.success("Doklad přidán.");
   }
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64 rounded-xl" /></div>;
+  if (loading) return <PortalPageContainer className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64 rounded-xl" /></PortalPageContainer>;
 
   // Yearly data
   const yearRecords = records.filter((r) => r.date.startsWith(String(viewYear)));
@@ -149,7 +158,7 @@ export default function EvidencePage() {
   const viewExpense = viewRecords.filter((r) => r.type === "expense").reduce((s, r) => s + r.amount, 0);
 
   return (
-    <div>
+    <PortalPageContainer>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold gradient-text">Evidence OSVČ</h1>
@@ -204,13 +213,15 @@ export default function EvidencePage() {
       <div className="mb-4 flex flex-wrap gap-1">
         <button
           onClick={() => setViewMonth(null)}
-          className={`rounded-full px-3 py-1 text-xs font-medium ${viewMonth === null ? "bg-blue-600 text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
+          aria-pressed={viewMonth === null}
+          className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${viewMonth === null ? "bg-blue-600 text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
         >Celý rok</button>
         {monthlyData.map((m, i) => (
           <button
             key={i}
             onClick={() => setViewMonth(i)}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${viewMonth === i ? "bg-blue-600 text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
+            aria-pressed={viewMonth === i}
+            className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${viewMonth === i ? "bg-blue-600 text-white" : "bg-[var(--table-header)] text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]"}`}
           >{m.month}</button>
         ))}
       </div>
@@ -222,7 +233,7 @@ export default function EvidencePage() {
           <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné doklady</p>
         </div>
       ) : (
-        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm overflow-x-auto">
           <table className="w-full">
             <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Popis</th><th className="px-6 py-3">Kategorie</th><th className="px-6 py-3">Typ</th><th className="px-6 py-3 text-right">Částka</th></tr></thead>
             <tbody>
@@ -255,23 +266,54 @@ export default function EvidencePage() {
       {/* Add record sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-[500px] overflow-y-auto">
-          <SheetHeader><SheetTitle>Přidat doklad</SheetTitle></SheetHeader>
+          <SheetHeader>
+            <SheetTitle>Přidat doklad</SheetTitle>
+            <SheetDescription>
+              Zadejte údaje k příjmu nebo výdaji. Povinná pole jsou označena hvězdičkou.
+            </SheetDescription>
+          </SheetHeader>
           <div className="mt-6 space-y-4">
             {/* Type toggle */}
             <div className="flex gap-2">
               <button
                 onClick={() => setRecType("income")}
-                className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${recType === "income" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-[var(--card-border)] text-[var(--card-text-muted)]"}`}
+                aria-pressed={recType === "income"}
+                className={`flex-1 cursor-pointer rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${recType === "income" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-[var(--card-border)] text-[var(--card-text-muted)]"}`}
               ><TrendingUp className="mx-auto mb-1 h-5 w-5" />Příjem</button>
               <button
                 onClick={() => setRecType("expense")}
-                className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${recType === "expense" ? "border-red-500 bg-red-50 text-red-700" : "border-[var(--card-border)] text-[var(--card-text-muted)]"}`}
+                aria-pressed={recType === "expense"}
+                className={`flex-1 cursor-pointer rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${recType === "expense" ? "border-red-500 bg-red-50 text-red-700" : "border-[var(--card-border)] text-[var(--card-text-muted)]"}`}
               ><TrendingDown className="mx-auto mb-1 h-5 w-5" />Výdaj</button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1"><Label className="text-xs">Částka (Kč) *</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
-              <div className="space-y-1"><Label className="text-xs">Datum *</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+              <FormField
+                id="record-amount"
+                label="Částka (Kč)"
+                requiredLabel
+                type="number"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  recordForm.clearError("amount");
+                }}
+                ref={recordForm.registerRef("amount")}
+                error={recordForm.errors.amount}
+              />
+              <FormField
+                id="record-date"
+                label="Datum"
+                requiredLabel
+                type="date"
+                value={date}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  recordForm.clearError("date");
+                }}
+                ref={recordForm.registerRef("date")}
+                error={recordForm.errors.date}
+              />
             </div>
 
             <div className="space-y-1">
@@ -309,13 +351,13 @@ export default function EvidencePage() {
               )}
             </div>
 
-            <Button onClick={handleSave} disabled={saving || !amount} className="w-full">
+            <Button onClick={handleSave} disabled={saving} className="w-full">
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Uložit doklad
             </Button>
           </div>
         </SheetContent>
       </Sheet>
-    </div>
+    </PortalPageContainer>
   );
 }
 

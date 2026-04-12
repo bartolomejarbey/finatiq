@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { FilterButton, FilterGroup } from "@/components/ui/filter-group";
+import { ContactAdvisorButton } from "@/components/portal/ContactAdvisorButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,8 +30,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { FileText, Plus, CreditCard, Shield, Upload, Loader2, AlertTriangle, Phone, Mail } from "lucide-react";
+import { FileText, Plus, CreditCard, Shield, Upload, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { usePortalForm } from "@/lib/forms/use-portal-form";
 
 interface Contract {
   id: string;
@@ -76,8 +78,7 @@ export default function ContractsPage() {
   const [validTo, setValidTo] = useState("");
   const [insuranceType, setInsuranceType] = useState("zivotni");
   const [insurancePremium, setInsurancePremium] = useState("");
-  const [formErrors, setFormErrors] = useState<{ provider?: string }>({});
-  const providerInputRef = useRef<HTMLInputElement>(null);
+  const contractForm = usePortalForm<"provider">();
 
   // Upload
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -108,17 +109,13 @@ export default function ContractsPage() {
     setProvider(""); setLoanAmount(""); setInterestRate(""); setMonthlyPayment("");
     setRemainingBalance(""); setValidFrom(""); setValidTo(""); setInsuranceType("zivotni");
     setInsurancePremium(""); setUploadFile(null);
-    setFormErrors({});
+    contractForm.resetErrors();
   }
 
   async function handleSaveContract() {
     if (!clientId || !advisorId) return;
 
-    if (!uploadFile && !provider.trim()) {
-      setFormErrors({ provider: "Toto pole je povinné" });
-      providerInputRef.current?.focus();
-      return;
-    }
+    if (!uploadFile && !contractForm.validateRequired([{ name: "provider", value: provider }])) return;
 
     setSaving(true);
 
@@ -303,20 +300,20 @@ export default function ContractsPage() {
                     <Label className="text-xs" htmlFor="contract-provider">Banka / Poskytovatel *</Label>
                     <Input
                       id="contract-provider"
-                      ref={providerInputRef}
+                      ref={contractForm.registerRef("provider")}
                       value={provider}
                       onChange={(e) => {
                         setProvider(e.target.value);
-                        if (formErrors.provider) setFormErrors({});
+                        contractForm.clearError("provider");
                       }}
                       placeholder="např. Česká spořitelna"
                       required
-                      aria-invalid={!!formErrors.provider}
-                      aria-describedby={formErrors.provider ? "contract-provider-error" : undefined}
+                      aria-invalid={!!contractForm.errors.provider}
+                      aria-describedby={contractForm.errors.provider ? "contract-provider-error" : undefined}
                     />
-                    {formErrors.provider && (
+                    {contractForm.errors.provider && (
                       <p id="contract-provider-error" className="text-xs font-medium text-red-600">
-                        {formErrors.provider}
+                        {contractForm.errors.provider}
                       </p>
                     )}
                   </div>
@@ -337,20 +334,20 @@ export default function ContractsPage() {
                     <Label className="text-xs" htmlFor="contract-provider">Pojišťovna *</Label>
                     <Input
                       id="contract-provider"
-                      ref={providerInputRef}
+                      ref={contractForm.registerRef("provider")}
                       value={provider}
                       onChange={(e) => {
                         setProvider(e.target.value);
-                        if (formErrors.provider) setFormErrors({});
+                        contractForm.clearError("provider");
                       }}
                       placeholder="např. Allianz"
                       required
-                      aria-invalid={!!formErrors.provider}
-                      aria-describedby={formErrors.provider ? "contract-provider-error" : undefined}
+                      aria-invalid={!!contractForm.errors.provider}
+                      aria-describedby={contractForm.errors.provider ? "contract-provider-error" : undefined}
                     />
-                    {formErrors.provider && (
+                    {contractForm.errors.provider && (
                       <p id="contract-provider-error" className="text-xs font-medium text-red-600">
-                        {formErrors.provider}
+                        {contractForm.errors.provider}
                       </p>
                     )}
                   </div>
@@ -383,12 +380,7 @@ export default function ContractsPage() {
                       <p className="text-sm font-medium text-green-800">Vaše úroková sazba je nad {interestThreshold}%.</p>
                       <p className="mt-1 text-xs text-green-700">Je možné, že můžete ušetřit optimalizací nebo refinancováním úvěru.</p>
                       <div className="mt-3 flex gap-2">
-                        <Button size="sm" variant="outline" className="text-xs" asChild>
-                          <a href="tel:+420000000000"><Phone className="mr-1 h-3 w-3" />Zavolat poradci</a>
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-xs" asChild>
-                          <a href="mailto:poradce@example.com"><Mail className="mr-1 h-3 w-3" />Napsat zprávu</a>
-                        </Button>
+                        <ContactAdvisorButton clientId={clientId} label="Kontaktovat poradce" className="text-xs" />
                       </div>
                     </div>
                   </div>

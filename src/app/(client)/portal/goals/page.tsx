@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { AddGoalModal } from "@/components/portal/AddGoalModal";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Target, CheckCircle2, AlertTriangle, XCircle, Home, Palmtree, Car, Gem } from "lucide-react";
+import { Target, CheckCircle2, AlertTriangle, XCircle, Home, Palmtree, Car, Plus } from "lucide-react";
 
 function formatCZK(v: number) {
   return new Intl.NumberFormat("cs-CZ", { style: "currency", currency: "CZK", maximumFractionDigits: 0 }).format(v);
@@ -34,18 +37,23 @@ export default function GoalsPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [clientId, setClientId] = useState("");
+  const [advisorId, setAdvisorId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
-  useEffect(() => {
-    async function fetchData() {
+  async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id").eq("user_id", user.id).single();
+      const { data: client } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
       if (!client) { setLoading(false); return; }
+      setClientId(client.id);
+      setAdvisorId(client.advisor_id);
 
       const { data } = await supabase.from("financial_goals").select("*").eq("client_id", client.id).order("created_at");
       setGoals(data || []);
       setLoading(false);
     }
+  useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -73,11 +81,17 @@ export default function GoalsPage() {
       </p>
 
       {goals.length === 0 ? (
-        <div className="flex flex-col items-center py-16">
-          <Target className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
-          <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné finanční cíle</p>
-          <p className="mt-1 text-sm text-[var(--card-text-dim)]">Váš poradce vám nastaví finanční plán</p>
-        </div>
+        <EmptyState
+          icon={<Target className="h-12 w-12" />}
+          title="Žádné finanční cíle"
+          description="Přidejte první finanční cíl a sledujte průběžné plnění."
+          action={
+            <Button onClick={() => setAddOpen(true)} disabled={!clientId}>
+              <Plus className="mr-2 h-4 w-4" />
+              Přidat cíl
+            </Button>
+          }
+        />
       ) : (
         <div className="space-y-4">
           {goals.map((g) => {
@@ -124,6 +138,15 @@ export default function GoalsPage() {
             );
           })}
         </div>
+      )}
+      {clientId && (
+        <AddGoalModal
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          clientId={clientId}
+          advisorId={advisorId}
+          onAdded={fetchData}
+        />
       )}
     </div>
   );

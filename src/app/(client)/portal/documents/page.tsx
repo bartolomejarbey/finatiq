@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import { FolderOpen, Upload, FileText, Loader2, Brain, Eye, Scan } from "lucide-
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -145,10 +147,10 @@ export default function DocumentsPage() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64 rounded-xl" /></div>;
+  if (loading) return <PortalPageContainer className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64 rounded-xl" /></PortalPageContainer>;
 
   return (
-    <div>
+    <PortalPageContainer>
       <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Dokumenty</h1>
 
       <Tabs defaultValue="scan" className="mb-6">
@@ -256,10 +258,10 @@ export default function DocumentsPage() {
               {d.ai_analysis && d.ocr_status === "done" && !('parse_error' in (d.ai_analysis as Record<string, unknown>)) && (
                 <div className="mt-3 rounded-lg bg-violet-50 p-3">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    {(d.ai_analysis as Record<string, unknown>).type && <div><span className="text-violet-500">Typ:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).type)}</span></div>}
-                    {(d.ai_analysis as Record<string, unknown>).provider && <div><span className="text-violet-500">Poskytovatel:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).provider)}</span></div>}
-                    {(d.ai_analysis as Record<string, unknown>).total_amount && <div><span className="text-violet-500">Částka:</span> <span className="font-medium text-violet-800">{Number((d.ai_analysis as Record<string, unknown>).total_amount).toLocaleString("cs-CZ")} Kč</span></div>}
-                    {(d.ai_analysis as Record<string, unknown>).interest_rate && <div><span className="text-violet-500">Úrok:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).interest_rate)} %</span></div>}
+                    {Boolean((d.ai_analysis as Record<string, unknown>).type) && <div><span className="text-violet-500">Typ:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).type)}</span></div>}
+                    {Boolean((d.ai_analysis as Record<string, unknown>).provider) && <div><span className="text-violet-500">Poskytovatel:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).provider)}</span></div>}
+                    {Boolean((d.ai_analysis as Record<string, unknown>).total_amount) && <div><span className="text-violet-500">Částka:</span> <span className="font-medium text-violet-800">{Number((d.ai_analysis as Record<string, unknown>).total_amount).toLocaleString("cs-CZ")} Kč</span></div>}
+                    {Boolean((d.ai_analysis as Record<string, unknown>).interest_rate) && <div><span className="text-violet-500">Úrok:</span> <span className="font-medium text-violet-800">{String((d.ai_analysis as Record<string, unknown>).interest_rate)} %</span></div>}
                   </div>
                 </div>
               )}
@@ -273,6 +275,9 @@ export default function DocumentsPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>AI analýza dokumentu</DialogTitle>
+            <DialogDescription>
+              Shrnutí automaticky zpracovaného dokumentu a doporučených kroků.
+            </DialogDescription>
           </DialogHeader>
           {viewingAnalysis && (
             <div className="space-y-3 text-sm">
@@ -295,6 +300,6 @@ export default function DocumentsPage() {
 
         </TabsContent>
       </Tabs>
-    </div>
+    </PortalPageContainer>
   );
 }

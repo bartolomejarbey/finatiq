@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -17,11 +19,13 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePortalForm } from "@/lib/forms/use-portal-form";
 import { toast } from "sonner";
 import { Star, Plus, Target, Gift, Trash2, AlertCircle } from "lucide-react";
 
@@ -86,6 +90,7 @@ export default function WishlistPage() {
   const [targetAmount, setTargetAmount] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [priority, setPriority] = useState("medium");
+  const wishForm = usePortalForm<"title">();
 
   useEffect(() => {
     fetchData();
@@ -120,10 +125,10 @@ export default function WishlistPage() {
   }
 
   async function handleAdd() {
-    if (!clientId || !title.trim()) {
-      toast.error("Vyplňte název přání");
+    if (!wishForm.validateRequired([{ name: "title", value: title }])) {
       return;
     }
+    if (!clientId) return;
 
     const { error } = await supabase.from("client_wishes").insert({
       client_id: clientId,
@@ -169,17 +174,17 @@ export default function WishlistPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <PortalPageContainer className="space-y-4">
         <Skeleton className="h-8 w-48" />
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-32 rounded-xl" />
         ))}
-      </div>
+      </PortalPageContainer>
     );
   }
 
   return (
-    <div>
+    <PortalPageContainer>
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
@@ -201,15 +206,24 @@ export default function WishlistPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Nové přání</DialogTitle>
+              <DialogDescription>
+                Zadejte přání nebo cíl, který chcete sdílet se svým poradcem.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <div>
-                <Label htmlFor="wish-title">Název *</Label>
-                <Input
+                <FormField
                   id="wish-title"
+                  label="Název"
+                  requiredLabel
+                  ref={wishForm.registerRef("title")}
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    wishForm.clearError("title");
+                  }}
                   placeholder="Např. Nové auto, dovolená..."
+                  error={wishForm.errors.title}
                 />
               </div>
               <div>
@@ -293,6 +307,7 @@ export default function WishlistPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={`Smazat přání ${w.title}`}
                     onClick={() => handleDelete(w.id)}
                     className="h-8 w-8 p-0 text-[var(--card-text-dim)] hover:text-red-600"
                   >
@@ -340,6 +355,6 @@ export default function WishlistPage() {
           })}
         </div>
       )}
-    </div>
+    </PortalPageContainer>
   );
 }

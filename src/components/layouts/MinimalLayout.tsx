@@ -56,7 +56,7 @@ export function MinimalLayout({
   return (
     <div className="flex h-screen">
       {/* Mobile top bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b px-4 md:hidden" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b px-4 md:hidden" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -71,7 +71,7 @@ export function MinimalLayout({
         ) : (
           <span className="text-lg font-bold" style={{ color: primaryColor }}>{appName}</span>
         )}
-      </div>
+      </header>
 
       {/* Mobile overlay */}
       {mobileOpen && (
@@ -94,7 +94,7 @@ export function MinimalLayout({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
+            <nav aria-label="Hlavní navigace" className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
               {navItems.map((item) => {
                 const active = isActive(item.href);
                 return (
@@ -153,7 +153,7 @@ export function MinimalLayout({
           )}
         </div>
 
-        <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
+        <nav aria-label="Hlavní navigace" className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (

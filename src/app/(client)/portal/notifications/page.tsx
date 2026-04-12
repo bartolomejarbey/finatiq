@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -66,10 +67,10 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-48" />{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>;
+  if (loading) return <PortalPageContainer className="space-y-4"><Skeleton className="h-8 w-48" />{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}</PortalPageContainer>;
 
   return (
-    <div>
+    <PortalPageContainer>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[var(--card-text)]">Oznámení</h1>
@@ -116,6 +117,6 @@ export default function NotificationsPage() {
           })}
         </div>
       )}
-    </div>
+    </PortalPageContainer>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -99,7 +100,7 @@ export default function ReferralPage() {
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(shareLink);
-      toast.success("Odkaz zkopirovan do schranky");
+      toast.success("Odkaz zkopírován do schránky");
     } catch {
       toast.error("Nepodařilo se zkopirovat odkaz");
     }
@@ -108,25 +109,25 @@ export default function ReferralPage() {
   function shareEmail() {
     const subject = encodeURIComponent("Doporučuji skvělého finančního poradce");
     const body = encodeURIComponent(
-      `Ahoj,\n\nchci ti doporučit svého finančního poradce. Podivej se na tento odkaz:\n\n${shareLink}\n\nS pozdravem,\n${client?.first_name || ""}`
+      `Ahoj,\n\nchci ti doporučit svého finančního poradce. Podívej se na tento odkaz:\n\n${shareLink}\n\nS pozdravem,\n${client?.first_name || ""}`
     );
     window.open(`mailto:?subject=${subject}&body=${body}`);
   }
 
   function shareWhatsApp() {
     const text = encodeURIComponent(
-      `Ahoj! Doporučuji ti skvělého finančního poradce. Podivej se: ${shareLink}`
+      `Ahoj! Doporučuji ti skvělého finančního poradce. Podívej se: ${shareLink}`
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
   }
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <PortalPageContainer className="space-y-4">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-40 rounded-xl" />
         <Skeleton className="h-24 rounded-xl" />
-      </div>
+      </PortalPageContainer>
     );
   }
 
@@ -135,16 +136,16 @@ export default function ReferralPage() {
   const converted = referrals.filter((r) => r.status === "converted").length;
 
   return (
-    <div>
+    <PortalPageContainer>
       {/* Header */}
       <div className="mb-8 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white">
         <div className="flex items-center gap-3 mb-2">
           <Gift className="h-8 w-8" />
-          <h1 className="text-2xl font-bold">Doporučte sveho poradce</h1>
+          <h1 className="text-2xl font-bold">Doporučte svého poradce</h1>
         </div>
         <p className="text-blue-100">
-          Sdílejte svuj odkaz s přateli a rodinou. Za každe uspěšne doporučeni
-          ziskate odmenu.
+          Sdílejte svůj odkaz s přáteli a rodinou. Za každé úspěšné doporučení
+          získáte odměnu.
         </p>
       </div>
 
@@ -152,25 +153,25 @@ export default function ReferralPage() {
       <div className="mb-8 rounded-xl border bg-[var(--card-bg)] p-6 shadow-sm">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[var(--card-text)]">
           <Share2 className="h-5 w-5 text-blue-600" />
-          Vas doporučujici odkaz
+          Váš doporučující odkaz
         </h2>
 
         <div className="mb-4 flex items-center gap-3">
           <div className="flex-1 rounded-lg border bg-[var(--table-hover)] px-4 py-3 font-mono text-sm text-[var(--card-text)]">
-            {shareLink || "Načitani..."}
+            {shareLink || "Načítání..."}
           </div>
           <Button onClick={copyLink} variant="outline" className="gap-2">
             <Copy className="h-4 w-4" />
-            Zkopirovat
+            Zkopírovat
           </Button>
         </div>
 
-        <div className="mb-2 text-xs text-[var(--card-text-muted)]">Vas kod: <span className="font-bold text-[var(--card-text)]">{referralCode}</span></div>
+        <div className="mb-2 text-xs text-[var(--card-text-muted)]">Váš kód: <span className="font-bold text-[var(--card-text)]">{referralCode}</span></div>
 
         <div className="flex gap-3">
           <Button onClick={copyLink} className="gap-2 bg-blue-600 hover:bg-blue-700">
             <Copy className="h-4 w-4" />
-            Zkopirovat odkaz
+            Zkopírovat odkaz
           </Button>
           <Button onClick={shareEmail} variant="outline" className="gap-2">
             <Mail className="h-4 w-4" />
@@ -191,7 +192,7 @@ export default function ReferralPage() {
               <Users className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-[var(--card-text-muted)]">Celkem doporučeni</p>
+              <p className="text-xs text-[var(--card-text-muted)]">Celkem doporučení</p>
               <p className="text-lg font-bold text-[var(--card-text)]">{totalReferrals}</p>
             </div>
           </div>
@@ -202,7 +203,7 @@ export default function ReferralPage() {
               <Phone className="h-5 w-5 text-indigo-600" />
             </div>
             <div>
-              <p className="text-xs text-[var(--card-text-muted)]">Kontaktovani</p>
+              <p className="text-xs text-[var(--card-text-muted)]">Kontaktovaní</p>
               <p className="text-lg font-bold text-[var(--card-text)]">{contacted}</p>
             </div>
           </div>
@@ -213,7 +214,7 @@ export default function ReferralPage() {
               <CheckCircle2 className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-[var(--card-text-muted)]">Konvertovani</p>
+              <p className="text-xs text-[var(--card-text-muted)]">Konvertovaní</p>
               <p className="text-lg font-bold text-[var(--card-text)]">{converted}</p>
             </div>
           </div>
@@ -224,17 +225,17 @@ export default function ReferralPage() {
       <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
         <div className="border-b px-6 py-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--card-text)]">
-            Vase doporučeni
+            Vaše doporučení
           </h2>
         </div>
         {referrals.length === 0 ? (
           <div className="flex flex-col items-center py-16">
             <Gift className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
             <p className="text-lg font-medium text-[var(--card-text-dim)]">
-              Zatim žadna doporučeni
+              Zatím žádná doporučení
             </p>
             <p className="mt-1 text-sm text-[var(--card-text-dim)]">
-              Sdílejte svuj odkaz a sledujte doporučeni zde
+              Sdílejte svůj odkaz a sledujte doporučení zde
             </p>
           </div>
         ) : (
@@ -269,6 +270,6 @@ export default function ReferralPage() {
           </div>
         )}
       </div>
-    </div>
+    </PortalPageContainer>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, Wallet, CreditCard, Landmark } from "lucide-react";
 import {
@@ -115,7 +116,7 @@ export default function CockpitPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <PortalPageContainer className="space-y-4">
         <Skeleton className="h-8 w-56" />
         <Skeleton className="h-28 rounded-2xl" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -123,7 +124,7 @@ export default function CockpitPage() {
           <Skeleton className="h-64 rounded-2xl" />
         </div>
         <Skeleton className="h-72 rounded-2xl" />
-      </div>
+      </PortalPageContainer>
     );
   }
 
@@ -131,17 +132,20 @@ export default function CockpitPage() {
   const totalAssets = investments.reduce((s, i) => s + i.current_value, 0)
     + goals.reduce((s, g) => s + (g.current_amount || 0), 0);
   const netWorth = totalAssets - totalDebt;
-  const isPositive = netWorth >= 0;
+  const netWorthColorClass =
+    netWorth > 0 ? "text-green-400" :
+    netWorth < 0 ? "text-red-400" :
+    "text-gray-400";
 
   return (
-    <div>
+    <PortalPageContainer>
       <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Finanční cockpit</h1>
 
       {/* Net worth hero card */}
       <div className="mb-6 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 md:p-8 text-white">
         <p className="text-sm text-gray-400">Čistá hodnota</p>
         <div className="flex items-center gap-3 mt-2">
-          {isPositive ? <TrendingUp className="h-6 w-6 text-green-400" /> : <TrendingDown className="h-6 w-6 text-red-400" />}
+          {netWorth > 0 ? <TrendingUp className={`h-6 w-6 ${netWorthColorClass}`} /> : netWorth < 0 ? <TrendingDown className={`h-6 w-6 ${netWorthColorClass}`} /> : null}
           <p className={`text-3xl md:text-4xl font-bold`}>{formatCZK(netWorth)}</p>
         </div>
       </div>
@@ -240,8 +244,8 @@ export default function CockpitPage() {
             <AreaChart data={netWorthHistory}>
               <defs>
                 <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={isPositive ? "#10B981" : "#EF4444"} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={isPositive ? "#10B981" : "#EF4444"} stopOpacity={0} />
+                  <stop offset="5%" stopColor={netWorth > 0 ? "#10B981" : "#EF4444"} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={netWorth > 0 ? "#10B981" : "#EF4444"} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
@@ -252,7 +256,7 @@ export default function CockpitPage() {
                 type="monotone"
                 dataKey="value"
                 name="Čistá hodnota"
-                stroke={isPositive ? "#10B981" : "#EF4444"}
+                stroke={netWorth > 0 ? "#10B981" : "#EF4444"}
                 strokeWidth={2}
                 fill="url(#netWorthGradient)"
                 dot={{ r: 3 }}
@@ -261,6 +265,6 @@ export default function CockpitPage() {
           </ResponsiveContainer>
         </div>
       )}
-    </div>
+    </PortalPageContainer>
   );
 }

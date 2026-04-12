@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { usePortalForm } from "@/lib/forms/use-portal-form";
 
 interface Appointment {
   id: string;
@@ -91,6 +93,7 @@ export default function KlientKalendarPage() {
   } | null>(null);
   const [formTitle, setFormTitle] = useState("");
   const [formDescription, setFormDescription] = useState("");
+  const bookingForm = usePortalForm<"title">();
 
   useEffect(() => {
     async function fetchData() {
@@ -169,7 +172,8 @@ export default function KlientKalendarPage() {
   }
 
   async function handleSubmit() {
-    if (!client || !selectedSlot || !formTitle.trim()) return;
+    if (!bookingForm.validateRequired([{ name: "title", value: formTitle }])) return;
+    if (!client || !selectedSlot) return;
     setSubmitting(true);
 
     const startTime = getSlotStartTime();
@@ -241,13 +245,13 @@ export default function KlientKalendarPage() {
 
       {/* Week navigation */}
       <div className="mb-4 flex items-center justify-between">
-        <Button variant="outline" size="sm" onClick={handlePrevWeek}>
+        <Button variant="outline" size="sm" onClick={handlePrevWeek} aria-label="Předchozí týden">
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="text-sm font-medium text-[var(--card-text)]">
           {formatDate(selectedWeekStart)} &ndash; {formatDate(weekEnd)}
         </span>
-        <Button variant="outline" size="sm" onClick={handleNextWeek}>
+        <Button variant="outline" size="sm" onClick={handleNextWeek} aria-label="Další týden">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -318,11 +322,18 @@ export default function KlientKalendarPage() {
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <div className="space-y-1">
-              <Label className="text-xs">Název schůzky</Label>
-              <Input
+              <FormField
+                id="appointment-title"
+                label="Název schůzky"
+                requiredLabel
                 value={formTitle}
-                onChange={(e) => setFormTitle(e.target.value)}
+                onChange={(e) => {
+                  setFormTitle(e.target.value);
+                  bookingForm.clearError("title");
+                }}
                 placeholder="Např. Konzultace k hypotéce"
+                ref={bookingForm.registerRef("title")}
+                error={bookingForm.errors.title}
               />
             </div>
             <div className="space-y-1">
@@ -350,7 +361,7 @@ export default function KlientKalendarPage() {
             </div>
             <Button
               onClick={handleSubmit}
-              disabled={submitting || !formTitle.trim()}
+              disabled={submitting}
               className="w-full"
             >
               {submitting && (

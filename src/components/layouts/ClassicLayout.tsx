@@ -213,7 +213,7 @@ export function ClassicLayout({
   return (
     <div className="flex h-screen">
       {/* Mobile top bar */}
-      <div
+      <header
         className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 px-4 md:hidden"
         style={{ backgroundColor: sidebarBg, borderBottom: `1px solid ${borderColor}` }}
       >
@@ -227,7 +227,7 @@ export function ClassicLayout({
           <Menu className="h-6 w-6" />
         </button>
         {renderLogo(32)}
-      </div>
+      </header>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -249,7 +249,7 @@ export function ClassicLayout({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <nav className="flex-1 overflow-y-auto py-2">
+            <nav aria-label="Hlavní navigace" className="flex-1 overflow-y-auto py-2">
               {renderNav(() => setSidebarOpen(false))}
             </nav>
             {bottomContent && <div className="px-3 pb-2">{bottomContent}</div>}
@@ -278,7 +278,7 @@ export function ClassicLayout({
             {renderLogo()}
           </div>
         )}
-        <nav className="flex-1 overflow-y-auto py-2">
+        <nav aria-label="Hlavní navigace" className="flex-1 overflow-y-auto py-2">
           {logoPosition === "above_nav" && (
             <div className="px-6 pb-4 pt-2">
               {renderLogo()}

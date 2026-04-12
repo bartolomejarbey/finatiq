@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,6 +31,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+import { usePortalForm } from "@/lib/forms/use-portal-form";
 
 const EVENT_TYPES = [
   { value: "marriage", label: "Svatba", icon: Heart, color: "bg-pink-100 text-pink-700" },
@@ -74,6 +77,7 @@ export default function ZivotniUdalostiPage() {
   const [eventType, setEventType] = useState("");
   const [eventDate, setEventDate] = useState(new Date().toISOString().split("T")[0]);
   const [description, setDescription] = useState("");
+  const eventForm = usePortalForm<"eventType">();
 
   useEffect(() => {
     fetchEvents();
@@ -100,10 +104,7 @@ export default function ZivotniUdalostiPage() {
   }
 
   async function handleSubmit() {
-    if (!eventType) {
-      toast.error("Vyberte typ události");
-      return;
-    }
+    if (!eventForm.validateRequired([{ name: "eventType", value: eventType }])) return;
 
     setSubmitting(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -161,16 +162,16 @@ export default function ZivotniUdalostiPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <PortalPageContainer className="space-y-4">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-32 rounded-xl" />
         <Skeleton className="h-32 rounded-xl" />
-      </div>
+      </PortalPageContainer>
     );
   }
 
   return (
-    <div>
+    <PortalPageContainer>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[var(--card-text)]">Životní události</h1>
@@ -200,9 +201,20 @@ export default function ZivotniUdalostiPage() {
 
           <div className="space-y-4">
             <div className="space-y-1">
-              <Label>Typ události</Label>
-              <Select value={eventType} onValueChange={setEventType}>
-                <SelectTrigger>
+              <Label htmlFor="life-event-type">Typ události *</Label>
+              <Select
+                value={eventType}
+                onValueChange={(value) => {
+                  setEventType(value);
+                  eventForm.clearError("eventType");
+                }}
+              >
+                <SelectTrigger
+                  id="life-event-type"
+                  aria-invalid={!!eventForm.errors.eventType}
+                  aria-describedby={eventForm.errors.eventType ? "life-event-type-error" : undefined}
+                  ref={eventForm.registerRef("eventType")}
+                >
                   <SelectValue placeholder="Vyberte typ události" />
                 </SelectTrigger>
                 <SelectContent>
@@ -213,16 +225,20 @@ export default function ZivotniUdalostiPage() {
                   ))}
                 </SelectContent>
               </Select>
+              {eventForm.errors.eventType && (
+                <span id="life-event-type-error" className="block text-xs font-medium text-red-600">
+                  {eventForm.errors.eventType}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-1">
-              <Label>Datum</Label>
-              <Input
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-              />
-            </div>
+            <FormField
+              id="life-event-date"
+              label="Datum"
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+            />
 
             <div className="space-y-1">
               <Label>Poznámka (volitelné)</Label>
@@ -243,7 +259,7 @@ export default function ZivotniUdalostiPage() {
               </div>
             )}
 
-            <Button onClick={handleSubmit} disabled={submitting || !eventType}>
+            <Button onClick={handleSubmit} disabled={submitting}>
               {submitting ? "Odesílám..." : "Nahlásit událost"}
             </Button>
           </div>
@@ -311,6 +327,6 @@ export default function ZivotniUdalostiPage() {
           </div>
         )}
       </div>
-    </div>
+    </PortalPageContainer>
   );
 }

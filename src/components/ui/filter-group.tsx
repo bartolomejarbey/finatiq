@@ -10,7 +10,7 @@ type FilterGroupContextValue = {
 
 const FilterGroupContext = React.createContext<FilterGroupContextValue | null>(null);
 
-type FilterGroupProps = React.ComponentProps<"div"> & FilterGroupContextValue;
+type FilterGroupProps = Omit<React.ComponentProps<"div">, "onChange"> & FilterGroupContextValue;
 
 function FilterGroup({ value, onChange, className, children, ...props }: FilterGroupProps) {
   return (

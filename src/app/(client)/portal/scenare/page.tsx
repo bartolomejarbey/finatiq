@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,36 +73,36 @@ const SCENARIOS: {
 }[] = [
   {
     id: 1,
-    title: "Refinancovani hypoteky",
+    title: "Refinancování hypotéky",
     description:
-      "Zjistete, kolik muzete usetrit pri nizsim uroku.",
+      "Zjistěte, kolik můžete ušetřit při nižším úroku.",
     icon: RefreshCw,
     color: "text-blue-600",
     bg: "bg-blue-50",
   },
   {
     id: 2,
-    title: "Pravidelne sporeni",
+    title: "Pravidelné spoření",
     description:
-      "Podivejte se, jak vase sporeni poroste v case.",
+      "Podívejte se, jak vaše spoření poroste v čase.",
     icon: PiggyBank,
     color: "text-emerald-600",
     bg: "bg-emerald-50",
   },
   {
     id: 3,
-    title: "Predcasne splaceni",
+    title: "Předčasné splacení",
     description:
-      "Spocitejte, kolik usetrite pri mimoradne splatce.",
+      "Spočítejte, kolik ušetříte při mimořádné splátce.",
     icon: Zap,
     color: "text-amber-600",
     bg: "bg-amber-50",
   },
   {
     id: 4,
-    title: "Jednorazova investice",
+    title: "Jednorázová investice",
     description:
-      "Modelujte rust vasi investice v case.",
+      "Modelujte růst vaší investice v čase.",
     icon: TrendingUp,
     color: "text-violet-600",
     bg: "bg-violet-50",
@@ -446,12 +447,12 @@ export default function ScenarePage() {
 
   if (loading)
     return (
-      <div className="space-y-4">
+      <PortalPageContainer className="space-y-4">
         <Skeleton className="h-8 w-64" />
         {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-28 rounded-xl" />
         ))}
-      </div>
+      </PortalPageContainer>
     );
 
   // -------------------------------------------------------------------------
@@ -459,7 +460,7 @@ export default function ScenarePage() {
   // -------------------------------------------------------------------------
 
   return (
-    <div>
+    <PortalPageContainer>
       <h1 className="mb-1 text-2xl font-bold gradient-text">
         &bdquo;Co kdyby&ldquo; scénáře
       </h1>
@@ -486,9 +487,9 @@ export default function ScenarePage() {
                     <Icon className={`h-6 w-6 ${s.color}`} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-[var(--card-text)]">
+                    <span className="block text-sm font-semibold text-[var(--card-text)]">
                       {d.title}
-                    </h3>
+                    </span>
                     <p className="mt-0.5 text-xs text-[var(--card-text-muted)]">
                       {d.description}
                     </p>
@@ -959,6 +960,6 @@ export default function ScenarePage() {
           )}
         </div>
       )}
-    </div>
+    </PortalPageContainer>
   );
 }
