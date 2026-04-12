@@ -94,8 +94,8 @@ export default function ZivotniUdalostiPage() {
       .from("clients")
       .select("id")
       .eq("user_id", user.id)
-      .single();
-    if (clientError) {
+      .maybeSingle();
+    if (clientError && clientError.code !== "PGRST116") {
       setError("Nepodařilo se načíst klientský profil.");
       setLoading(false);
       return;
@@ -127,7 +127,7 @@ export default function ZivotniUdalostiPage() {
       .from("clients")
       .select("id, advisor_id, first_name, last_name")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
     if (!client) return;
 
     const advisorAction = ADVISOR_ACTIONS[eventType] || ADVISOR_ACTIONS.other;

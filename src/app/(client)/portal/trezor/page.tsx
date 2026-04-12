@@ -88,8 +88,8 @@ export default function TrezorPage() {
     setError(null);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
-    const { data: client, error: clientError } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
-    if (clientError) {
+    const { data: client, error: clientError } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).maybeSingle();
+    if (clientError && clientError.code !== "PGRST116") {
       setError("Nepodařilo se načíst klientský profil.");
       setLoading(false);
       return;

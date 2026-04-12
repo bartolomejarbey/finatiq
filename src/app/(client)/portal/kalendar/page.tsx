@@ -109,8 +109,8 @@ export default function KlientKalendarPage() {
         .from("clients")
         .select("id, first_name, last_name, advisor_id")
         .eq("user_id", user.id)
-        .single();
-      if (clientError) {
+        .maybeSingle();
+      if (clientError && clientError.code !== "PGRST116") {
         setError("Nepodařilo se načíst klientský profil.");
         setLoading(false);
         return;

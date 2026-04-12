@@ -110,8 +110,8 @@ export default function WishlistPage() {
       .from("clients")
       .select("id")
       .eq("user_id", user.id)
-      .single();
-    if (clientError) {
+      .maybeSingle();
+    if (clientError && clientError.code !== "PGRST116") {
       setError("Nepodařilo se načíst klientský profil.");
       setLoading(false);
       return;
