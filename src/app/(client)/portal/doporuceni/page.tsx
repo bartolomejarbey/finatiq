@@ -156,7 +156,7 @@ export default function ReferralPage() {
           Váš doporučující odkaz
         </h2>
 
-        <div className="mb-4 flex items-center gap-3">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <div className="flex-1 rounded-lg border bg-[var(--table-hover)] px-4 py-3 font-mono text-sm text-[var(--card-text)]">
             {shareLink || "Načítání..."}
           </div>
@@ -168,7 +168,7 @@ export default function ReferralPage() {
 
         <div className="mb-2 text-xs text-[var(--card-text-muted)]">Váš kód: <span className="font-bold text-[var(--card-text)]">{referralCode}</span></div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button onClick={copyLink} className="gap-2 bg-blue-600 hover:bg-blue-700">
             <Copy className="h-4 w-4" />
             Zkopírovat odkaz
@@ -245,7 +245,7 @@ export default function ReferralPage() {
               return (
                 <div
                   key={ref.id}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-[var(--table-hover)]"
+                  className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 hover:bg-[var(--table-hover)]"
                 >
                   <div>
                     <p className="text-sm font-medium text-[var(--card-text)]">

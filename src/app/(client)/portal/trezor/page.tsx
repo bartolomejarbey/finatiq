@@ -6,6 +6,7 @@ import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { AddVaultItemModal } from "@/components/portal/AddVaultItemModal";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +65,7 @@ export default function TrezorPage() {
   const supabase = createClient();
   const [docs, setDocs] = useState<VaultDoc[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState("");
   const [advisorId, setAdvisorId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -82,19 +84,31 @@ export default function TrezorPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchDocs() {
+    setLoading(true);
+    setError(null);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data: client } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
-    if (!client) return;
+    if (!user) { setLoading(false); return; }
+    const { data: client, error: clientError } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+    if (clientError) {
+      setError("Nepodařilo se načíst klientský profil.");
+      setLoading(false);
+      return;
+    }
+    if (!client) { setLoading(false); return; }
     setClientId(client.id);
     setAdvisorId(client.advisor_id);
 
-    const { data } = await supabase
+    const { data, error: docsError } = await supabase
       .from("documents")
       .select("id, name, vault_category, valid_until, shared_with_advisor, file_url, created_at")
       .eq("client_id", client.id)
       .eq("is_vault", true)
       .order("created_at", { ascending: false });
+    if (docsError) {
+      setError("Nepodařilo se načíst trezor.");
+      setLoading(false);
+      return;
+    }
 
     setDocs(data || []);
     setLoading(false);
@@ -188,6 +202,7 @@ export default function TrezorPage() {
       </PortalPageContainer>
     );
   }
+  if (error) return <PortalPageContainer><ErrorState description={error} onRetry={fetchDocs} /></PortalPageContainer>;
 
   const categoryCounts = CATEGORIES.map((cat) => ({
     ...cat,
@@ -200,7 +215,7 @@ export default function TrezorPage() {
 
   return (
     <PortalPageContainer>
-      <div className="mb-6 flex items-center justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--card-text)] flex items-center gap-2">
             <Lock className="h-6 w-6" /> Dokumentový trezor

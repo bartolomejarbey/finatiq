@@ -9,6 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getAdvisorContact, type AdvisorContact } from "@/lib/portal/get-advisor-contact";
 
 type ContactAdvisorButtonProps = {
@@ -50,15 +56,25 @@ export function ContactAdvisorButton({
 
   if (!clientId || (!loading && !hasContact)) {
     return (
-      <Button
-        size={size}
-        variant={variant}
-        className={className}
-        disabled
-        title="Kontakt není dostupný, kontaktujte podporu"
-      >
-        {label}
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex">
+              <Button
+                size={size}
+                variant={variant}
+                className={className}
+                disabled
+              >
+                {label}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            Poradce nemá zadané kontakty, požádejte ho o doplnění
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
 

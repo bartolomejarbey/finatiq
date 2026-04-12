@@ -35,11 +35,15 @@ export function AddVaultItemModal({ open, onOpenChange, clientId, advisorId, onA
 
     let filePath: string | null = null;
     if (file) {
-      filePath = `vault-items/${clientId}/${Date.now()}_${file.name}`;
-      const { error } = await supabase.storage.from("deal-documents").upload(filePath, file);
+      filePath = `${clientId}/${Date.now()}_${file.name}`;
+      const { error } = await supabase.storage.from("vault-items").upload(filePath, file);
       if (error) {
         setSaving(false);
-        toast.error("Soubor se nepodařilo nahrát: " + error.message);
+        toast.error("Soubor se nepodařilo nahrát", {
+          description: error.message.includes("Bucket not found")
+            ? "Bucket vault-items zatím neexistuje. Připravil jsem SQL/config návrh ke schválení."
+            : error.message,
+        });
         return;
       }
     }

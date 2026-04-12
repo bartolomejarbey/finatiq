@@ -93,6 +93,9 @@
   --input-text: #111827;
   --input-placeholder: #9ca3af;
   --skeleton-bg: #e5e7eb;
+  --accent-success: #16a34a;
+  --accent-warning: #d97706;
+  --accent-danger: #dc2626;
 }
 
 .dark {
@@ -141,6 +144,9 @@
   --input-text: #f1f5f9;
   --input-placeholder: #64748b;
   --skeleton-bg: #334155;
+  --accent-success: #4ade80;
+  --accent-warning: #fbbf24;
+  --accent-danger: #f87171;
 }
 
 @layer base {

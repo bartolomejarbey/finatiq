@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,6 +72,7 @@ export default function ZivotniUdalostiPage() {
   const supabase = createClient();
   const [events, setEvents] = useState<LifeEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -84,20 +86,32 @@ export default function ZivotniUdalostiPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchEvents() {
+    setLoading(true);
+    setError(null);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data: client } = await supabase
+    if (!user) { setLoading(false); return; }
+    const { data: client, error: clientError } = await supabase
       .from("clients")
       .select("id")
       .eq("user_id", user.id)
       .single();
-    if (!client) return;
+    if (clientError) {
+      setError("Nepodařilo se načíst klientský profil.");
+      setLoading(false);
+      return;
+    }
+    if (!client) { setLoading(false); return; }
 
-    const { data } = await supabase
+    const { data, error: eventsError } = await supabase
       .from("life_events")
       .select("*")
       .eq("client_id", client.id)
       .order("event_date", { ascending: false });
+    if (eventsError) {
+      setError("Nepodařilo se načíst životní události.");
+      setLoading(false);
+      return;
+    }
 
     setEvents(data || []);
     setLoading(false);
@@ -169,10 +183,11 @@ export default function ZivotniUdalostiPage() {
       </PortalPageContainer>
     );
   }
+  if (error) return <PortalPageContainer><ErrorState description={error} onRetry={fetchEvents} /></PortalPageContainer>;
 
   return (
     <PortalPageContainer>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--card-text)]">Životní události</h1>
           <p className="text-sm text-[var(--card-text-muted)] mt-1">

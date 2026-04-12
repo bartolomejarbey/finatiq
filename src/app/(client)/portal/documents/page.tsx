@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -49,6 +50,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default function DocumentsPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [clientId, setClientId] = useState("");
   const [advisorId, setAdvisorId] = useState("");
@@ -58,19 +60,31 @@ export default function DocumentsPage() {
   const [ocrProcessing, setOcrProcessing] = useState<string | null>(null);
   const [viewingAnalysis, setViewingAnalysis] = useState<Record<string, unknown> | null>(null);
 
-  useEffect(() => {
-    async function fetchData() {
+  async function fetchData() {
+      setLoading(true);
+      setError(null);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+      if (!user) { setLoading(false); return; }
+      const { data: client, error: clientError } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+      if (clientError) {
+        setError("Nepodařilo se načíst klientský profil.");
+        setLoading(false);
+        return;
+      }
       if (!client) { setLoading(false); return; }
       setClientId(client.id);
       setAdvisorId(client.advisor_id);
 
-      const { data } = await supabase.from("client_documents").select("id, name, category, file_path, file_size, uploaded_by, created_at, ocr_status, ai_analysis").eq("client_id", client.id).order("created_at", { ascending: false });
+      const { data, error: docsError } = await supabase.from("client_documents").select("id, name, category, file_path, file_size, uploaded_by, created_at, ocr_status, ai_analysis").eq("client_id", client.id).order("created_at", { ascending: false });
+      if (docsError) {
+        setError("Nepodařilo se načíst dokumenty.");
+        setLoading(false);
+        return;
+      }
       setDocs(data || []);
       setLoading(false);
     }
+  useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -148,6 +162,7 @@ export default function DocumentsPage() {
   }
 
   if (loading) return <PortalPageContainer className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64 rounded-xl" /></PortalPageContainer>;
+  if (error) return <PortalPageContainer><ErrorState description={error} onRetry={fetchData} /></PortalPageContainer>;
 
   return (
     <PortalPageContainer>
@@ -193,7 +208,7 @@ export default function DocumentsPage() {
         </div>
 
         {uploadFile && (
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <div className="flex flex-1 items-center gap-2 rounded-lg bg-blue-50 px-3 py-2">
               <FileText className="h-4 w-4 text-blue-500" />
               <span className="text-xs text-blue-700">{uploadFile.name} ({formatSize(uploadFile.size)})</span>
@@ -224,7 +239,7 @@ export default function DocumentsPage() {
         <div className="space-y-3">
           {docs.map((d) => (
             <div key={d.id} className="rounded-xl border bg-[var(--card-bg)] p-4 shadow-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5 text-blue-500" />
                   <div>

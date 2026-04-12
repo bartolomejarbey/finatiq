@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { FilterButton, FilterGroup } from "@/components/ui/filter-group";
 import { ContactAdvisorButton } from "@/components/portal/ContactAdvisorButton";
+import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,6 +59,7 @@ export default function ContractsPage() {
   const supabase = createClient();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [filter, setFilter] = useState("all");
   const [clientId, setClientId] = useState("");
@@ -84,11 +86,17 @@ export default function ContractsPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    async function fetchData() {
+  async function fetchData() {
+      setLoading(true);
+      setError(null);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+      if (!user) { setLoading(false); return; }
+      const { data: client, error: clientError } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+      if (clientError) {
+        setError("Nepodařilo se načíst klientský profil.");
+        setLoading(false);
+        return;
+      }
       if (!client) { setLoading(false); return; }
       setClientId(client.id);
       setAdvisorId(client.advisor_id);
@@ -96,10 +104,16 @@ export default function ContractsPage() {
       const { data: adv } = await supabase.from("advisors").select("interest_rate_threshold").eq("id", client.advisor_id).single();
       if (adv?.interest_rate_threshold) setInterestThreshold(adv.interest_rate_threshold);
 
-      const { data } = await supabase.from("contracts").select("id, title, status, type, provider, interest_rate, remaining_balance, monthly_payment, valid_from, valid_to, insurance_type, value").eq("client_id", client.id).order("created_at", { ascending: false });
+      const { data, error: contractsError } = await supabase.from("contracts").select("id, title, status, type, provider, interest_rate, remaining_balance, monthly_payment, valid_from, valid_to, insurance_type, value").eq("client_id", client.id).order("created_at", { ascending: false });
+      if (contractsError) {
+        setError("Nepodařilo se načíst smlouvy.");
+        setLoading(false);
+        return;
+      }
       setContracts(data || []);
       setLoading(false);
     }
+  useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -196,6 +210,7 @@ export default function ContractsPage() {
   const showSavingsAlert = sheetType === "uver" && parseFloat(interestRate) > interestThreshold;
 
   if (loading) return <div className="space-y-4 p-4 md:p-8"><Skeleton className="h-8 w-48" />{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>;
+  if (error) return <div className="p-4 md:p-8"><ErrorState description={error} onRetry={fetchData} /></div>;
 
   return (
     <div className="p-4 md:p-8">

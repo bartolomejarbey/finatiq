@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { FilterButton, FilterGroup } from "@/components/ui/filter-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreditCard, CheckCircle2, Clock, AlertTriangle, Wallet } from "lucide-react";
@@ -25,20 +26,33 @@ interface Payment {
 export default function PaymentsPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [filter, setFilter] = useState("all");
 
-  useEffect(() => {
-    async function fetchData() {
+  async function fetchData() {
+      setLoading(true);
+      setError(null);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id").eq("user_id", user.id).single();
+      if (!user) { setLoading(false); return; }
+      const { data: client, error: clientError } = await supabase.from("clients").select("id").eq("user_id", user.id).single();
+      if (clientError) {
+        setError("Nepodařilo se načíst klientský profil.");
+        setLoading(false);
+        return;
+      }
       if (!client) { setLoading(false); return; }
 
       const [paymentsRes, contractsRes] = await Promise.all([
         supabase.from("payments").select("*").eq("client_id", client.id).order("due_date", { ascending: false }),
         supabase.from("contracts").select("id, title").eq("client_id", client.id),
       ]);
+
+      if (paymentsRes.error || contractsRes.error) {
+        setError("Nepodařilo se načíst platby.");
+        setLoading(false);
+        return;
+      }
 
       const contractMap: Record<string, string> = {};
       (contractsRes.data || []).forEach((c) => { contractMap[c.id] = c.title; });
@@ -51,6 +65,7 @@ export default function PaymentsPage() {
       );
       setLoading(false);
     }
+  useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -64,9 +79,9 @@ export default function PaymentsPage() {
   });
 
   function getStatusInfo(p: Payment) {
-    if (p.status === "paid") return { icon: CheckCircle2, label: "Uhrazeno", bg: "bg-emerald-100", text: "text-emerald-600" };
-    if (p.due_date && new Date(p.due_date) < now) return { icon: AlertTriangle, label: "Po splatnosti", bg: "bg-red-100", text: "text-red-600" };
-    return { icon: Clock, label: "Čeká", bg: "bg-amber-100", text: "text-amber-600" };
+    if (p.status === "paid") return { icon: CheckCircle2, label: "Uhrazeno", bg: "bg-[color-mix(in_srgb,var(--accent-success)_14%,transparent)]", text: "text-[var(--accent-success)]" };
+    if (p.due_date && new Date(p.due_date) < now) return { icon: AlertTriangle, label: "Po splatnosti", bg: "bg-destructive/10", text: "text-destructive" };
+    return { icon: Clock, label: "Čeká", bg: "bg-[color-mix(in_srgb,var(--accent-warning)_14%,transparent)]", text: "text-[var(--accent-warning)]" };
   }
 
   if (loading) return (
@@ -75,6 +90,7 @@ export default function PaymentsPage() {
       {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
     </div>
   );
+  if (error) return <div className="p-4 md:p-8"><ErrorState description={error} onRetry={fetchData} /></div>;
 
   return (
     <div className="p-4 md:p-8">

@@ -27,6 +27,7 @@ const PORTAL_TITLES: Record<string, string> = {
   "/portal/evidence": "Evidence",
   "/portal/notifications": "Oznámení",
   "/portal/nastaveni": "Nastavení",
+  "/portal/vitejte": "Vítejte",
 };
 
 function getPortalTitle(pathname: string) {

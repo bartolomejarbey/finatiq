@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -80,6 +81,7 @@ const HOURS = Array.from({ length: 8 }, (_, i) => i + 9); // 9-16 (slots 9:00-17
 export default function KlientKalendarPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [client, setClient] = useState<ClientRecord | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -95,34 +97,46 @@ export default function KlientKalendarPage() {
   const [formDescription, setFormDescription] = useState("");
   const bookingForm = usePortalForm<"title">();
 
-  useEffect(() => {
-    async function fetchData() {
+  async function fetchData() {
+      setLoading(true);
+      setError(null);
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { setLoading(false); return; }
 
-      const { data: clientData } = await supabase
+      const { data: clientData, error: clientError } = await supabase
         .from("clients")
         .select("id, first_name, last_name, advisor_id")
         .eq("user_id", user.id)
         .single();
+      if (clientError) {
+        setError("Nepodařilo se načíst klientský profil.");
+        setLoading(false);
+        return;
+      }
 
       if (clientData) {
         setClient(clientData);
 
-        const { data: appts } = await supabase
+        const { data: appts, error: appointmentsError } = await supabase
           .from("appointments")
           .select("*")
           .eq("client_id", clientData.id)
           .eq("status", "scheduled")
           .gt("start_time", new Date().toISOString())
           .order("start_time", { ascending: true });
+        if (appointmentsError) {
+          setError("Nepodařilo se načíst schůzky.");
+          setLoading(false);
+          return;
+        }
 
         setAppointments(appts || []);
       }
       setLoading(false);
     }
+  useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -233,6 +247,7 @@ export default function KlientKalendarPage() {
       </div>
     );
   }
+  if (error) return <div className="mx-auto max-w-5xl p-8"><ErrorState description={error} onRetry={fetchData} /></div>;
 
   const weekEnd = new Date(selectedWeekStart);
   weekEnd.setDate(weekEnd.getDate() + 4);

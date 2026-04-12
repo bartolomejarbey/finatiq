@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { AddInvestmentModal } from "@/components/portal/AddInvestmentModal";
 import { TrendingUp, TrendingDown, Wallet, Plus } from "lucide-react";
 import {
@@ -32,6 +33,7 @@ interface Investment {
 export default function InvestmentsPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [portfolioHistory, setPortfolioHistory] = useState<{ month: string; value: number }[]>([]);
   const [clientId, setClientId] = useState("");
@@ -39,14 +41,26 @@ export default function InvestmentsPage() {
   const [addOpen, setAddOpen] = useState(false);
 
   async function fetchData() {
+      setLoading(true);
+      setError(null);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+      if (!user) { setLoading(false); return; }
+      const { data: client, error: clientError } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+      if (clientError) {
+        setError("Nepodařilo se načíst klientský profil.");
+        setLoading(false);
+        return;
+      }
       if (!client) { setLoading(false); return; }
       setClientId(client.id);
       setAdvisorId(client.advisor_id);
 
-      const { data } = await supabase.from("investments").select("id, instrument_name, type, current_value, purchase_value").eq("client_id", client.id);
+      const { data, error: investmentsError } = await supabase.from("investments").select("id, instrument_name, type, current_value, purchase_value").eq("client_id", client.id);
+      if (investmentsError) {
+        setError("Nepodařilo se načíst investice.");
+        setLoading(false);
+        return;
+      }
       const invs = data || [];
       setInvestments(invs);
 
@@ -74,6 +88,7 @@ export default function InvestmentsPage() {
       <Skeleton className="h-80 rounded-2xl" />
     </div>
   );
+  if (error) return <div className="p-4 md:p-8"><ErrorState description={error} onRetry={fetchData} /></div>;
 
   const totalCurrent = investments.reduce((s, i) => s + i.current_value, 0);
   const totalPurchase = investments.reduce((s, i) => s + (i.purchase_value || i.current_value), 0);

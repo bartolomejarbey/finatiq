@@ -71,7 +71,7 @@ export default function NotificationsPage() {
 
   return (
     <PortalPageContainer>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--card-text)]">Oznámení</h1>
           {unreadCount > 0 && <p className="mt-0.5 text-sm text-[var(--card-text-muted)]">{unreadCount} nepřečtených</p>}

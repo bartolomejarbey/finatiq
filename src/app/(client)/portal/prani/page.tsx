@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -80,6 +81,7 @@ function getStatusConfig(status: string) {
 export default function WishlistPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -97,16 +99,23 @@ export default function WishlistPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchData() {
+    setLoading(true);
+    setError(null);
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
-    const { data: client } = await supabase
+    const { data: client, error: clientError } = await supabase
       .from("clients")
       .select("id")
       .eq("user_id", user.id)
       .single();
+    if (clientError) {
+      setError("Nepodařilo se načíst klientský profil.");
+      setLoading(false);
+      return;
+    }
     if (!client) {
       setLoading(false);
       return;
@@ -114,11 +123,16 @@ export default function WishlistPage() {
 
     setClientId(client.id);
 
-    const { data } = await supabase
+    const { data, error: wishesError } = await supabase
       .from("client_wishes")
       .select("*")
       .eq("client_id", client.id)
       .order("created_at", { ascending: false });
+    if (wishesError) {
+      setError("Nepodařilo se načíst přání.");
+      setLoading(false);
+      return;
+    }
 
     setWishes(data || []);
     setLoading(false);
@@ -182,11 +196,12 @@ export default function WishlistPage() {
       </PortalPageContainer>
     );
   }
+  if (error) return <PortalPageContainer><ErrorState description={error} onRetry={fetchData} /></PortalPageContainer>;
 
   return (
     <PortalPageContainer>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-[var(--card-text)]">
             <Star className="h-6 w-6 text-amber-500" />

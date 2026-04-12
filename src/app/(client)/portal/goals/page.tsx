@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AddGoalModal } from "@/components/portal/AddGoalModal";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Target, CheckCircle2, AlertTriangle, XCircle, Home, Palmtree, Car, Plus } from "lucide-react";
 
@@ -36,20 +37,33 @@ function getGoalIcon(title: string) {
 export default function GoalsPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [clientId, setClientId] = useState("");
   const [advisorId, setAdvisorId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
 
   async function fetchData() {
+      setLoading(true);
+      setError(null);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+      if (!user) { setLoading(false); return; }
+      const { data: client, error: clientError } = await supabase.from("clients").select("id, advisor_id").eq("user_id", user.id).single();
+      if (clientError) {
+        setError("Nepodařilo se načíst klientský profil.");
+        setLoading(false);
+        return;
+      }
       if (!client) { setLoading(false); return; }
       setClientId(client.id);
       setAdvisorId(client.advisor_id);
 
-      const { data } = await supabase.from("financial_goals").select("*").eq("client_id", client.id).order("created_at");
+      const { data, error: goalsError } = await supabase.from("financial_goals").select("*").eq("client_id", client.id).order("created_at");
+      if (goalsError) {
+        setError("Nepodařilo se načíst finanční cíle.");
+        setLoading(false);
+        return;
+      }
       setGoals(data || []);
       setLoading(false);
     }
@@ -63,6 +77,7 @@ export default function GoalsPage() {
       {[1, 2, 3].map((i) => <Skeleton key={i} className="h-40 rounded-2xl" />)}
     </div>
   );
+  if (error) return <div className="p-4 md:p-8"><ErrorState description={error} onRetry={fetchData} /></div>;
 
   const onTrack = goals.filter((g) => (g.current_amount / g.target_amount) >= 0.5).length;
 

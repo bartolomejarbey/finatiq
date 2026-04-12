@@ -199,7 +199,7 @@ export default function RodinaPage() {
             <Wallet className="h-4 w-4 text-blue-500" />
             Čistá hodnota rodiny
           </div>
-          <p className={`text-2xl font-bold ${netWorth >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+          <p className={`text-2xl font-bold ${netWorth > 0 ? "text-emerald-600" : netWorth < 0 ? "text-red-600" : "text-gray-400"}`}>
             {formatCZK(netWorth)}
           </p>
         </div>

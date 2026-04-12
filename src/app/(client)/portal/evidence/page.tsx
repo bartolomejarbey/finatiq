@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { PortalPageContainer } from "@/components/portal/PortalPageContainer";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,7 @@ function formatCZK(v: number) {
 export default function EvidencePage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [records, setRecords] = useState<OsvcRecord[]>([]);
   const [clientId, setClientId] = useState("");
   const [advisorId, setAdvisorId] = useState("");
@@ -83,19 +85,31 @@ export default function EvidencePage() {
   const [docId, setDocId] = useState<string | null>(null);
   const recordForm = usePortalForm<"amount" | "date">();
 
-  useEffect(() => {
-    async function fetchData() {
+  async function fetchData() {
+      setLoading(true);
+      setError(null);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id, advisor_id, is_osvc").eq("user_id", user.id).single();
+      if (!user) { setLoading(false); return; }
+      const { data: client, error: clientError } = await supabase.from("clients").select("id, advisor_id, is_osvc").eq("user_id", user.id).single();
+      if (clientError) {
+        setError("Nepodařilo se načíst klientský profil.");
+        setLoading(false);
+        return;
+      }
       if (!client || !client.is_osvc) { setLoading(false); return; }
       setClientId(client.id);
       setAdvisorId(client.advisor_id);
 
-      const { data } = await supabase.from("osvc_records").select("*").eq("client_id", client.id).order("date", { ascending: false });
+      const { data, error: recordsError } = await supabase.from("osvc_records").select("*").eq("client_id", client.id).order("date", { ascending: false });
+      if (recordsError) {
+        setError("Nepodařilo se načíst evidenci.");
+        setLoading(false);
+        return;
+      }
       setRecords(data || []);
       setLoading(false);
     }
+  useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -131,6 +145,7 @@ export default function EvidencePage() {
   }
 
   if (loading) return <PortalPageContainer className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64 rounded-xl" /></PortalPageContainer>;
+  if (error) return <PortalPageContainer><ErrorState description={error} onRetry={fetchData} /></PortalPageContainer>;
 
   // Yearly data
   const yearRecords = records.filter((r) => r.date.startsWith(String(viewYear)));
@@ -159,7 +174,7 @@ export default function EvidencePage() {
 
   return (
     <PortalPageContainer>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold gradient-text">Evidence OSVČ</h1>
           <div className="mt-1 flex items-center gap-2">
@@ -180,16 +195,16 @@ export default function EvidencePage() {
       {/* Summary cards */}
       <div className="mb-6 grid grid-cols-3 gap-4">
         <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
-          <div className="flex items-center gap-2"><ArrowUpRight className="h-4 w-4 text-emerald-500" /><p className="text-xs text-[var(--card-text-muted)]">Příjmy {viewMonth !== null ? `(${monthlyData[viewMonth]?.month})` : `(${viewYear})`}</p></div>
-          <p className="text-xl font-bold text-emerald-600">{formatCZK(viewIncome)}</p>
+          <div className="flex items-center gap-2"><ArrowUpRight className="h-4 w-4 text-[var(--accent-success)]" /><p className="text-xs text-[var(--card-text-muted)]">Příjmy {viewMonth !== null ? `(${monthlyData[viewMonth]?.month})` : `(${viewYear})`}</p></div>
+          <p className="text-xl font-bold text-[var(--accent-success)]">{formatCZK(viewIncome)}</p>
         </div>
         <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
-          <div className="flex items-center gap-2"><ArrowDownRight className="h-4 w-4 text-red-500" /><p className="text-xs text-[var(--card-text-muted)]">Výdaje</p></div>
-          <p className="text-xl font-bold text-red-600">{formatCZK(viewExpense)}</p>
+          <div className="flex items-center gap-2"><ArrowDownRight className="h-4 w-4 text-destructive" /><p className="text-xs text-[var(--card-text-muted)]">Výdaje</p></div>
+          <p className="text-xl font-bold text-destructive">{formatCZK(viewExpense)}</p>
         </div>
         <div className="rounded-xl border bg-[var(--card-bg)] p-5 shadow-sm">
           <p className="text-xs text-[var(--card-text-muted)]">Rozdíl</p>
-          <p className={`text-xl font-bold ${viewIncome - viewExpense >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCZK(viewIncome - viewExpense)}</p>
+          <p className={`text-xl font-bold ${viewIncome - viewExpense > 0 ? "text-[var(--accent-success)]" : viewIncome - viewExpense < 0 ? "text-destructive" : "text-muted-foreground"}`}>{formatCZK(viewIncome - viewExpense)}</p>
         </div>
       </div>
 
@@ -243,11 +258,11 @@ export default function EvidencePage() {
                   <td className="px-6 py-3 text-sm text-[var(--card-text)]">{r.description || "—"}</td>
                   <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{CATEGORIES[r.category] || r.category}</td>
                   <td className="px-6 py-3">
-                    <Badge className={`text-[10px] ${r.type === "income" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                    <Badge className={`text-[10px] ${r.type === "income" ? "bg-[color-mix(in_srgb,var(--accent-success)_14%,transparent)] text-[var(--accent-success)]" : "bg-destructive/10 text-destructive"}`}>
                       {r.type === "income" ? "Příjem" : "Výdaj"}
                     </Badge>
                   </td>
-                  <td className={`px-6 py-3 text-sm font-bold text-right ${r.type === "income" ? "text-emerald-600" : "text-red-600"}`}>
+                  <td className={`px-6 py-3 text-sm font-bold text-right ${r.type === "income" ? "text-[var(--accent-success)]" : "text-destructive"}`}>
                     {r.type === "income" ? "+" : "−"}{formatCZK(r.amount)}
                   </td>
                 </tr>
@@ -256,9 +271,9 @@ export default function EvidencePage() {
           </table>
           {/* Month summary */}
           <div className="flex justify-end gap-6 border-t px-6 py-3 text-xs">
-            <span className="text-emerald-600 font-medium">Příjmy: {formatCZK(viewIncome)}</span>
-            <span className="text-red-600 font-medium">Výdaje: {formatCZK(viewExpense)}</span>
-            <span className={`font-bold ${viewIncome - viewExpense >= 0 ? "text-emerald-700" : "text-red-700"}`}>Rozdíl: {formatCZK(viewIncome - viewExpense)}</span>
+            <span className="text-[var(--accent-success)] font-medium">Příjmy: {formatCZK(viewIncome)}</span>
+            <span className="text-destructive font-medium">Výdaje: {formatCZK(viewExpense)}</span>
+            <span className={`font-bold ${viewIncome - viewExpense > 0 ? "text-[var(--accent-success)]" : viewIncome - viewExpense < 0 ? "text-destructive" : "text-muted-foreground"}`}>Rozdíl: {formatCZK(viewIncome - viewExpense)}</span>
           </div>
         </div>
       )}
