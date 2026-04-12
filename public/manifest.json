@@ -1,6 +1,6 @@
 {
-  "name": "FinAdvisor",
-  "short_name": "FinAdvisor",
+  "name": "Finatiq",
+  "short_name": "Finatiq",
   "description": "Platforma pro finanční poradce",
   "start_url": "/",
   "display": "standalone",

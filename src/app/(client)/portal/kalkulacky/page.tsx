@@ -290,7 +290,8 @@ function MortgageCalculator() {
             <XAxis
               dataKey="month"
               tick={{ fontSize: 11 }}
-              label={{ value: "Měsíc", position: "insideBottomRight", offset: -5, fontSize: 11 }}
+              interval={11}
+              tickFormatter={(v: number) => `${Math.ceil(v / 12)}. rok`}
             />
             <YAxis
               tickFormatter={(v: number) => `${formatNum(v / 1000)} tis`}
@@ -479,6 +480,7 @@ function SavingsCalculator() {
               dataKey="month"
               tickFormatter={(v: number) => `${Math.round(v / 12)}. rok`}
               tick={{ fontSize: 11 }}
+              interval={0}
             />
             <YAxis
               tickFormatter={(v: number) => `${formatNum(v / 1000)} tis`}
@@ -677,16 +679,16 @@ export default function KalkulackyPage() {
       </p>
 
       <Tabs defaultValue="mortgage">
-        <TabsList className="mb-6 w-full sm:w-auto rounded-full bg-[var(--table-header)] p-1">
-          <TabsTrigger value="mortgage" className="rounded-full data-[state=active]:bg-[var(--card-bg)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
+        <TabsList className="mb-6 w-full sm:w-auto rounded-full bg-[var(--table-header,#f1f5f9)] p-1">
+          <TabsTrigger value="mortgage" className="rounded-full text-[var(--card-text-muted,#6b7280)] data-[state=active]:bg-[var(--card-bg,#fff)] data-[state=active]:text-[var(--card-text,#111827)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
             <Calculator className="h-4 w-4" />
             Hypotéka
           </TabsTrigger>
-          <TabsTrigger value="savings" className="rounded-full data-[state=active]:bg-[var(--card-bg)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
+          <TabsTrigger value="savings" className="rounded-full text-[var(--card-text-muted,#6b7280)] data-[state=active]:bg-[var(--card-bg,#fff)] data-[state=active]:text-[var(--card-text,#111827)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
             <PiggyBank className="h-4 w-4" />
             Spoření
           </TabsTrigger>
-          <TabsTrigger value="retirement" className="rounded-full data-[state=active]:bg-[var(--card-bg)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
+          <TabsTrigger value="retirement" className="rounded-full text-[var(--card-text-muted,#6b7280)] data-[state=active]:bg-[var(--card-bg,#fff)] data-[state=active]:text-[var(--card-text,#111827)] data-[state=active]:shadow-sm gap-1.5 px-4 py-2">
             <Landmark className="h-4 w-4" />
             Důchod
           </TabsTrigger>

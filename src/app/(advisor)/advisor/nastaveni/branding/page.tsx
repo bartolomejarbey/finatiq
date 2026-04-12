@@ -62,7 +62,7 @@ interface BrandingState {
 }
 
 const DEFAULTS: BrandingState = {
-  app_name: "FinAdvisor",
+  app_name: "Finatiq",
   logo_url: "",
   logo_icon_url: "",
   logo_size: 40,
@@ -833,7 +833,7 @@ export default function BrandingPage() {
                 <Input
                   value={state.app_name}
                   onChange={(e) => update("app_name", e.target.value)}
-                  placeholder="FinAdvisor"
+                  placeholder="Finatiq"
                   className="h-9"
                 />
                 <p className="text-xs text-[var(--card-text-dim)] mt-1">Tento název uvidí vaši klienti</p>

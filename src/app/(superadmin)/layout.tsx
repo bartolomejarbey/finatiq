@@ -205,7 +205,7 @@ export default function SuperadminLayout({
   function renderHeader() {
     return (
       <>
-        <span className="text-xl font-bold tracking-tight">FinAdvisor</span>
+        <span className="text-xl font-bold tracking-tight">Finatiq</span>
         <span className="ml-2 rounded bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
           Admin
         </span>
@@ -220,7 +220,7 @@ export default function SuperadminLayout({
         <button onClick={() => setSidebarOpen(true)} className="text-white">
           <Menu className="h-6 w-6" />
         </button>
-        <span className="text-lg font-bold text-white">FinAdvisor</span>
+        <span className="text-lg font-bold text-white">Finatiq</span>
         <span className="rounded bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
           Admin
         </span>

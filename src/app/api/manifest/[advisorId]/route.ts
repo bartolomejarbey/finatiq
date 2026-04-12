@@ -18,7 +18,7 @@ export async function GET(
     .eq("id", advisorId)
     .single();
 
-  const appName = advisor?.app_name || "FinAdvisor";
+  const appName = advisor?.app_name || "Finatiq";
 
   const manifest = {
     name: appName,

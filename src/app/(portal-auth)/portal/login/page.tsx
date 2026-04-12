@@ -218,7 +218,7 @@ export default function PortalLoginPage() {
               <a href="https://www.finatiq.cz" className="text-white/25 hover:text-white/40 transition-colors">Finatiq</a>
             </>
           ) : (
-            <>&copy; 2026 FinAdvisor</>
+            <>&copy; 2026 Finatiq</>
           )}
         </p>
       </div>

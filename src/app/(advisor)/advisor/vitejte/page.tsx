@@ -855,7 +855,7 @@ export default function AdvisorOnboardingPage() {
                   <div className="space-y-3">
                     <div>
                       <Label className="text-xs font-medium mb-1.5 block">Název aplikace</Label>
-                      <Input value={appName} onChange={(e) => setAppName(e.target.value)} placeholder="FinAdvisor" className="h-9" />
+                      <Input value={appName} onChange={(e) => setAppName(e.target.value)} placeholder="Finatiq" className="h-9" />
                       <p className="text-xs text-[var(--card-text-dim,#9ca3af)] mt-1">Tento název uvidí vaši klienti</p>
                     </div>
                     <div>

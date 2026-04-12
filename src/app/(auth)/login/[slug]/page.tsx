@@ -129,7 +129,7 @@ export default function AdvisorLoginPage() {
                 className="text-2xl font-bold"
                 style={{ color: primaryColor }}
               >
-                {brand?.app_name || "FinAdvisor"}
+                {brand?.app_name || "Finatiq"}
               </span>
             )}
           </div>

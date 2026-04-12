@@ -5,6 +5,6 @@ export async function GET() {
     status: "ok",
     timestamp: new Date().toISOString(),
     version: "1.0.0",
-    service: "FinAdvisor",
+    service: "Finatiq",
   });
 }

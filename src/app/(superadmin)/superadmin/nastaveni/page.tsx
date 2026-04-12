@@ -16,7 +16,7 @@ export default function SuperadminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [platformName, setPlatformName] = useState("FinAdvisor");
+  const [platformName, setPlatformName] = useState("Finatiq");
   const [platformContact, setPlatformContact] = useState("");
 
   const [defaultStages, setDefaultStages] = useState("Nový lead\nKontaktován\nSchůzka\nNabídka\nUzavřeno - výhra\nUzavřeno - prohra");

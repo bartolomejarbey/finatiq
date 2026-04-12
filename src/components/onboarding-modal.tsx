@@ -136,7 +136,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
         {step === 1 && (
           <>
             <DialogHeader>
-              <DialogTitle>Vítejte v FinAdvisor!</DialogTitle>
+              <DialogTitle>Vítejte ve Finatiq!</DialogTitle>
             </DialogHeader>
             <p className="text-sm text-slate-600">
               Pojďme nastavit váš účet.

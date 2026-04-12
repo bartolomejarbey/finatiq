@@ -21,7 +21,7 @@ export default function LoadingScreen({
         {logoUrl ? (
           <img
             src={logoUrl}
-            alt={appName || "FinAdvisor"}
+            alt={appName || "Finatiq"}
             className="h-20 w-auto animate-pulse"
           />
         ) : (
@@ -29,7 +29,7 @@ export default function LoadingScreen({
             className="animate-pulse text-3xl font-bold"
             style={{ color }}
           >
-            {appName || "FinAdvisor"}
+            {appName || "Finatiq"}
           </span>
         )}
 
