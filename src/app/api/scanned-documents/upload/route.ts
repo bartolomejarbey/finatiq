@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
-  const clientId = formData.get("client_id") as string | null;
+  let clientId = formData.get("client_id") as string | null;
 
   if (!file) {
     return NextResponse.json({ error: "Chybí soubor" }, { status: 400 });
@@ -68,6 +68,21 @@ export async function POST(request: Request) {
   );
 
   try {
+    // Resolve tenant_id: if user is a client, use their advisor's ID as tenant
+    // Otherwise (advisor uploading) use their own ID
+    let tenantId = user.id;
+    const { data: clientRecord } = await supabaseAdmin
+      .from("clients")
+      .select("id, advisor_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (clientRecord) {
+      // User is a client — tenant is their advisor
+      tenantId = clientRecord.advisor_id;
+      if (!clientId) clientId = clientRecord.id;
+    }
+
     // 1. Upload to Supabase Storage
     const fileName = `${user.id}/${Date.now()}-${file.name}`;
     const { error: uploadError } = await supabaseAdmin.storage
@@ -84,12 +99,10 @@ export async function POST(request: Request) {
     }
 
     // 2. Create pending record in DB — store only file_path, NOT signed URL
-    // TODO: Až přidáme team accounts, tenant_id musí jít z advisors.id nebo organization tabulky,
-    // ne přímo z user.id. Aktuálně advisor.user_id = tenant_id.
     const { data: doc, error: insertError } = await supabaseAdmin
       .from("scanned_documents")
       .insert({
-        tenant_id: user.id,
+        tenant_id: tenantId,
         uploaded_by: user.id,
         client_id: clientId || null,
         file_path: fileName,
@@ -109,7 +122,7 @@ export async function POST(request: Request) {
 
     // 3. Process via OpenAI Vision — service generates its own signed URL
     const result = await processDocument(fileName, {
-      tenantId: user.id,
+      tenantId,
       documentId: doc.id,
     });
 

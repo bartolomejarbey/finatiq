@@ -31,7 +31,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { FileText, Plus, CreditCard, Shield, Upload, Loader2, AlertTriangle } from "lucide-react";
+import { FileText, CreditCard, Shield, Upload, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { usePortalForm } from "@/lib/forms/use-portal-form";
 
@@ -87,29 +87,22 @@ export default function ContractsPage() {
   const [uploading, setUploading] = useState(false);
 
   async function fetchData() {
-      setLoading(true);
-      setError(null);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
-      const meRes = await fetch("/api/portal/me");
-      if (!meRes.ok) { setError("Nepodařilo se načíst klientský profil."); setLoading(false); return; }
-      const client = (await meRes.json()).client;
-      if (!client) { setLoading(false); return; }
-      setClientId(client.id);
-      setAdvisorId(client.advisor_id);
+    setLoading(true);
+    setError(null);
 
-      const { data: adv } = await supabase.from("advisors").select("interest_rate_threshold").eq("id", client.advisor_id).single();
-      if (adv?.interest_rate_threshold) setInterestThreshold(adv.interest_rate_threshold);
-
-      const { data, error: contractsError } = await supabase.from("contracts").select("id, title, status, type, provider, interest_rate, remaining_balance, monthly_payment, valid_from, valid_to, insurance_type, value").eq("client_id", client.id).order("created_at", { ascending: false });
-      if (contractsError) {
-        setError("Nepodařilo se načíst smlouvy.");
-        setLoading(false);
-        return;
-      }
-      setContracts(data || []);
-      setLoading(false);
+    try {
+      const res = await fetch("/api/portal/contracts");
+      if (!res.ok) { setError("Nepodařilo se načíst smlouvy."); setLoading(false); return; }
+      const data = await res.json();
+      setContracts(data.contracts || []);
+      setClientId(data.client_id || "");
+      setAdvisorId(data.advisor_id || "");
+    } catch {
+      setError("Nepodařilo se načíst smlouvy.");
     }
+    setLoading(false);
+  }
+
   useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -136,8 +129,6 @@ export default function ContractsPage() {
       : `${provider.trim() || "Pojištění"} - ${insuranceType}`;
 
     const payload = {
-      advisor_id: advisorId,
-      client_id: clientId,
       title,
       status: "active",
       type: isLoan ? "uver" : "pojisteni",
@@ -149,59 +140,62 @@ export default function ContractsPage() {
       valid_to: validTo || null,
       insurance_type: isLoan ? null : insuranceType,
       value: isLoan ? parseFloat(loanAmount) || null : parseFloat(insurancePremium) ? parseFloat(insurancePremium) * 12 : null,
-      client_uploaded: true,
     };
 
-    const { data: newContract, error: insertError } = await supabase.from("contracts").insert(payload).select().single();
+    try {
+      const res = await fetch("/api/portal/contracts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (insertError) {
-      toast.error("Chyba při ukládání smlouvy: " + insertError.message);
-      setSaving(false);
-      return;
-    }
+      const data = await res.json();
 
-    // Upload file if present
-    if (uploadFile && newContract) {
-      setUploading(true);
-      const filePath = `client-docs/${clientId}/${Date.now()}_${uploadFile.name}`;
-      const { error: storageError } = await supabase.storage.from("deal-documents").upload(filePath, uploadFile);
-      if (storageError) {
-        toast.error("Chyba při nahrávání souboru: " + storageError.message);
-        setUploading(false);
-      } else {
-        const { error: docError } = await supabase.from("client_documents").insert({
-          client_id: clientId,
-          advisor_id: advisorId,
-          name: uploadFile.name,
-          category: "contract",
-          file_path: filePath,
-          file_size: uploadFile.size,
-          uploaded_by: "client",
-        });
-        if (docError) {
-          toast.error("Chyba při ukládání dokumentu: " + docError.message);
+      if (!res.ok) {
+        toast.error(data.error || "Chyba při ukládání smlouvy.");
+        setSaving(false);
+        return;
+      }
+
+      // Upload file if present
+      if (uploadFile && data.contract) {
+        setUploading(true);
+        const filePath = `client-docs/${clientId}/${Date.now()}_${uploadFile.name}`;
+        const { error: storageError } = await supabase.storage.from("deal-documents").upload(filePath, uploadFile);
+        if (storageError) {
+          toast.error("Chyba při nahrávání souboru: " + storageError.message);
+        } else {
+          const docRes = await fetch("/api/portal/documents/upload-attachment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: uploadFile.name,
+              category: "contract",
+              file_path: filePath,
+              file_size: uploadFile.size,
+            }),
+          });
+          if (!docRes.ok) {
+            toast.error("Chyba při ukládání dokumentu.");
+          }
         }
         setUploading(false);
       }
-    }
 
-    // Check interest rate for savings alert
-    if (isLoan && parseFloat(interestRate) > interestThreshold && newContract) {
-      await supabase.from("upsell_alerts").insert({
-        advisor_id: advisorId,
-        client_id: clientId,
-        title: `Klient nahrál úvěr s vysokým úrokem (${interestRate}%)`,
-        description: `${title} — úrok ${interestRate}% překračuje práh ${interestThreshold}%. Možnost refinancování.`,
-      });
-    }
+      // Check interest rate for savings alert
+      if (isLoan && parseFloat(interestRate) > interestThreshold) {
+        // Alert already created server-side in POST handler
+      }
 
-    setSaving(false);
-    setSheetType(null);
-    resetForm();
-    toast.success("Smlouva přidána.");
-    // Refresh
-    const { data } = await supabase.from("contracts").select("id, title, status, type, provider, interest_rate, remaining_balance, monthly_payment, valid_from, valid_to, insurance_type, value").eq("client_id", clientId).order("created_at", { ascending: false });
-    setContracts(data || []);
+      setSaving(false);
+      setSheetType(null);
+      resetForm();
+      toast.success("Smlouva přidána.");
+      fetchData();
+    } catch {
+      toast.error("Chyba při ukládání smlouvy.");
+      setSaving(false);
+    }
   }
 
   const showSavingsAlert = sheetType === "uver" && parseFloat(interestRate) > interestThreshold;
