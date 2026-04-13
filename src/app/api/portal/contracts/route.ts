@@ -123,11 +123,15 @@ export async function POST(request: Request) {
 
   // Create alerts for the advisor
   if (client.advisor_id) {
-    const { data: advisor } = await supabaseAdmin
+    const { data: advisor, error: advisorError } = await supabaseAdmin
       .from("advisors")
       .select("interest_rate_threshold")
       .eq("id", client.advisor_id)
       .single();
+
+    if (advisorError) {
+      console.error("Failed to fetch advisor for alerts:", advisorError.message);
+    }
 
     const threshold = advisor?.interest_rate_threshold ?? 5.0;
     const providerInfo = body.provider ? ` u ${body.provider}` : "";
@@ -135,36 +139,40 @@ export async function POST(request: Request) {
     const typeLabel = body.type === "uver" ? "úvěr" : "pojištění";
 
     // High interest rate alert
-    if (body.type === "uver" && body.interest_rate && body.interest_rate > threshold) {
-      await supabaseAdmin.from("upsell_alerts").insert({
+    if (body.type === "uver" && body.interest_rate && Number(body.interest_rate) > threshold) {
+      const { error: alertError } = await supabaseAdmin.from("upsell_alerts").insert({
         advisor_id: client.advisor_id,
         client_id: client.id,
         title: `⚠️ Vysoký úrok ${body.interest_rate}%${providerInfo}`,
         description: `Klient nahrál ${typeLabel}${providerInfo}${amountInfo} s úrokem ${body.interest_rate}%, což překračuje váš práh ${threshold}%. Doporučujeme kontaktovat klienta ohledně možnosti refinancování.`,
         category: "loans",
-        priority: body.interest_rate > threshold * 1.5 ? "critical" : "high",
+        priority: Number(body.interest_rate) > threshold * 1.5 ? "critical" : "high",
         status: "new",
       });
+      if (alertError) console.error("Failed to create high-rate alert:", alertError.message);
     }
 
-    // Missing data alert — advisor should review and complete
+    // New contract notification — always notify advisor about client-uploaded contracts
     const missingParts: string[] = [];
     if (body.type === "uver") {
       if (!body.interest_rate) missingParts.push("úroková sazba");
       if (!body.monthly_payment) missingParts.push("měsíční splátka");
       if (!body.valid_to) missingParts.push("datum splatnosti");
     }
-    if (missingParts.length > 0) {
-      await supabaseAdmin.from("upsell_alerts").insert({
-        advisor_id: client.advisor_id,
-        client_id: client.id,
-        title: `Nová smlouva — chybí údaje`,
-        description: `Klient nahrál ${typeLabel}${providerInfo}${amountInfo}. Chybí: ${missingParts.join(", ")}. Zkontrolujte smlouvu a doplňte údaje.`,
-        category: "contracts",
-        priority: "medium",
-        status: "new",
-      });
-    }
+
+    const missingInfo = missingParts.length > 0 ? ` Chybí: ${missingParts.join(", ")}.` : "";
+    const { error: notifError } = await supabaseAdmin.from("upsell_alerts").insert({
+      advisor_id: client.advisor_id,
+      client_id: client.id,
+      title: missingParts.length > 0
+        ? `📋 Nová smlouva — chybí údaje`
+        : `📋 Nová smlouva${providerInfo}`,
+      description: `Klient nahrál ${typeLabel}${providerInfo}${amountInfo}.${missingInfo} Zkontrolujte smlouvu a doplňte údaje.`,
+      category: "contracts",
+      priority: missingParts.length > 0 ? "medium" : "low",
+      status: "new",
+    });
+    if (notifError) console.error("Failed to create contract notification:", notifError.message);
   }
 
   return NextResponse.json({ contract: newContract });

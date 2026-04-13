@@ -145,22 +145,26 @@ export default function ClientDetailPage() {
     setChatMessages(msgs || []);
 
     // Fetch client documents
-    const { data: docsData } = await supabase
+    const { data: docsData, error: docsError } = await supabase
       .from("client_documents")
-      .select("id, name, category, file_path, file_size, uploaded_by, created_at, ocr_status, ai_analysis")
+      .select("id, name, category, file_path, file_size, uploaded_by, created_at")
       .eq("client_id", clientId)
       .order("created_at", { ascending: false });
-    setClientDocs(docsData || []);
+    if (!docsError) {
+      setClientDocs((docsData || []).map((d) => ({ ...d, ocr_status: null, ai_analysis: null })));
+    }
 
     // Fetch OSVČ records if client is OSVČ
     if (c?.is_osvc) {
-      const { data: osvc } = await supabase
+      const { data: osvc, error: osvcError } = await supabase
         .from("osvc_records")
-        .select("id, type, amount, date, description, vendor")
+        .select("id, type, amount, date, description")
         .eq("client_id", clientId)
         .order("date", { ascending: false })
         .limit(50);
-      setOsvcRecords(osvc || []);
+      if (!osvcError) {
+        setOsvcRecords((osvc || []).map((r) => ({ ...r, vendor: null })));
+      }
     }
 
     setLoading(false);
