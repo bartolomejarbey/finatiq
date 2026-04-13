@@ -186,6 +186,87 @@ async function classifyWithModel(
   }
 }
 
+/**
+ * Second-pass verification: re-reads the document to verify the extracted amount
+ * by asking the AI to read digit-by-digit and cross-check against the word version.
+ */
+async function verifyAmount(
+  model: string,
+  base64Data: string,
+  mimeType: string,
+  claimedAmount: number,
+): Promise<number | null> {
+  try {
+    const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+    const verifyPrompt = `Přečti tento dokument a najdi PŘESNOU výši úvěru/jistiny.
+
+IGNORUJ výsledek předchozí analýzy. Čti dokument ZNOVU od začátku.
+
+POSTUP:
+1. Najdi řádek s textem "Celková výše úvěru" nebo "Výše úvěru" nebo "Jistina"
+2. Přečti číslo vedle něj CIFRU PO CIFŘE zleva doprava. Napiš každou cifru zvlášť.
+3. Najdi text "slovy:" nebo "(slovy" na stejném nebo následujícím řádku
+4. Přečti slovní zápis a převeď ho na číslo
+5. Porovnej výsledek z číslic a ze slov
+
+Vrať JSON:
+{
+  "digit_reading": "cifra po cifře, např: 1-3-8-5-9-5",
+  "digit_result": 138595,
+  "word_reading": "přesný slovní zápis z dokumentu",
+  "word_result": 138595,
+  "match": true,
+  "final_amount": 138595
+}
+
+Pokud se čísla z cifer a slov LIŠÍ → použij SLOVNÍ verzi jako final_amount.
+Pokud slovní zápis NENÍ → použij cifry, ale nastav match na false.`;
+
+    const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
+      { type: "text", text: verifyPrompt },
+    ];
+
+    if (mimeType === "application/pdf") {
+      userContent.push({
+        type: "file",
+        file: { filename: "document.pdf", file_data: dataUrl },
+      } as unknown as OpenAI.Chat.Completions.ChatCompletionContentPart);
+    } else {
+      userContent.push({
+        type: "image_url",
+        image_url: { url: dataUrl, detail: "high" },
+      });
+    }
+
+    const response = await openai.chat.completions.create({
+      model,
+      max_tokens: 400,
+      temperature: 0,
+      messages: [{ role: "user", content: userContent }],
+      response_format: { type: "json_object" },
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) return null;
+
+    const result = JSON.parse(content);
+    console.log("Amount verification result:", JSON.stringify(result));
+
+    if (result.final_amount && typeof result.final_amount === "number") {
+      // If the verified amount differs from claimed, log it
+      if (result.final_amount !== claimedAmount) {
+        console.log(`Amount corrected: ${claimedAmount} → ${result.final_amount} (word: "${result.word_reading}")`);
+      }
+      return result.final_amount;
+    }
+    return null;
+  } catch (e) {
+    console.error("Amount verification failed:", e);
+    return null;
+  }
+}
+
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -256,6 +337,24 @@ export async function POST(request: Request) {
   if (!result) {
     console.log("Primary retry failed, trying fallback model");
     result = await classifyWithModel(MODEL_FALLBACK, base64Data, mimeType);
+  }
+
+  // If we got a result with an amount, verify it with a second focused pass
+  if (result && result.classification.extracted_amount != null) {
+    const verifiedAmount = await verifyAmount(
+      MODEL_PRIMARY,
+      base64Data,
+      mimeType,
+      result.classification.extracted_amount as number,
+    );
+    if (verifiedAmount != null) {
+      if (verifiedAmount !== result.classification.extracted_amount) {
+        console.log(`Overriding amount: ${result.classification.extracted_amount} → ${verifiedAmount}`);
+        if (!result.classification.source_quotes) result.classification.source_quotes = {};
+        (result.classification.source_quotes as Record<string, string>).amount_verification = `Opraveno ověřením: ${result.classification.extracted_amount} → ${verifiedAmount}`;
+      }
+      result.classification.extracted_amount = verifiedAmount;
+    }
   }
 
   // Both models failed
