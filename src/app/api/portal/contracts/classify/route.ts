@@ -199,29 +199,56 @@ async function verifyAmount(
   try {
     const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
-    const verifyPrompt = `Přečti tento dokument a najdi PŘESNOU výši úvěru/jistiny.
+    const verifyPrompt = `Přečti tento dokument a najdi PŘESNOU výši úvěru/jistiny. IGNORUJ jakýkoliv předchozí výsledek.
 
-IGNORUJ výsledek předchozí analýzy. Čti dokument ZNOVU od začátku.
+KROK 1: Najdi řádek "Celková výše úvěru" nebo "Výše úvěru" nebo "Jistina".
 
-POSTUP:
-1. Najdi řádek s textem "Celková výše úvěru" nebo "Výše úvěru" nebo "Jistina"
-2. Přečti číslo vedle něj CIFRU PO CIFŘE zleva doprava. Napiš každou cifru zvlášť.
-3. Najdi text "slovy:" nebo "(slovy" na stejném nebo následujícím řádku
-4. Přečti slovní zápis a převeď ho na číslo
-5. Porovnej výsledek z číslic a ze slov
+KROK 2: Přečti ČÍSLICE — POZOR na formát!
+České dokumenty používají MEZERU jako oddělovač tisíců a ČÁRKU jako desetinnou čárku.
+Příklady formátu:
+- "138 595,00 CZK" = sto třicet osm tisíc pět set devadesát pět = 138595
+- "1 500 000,00 CZK" = jeden milion pět set tisíc = 1500000
+- "45 000,00 CZK" = čtyřicet pět tisíc = 45000
+- "2 350 000,00 CZK" = dva miliony tři sta padesát tisíc = 2350000
+
+Mezera je ODDĚLOVAČ TISÍCŮ, ne oddělovač celého čísla! "138 595" = stotřicetosmtisícpětsetdevadesátpět, NE "138" a "595" zvlášť.
+",00" na konci je HALÉŘOVÁ část — ignoruj ji.
+
+Přečti číslo a napiš každou SKUPINU zvlášť, pak celé číslo.
+
+KROK 3: Najdi SLOVNÍ zápis (hledej "slovy:" nebo "(slovy").
+Rozlož ho na části:
+
+ČESKÝ SLOVNÍ ROZKLAD:
+- "jedno sto" / "sto" = 100
+- "třicet" = 30, "dvacet" = 20, "padesát" = 50, "čtyřicet" = 40, "šedesát" = 60, "sedmdesát" = 70, "osmdesát" = 80, "devadesát" = 90
+- "osm" = 8, "devět" = 9, "pět" = 5, "šest" = 6, "sedm" = 7, "jeden/jedno" = 1, "dva/dvě" = 2, "tři" = 3, "čtyři" = 4
+- "tisíc" = ×1000
+- "milion/miliony" = ×1000000
+- "korun českých" / "Kč" = měna (ignoruj)
+
+Příklad rozkladu: "sto třicet osm tisíc pět set devadesát pět" = (100 + 30 + 8) × 1000 + 5 × 100 + 90 + 5 = 138 × 1000 + 595 = 138595
+Příklad: "jeden milion pět set tisíc" = 1 × 1000000 + 5 × 100 × 1000 = 1500000
+
+KROK 4: Porovnej číslo z ČÍSLIC a ze SLOV.
 
 Vrať JSON:
 {
-  "digit_reading": "cifra po cifře, např: 1-3-8-5-9-5",
+  "raw_digits": "přesně jak je číslo v dokumentu, např. '138 595,00'",
+  "digit_groups": "skupiny číslic: '138' a '595'",
   "digit_result": 138595,
   "word_reading": "přesný slovní zápis z dokumentu",
+  "word_breakdown": "rozklad: (100+30+8)×1000 + 500+90+5 = 138595",
   "word_result": 138595,
   "match": true,
   "final_amount": 138595
 }
 
-Pokud se čísla z cifer a slov LIŠÍ → použij SLOVNÍ verzi jako final_amount.
-Pokud slovní zápis NENÍ → použij cifry, ale nastav match na false.`;
+PRAVIDLA:
+- Pokud se digit_result a word_result LIŠÍ → použij word_result jako final_amount
+- Pokud slovní zápis chybí → použij digit_result, nastav match na false
+- Částka je VŽDY celé číslo (ignoruj ",00" haléře)
+- NESMÍŠ zaměnit "138 595" (= 138595) za "1 385 950" — to je 10× víc!`;
 
     const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
       { type: "text", text: verifyPrompt },
@@ -251,14 +278,21 @@ Pokud slovní zápis NENÍ → použij cifry, ale nastav match na false.`;
     if (!content) return null;
 
     const result = JSON.parse(content);
-    console.log("Amount verification result:", JSON.stringify(result));
+    console.log("Amount verification:", JSON.stringify(result));
 
-    if (result.final_amount && typeof result.final_amount === "number") {
-      // If the verified amount differs from claimed, log it
-      if (result.final_amount !== claimedAmount) {
-        console.log(`Amount corrected: ${claimedAmount} → ${result.final_amount} (word: "${result.word_reading}")`);
+    // Prefer word_result if available and valid, then final_amount, then digit_result
+    const candidates = [
+      result.word_result,
+      result.final_amount,
+      result.digit_result,
+    ].filter((v) => typeof v === "number" && v > 0);
+
+    if (candidates.length > 0) {
+      const best = candidates[0];
+      if (best !== claimedAmount) {
+        console.log(`Amount corrected: ${claimedAmount} → ${best} (word: "${result.word_reading}", breakdown: "${result.word_breakdown}")`);
       }
-      return result.final_amount;
+      return best;
     }
     return null;
   } catch (e) {
