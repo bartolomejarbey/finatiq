@@ -9,13 +9,13 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const MODEL_PRIMARY = "gpt-4o";
 const MODEL_FALLBACK = "gpt-4o-mini";
 
-const CLASSIFY_PROMPT = `Jsi precizní OCR asistent pro finanční dokumenty. Tvůj úkol je PŘESNĚ přečíst a přepsat údaje z dokumentu. NIKDY si nevymýšlej ani neodhaduj hodnoty.
+const CLASSIFY_PROMPT = `Jsi precizní OCR asistent pro české finanční dokumenty. PŘESNĚ přečti a přepiš údaje. NIKDY si nevymýšlej.
 
-Vrať JSON ve formátu:
+Vrať JSON:
 {
   "document_type": "contract" | "invoice" | "receipt" | "statement" | "other",
   "confidence": "high" | "medium" | "low",
-  "description_cs": "Stručný popis dokumentu v češtině (1 věta)",
+  "description_cs": "Stručný popis (1 věta)",
   "extracted_provider": string | null,
   "extracted_amount": number | null,
   "extracted_type": "uver" | "pojisteni" | null,
@@ -26,58 +26,70 @@ Vrať JSON ve formátu:
   "extracted_remaining_balance": number | null,
   "extracted_insurance_type": "zivotni" | "majetek" | "auto" | "odpovednost" | "dalsi" | null,
   "missing_fields": string[],
-  "source_quotes": { [field: string]: string },
+  "source_quotes": { [field]: "přesná citace z dokumentu" },
   "redirect_suggestion": "documents" | "receipts" | null
 }
 
-KLASIFIKACE:
-- "contract" = úvěrová smlouva, pojistná smlouva, jakákoliv smlouva
-- "invoice" = faktura → redirect_suggestion: "documents"
-- "receipt" = účtenka, paragon → redirect_suggestion: "receipts"
-- "statement" = bankovní výpis → redirect_suggestion: "documents"
-- "other" = cokoliv jiného → redirect_suggestion: "documents"
+═══ KROK 1: URČI TYP DOKUMENTU ═══
 
-PRAVIDLA EXTRAKCE — KRITICKY DŮLEŽITÉ:
-1. Každou hodnotu MUSÍŠ přečíst DOSLOVA z dokumentu. Pokud tam číslo nevidíš napsané, vrať null.
-2. Pro každou extrahovanou hodnotu MUSÍŠ uvést v "source_quotes" přesnou citaci textu z dokumentu, odkud jsi hodnotu vzal. Například: { "interest_rate": "úroková sazba 5,49 % p.a.", "amount": "výše úvěru: 1 500 000 Kč" }
-3. NIKDY neodhaduj, nezaokrouhluj, nepočítej. Pokud je v dokumentu napsáno "1 523 400 Kč", vrať 1523400, ne 1500000.
-4. Pokud údaj v dokumentu NENÍ, vrať null a přidej do missing_fields. NEPOČÍTEJ ho z jiných hodnot.
-5. NEPLEŤ SI různá čísla — číslo smlouvy NENÍ částka, IČO NENÍ částka, PSČ NENÍ částka.
+Přečti NÁZEV/NADPIS dokumentu (první strana, velký text nahoře). To určuje typ:
+- "Smlouva o spotřebitelském úvěru" / "Smlouva o úvěru" / "Úvěrová smlouva" / "Hypoteční smlouva" → extracted_type = "uver"
+- "Pojistná smlouva" / "Pojistka" → extracted_type = "pojisteni"
 
-OVĚŘENÍ ČÁSTEK — POVINNÝ KROK:
-České finanční smlouvy VŽDY uvádějí částku DVAKRÁT: číslicí A slovy (např. "1 500 000 Kč (slovy: jedenmilionpětsettisíc korun českých)").
-1. Najdi částku napsanou ČÍSLICEMI.
-2. Najdi částku napsanou SLOVY (hledej "slovy:", "slovy", "(slovy", "словами").
-3. Přečti slovní zápis a převeď ho na číslo.
-4. POROVNEJ obě hodnoty — MUSÍ být STEJNÉ.
-5. Pokud se liší → použij SLOVNÍ verzi (ta je spolehlivější).
-6. Do source_quotes uveď OBOJÍ: číselný i slovní zápis.
-   Příklad: { "amount": "1 500 000,- Kč (slovy: jedenmilionpětsettisíc korun českých)" }
+⚠️ POZOR: Úvěrová smlouva na auto/vozidlo JE ÚVĚR ("uver"), NE pojištění!
+Pokud je v úvěrové smlouvě zmínka o pojištění (např. "pojištění schopnosti splácet", "pojištění odpovědnosti za škodu způsobenou provozem vozidla"), stále je to ÚVĚR — ta zmínka je jen doplňkový produkt k úvěru.
 
-ČTENÍ ČÍSLIC — POZOR NA POŘADÍ CIFER:
-- Čti číslo CIFRU PO CIFŘE zleva doprava: 1 523 400 = jedna-pět-dva-tři-čtyři-nula-nula
-- Mezerové oddělovače tisíců IGNORUJ, jen čti cifry v pořadí jak jsou
-- Po přečtení zkontroluj: odpovídá počet cifer? (statisíce = 6 cifer, miliony = 7 cifer)
-- Zkontroluj ŘÁDOVOU VELIKOST — je číslo realistické pro daný typ smlouvy?
+Rozhoduje NADPIS dokumentu a typ smlouvy, NE zmínky o pojištění uvnitř textu.
 
-CO EXTRAHOVAT (pouze pokud je to smlouva):
-- extracted_provider: přesný název banky/pojišťovny jak je v dokumentu
-- extracted_amount: výše úvěru nebo celkové pojistné. Hledej u textu "výše úvěru", "jistina", "celková částka", "pojistná částka". OVĚŘ PROTI SLOVNÍMU ZÁPISU.
-- extracted_interest_rate: POUZE číslo u textu "úroková sazba", "p.a.", "% ročně", "fixní sazba". Vrať jako desetinné číslo (5,49% → 5.49)
-- extracted_monthly_payment: POUZE číslo u textu "měsíční splátka", "anuitní splátka", "měsíční pojistné". NE roční, NE jednorázové. OVĚŘ PROTI SLOVNÍMU ZÁPISU pokud existuje.
-- extracted_signing_date: datum u podpisů nebo "datum uzavření", "sjednáno dne"
-- extracted_maturity_date: datum u textu "splatnost", "platnost do", "konec smlouvy"
-- extracted_remaining_balance: POUZE pokud dokument explicitně uvádí "zůstatek" nebo "nesplaceno"
-- extracted_insurance_type: typ pojištění
-- missing_fields: pole názvů polí které v dokumentu URČITĚ NEJSOU. Hodnoty: "interest_rate", "monthly_payment", "signing_date", "maturity_date", "amount", "remaining_balance"
+═══ KROK 2: IDENTIFIKUJ STRANY SMLOUVY ═══
 
-KONTROLA PŘED ODESLÁNÍM:
-1. Má KAŽDÁ extrahovaná hodnota odpovídající citaci v source_quotes?
-2. Je citace DOSLOVA z dokumentu, ne tvůj překlad/přeformulování?
-3. Pokud nemáš citaci → nastav hodnotu na null
-4. Přečetl jsi VŠECHNY strany dokumentu?
-5. OVĚŘIL jsi každou částku proti slovnímu zápisu?
-6. Přečetl jsi cifry v SPRÁVNÉM POŘADÍ zleva doprava?`;
+Každá smlouva má DVĚ strany:
+- VĚŘITEL / POSKYTOVATEL ÚVĚRU / POJISTITEL = banka nebo pojišťovna (ČSOB, Česká spořitelna, KB, mBank, Raiffeisen, Moneta, Allianz, Kooperativa, Generali, ČPP, UNIQA...)
+- DLUŽNÍK / KLIENT / POJISTNÍK = fyzická osoba nebo firma která si bere úvěr/pojištění
+
+extracted_provider = VĚŘITEL/POJISTITEL (= ta BANKA nebo POJIŠŤOVNA), NIKDY dlužník/klient!
+
+Hledej:
+- "Věřitel:", "Poskytovatel:", "Pojistitel:" → TO je provider
+- "Dlužník:", "Klient:", "Pojistník:", "Spotřebitel:" → to NENÍ provider
+- Logo banky/pojišťovny v hlavičce → to je provider
+- Pokud je v dokumentu firma s.r.o./a.s. jako DLUŽNÍK a banka jako VĚŘITEL → provider = banka
+
+═══ KROK 3: NAJDI SPRÁVNOU ČÁSTKU ═══
+
+V úvěrové smlouvě existuje NĚKOLIK různých částek. Potřebuješ JISTINU (výši úvěru):
+
+✅ SPRÁVNÁ částka (extracted_amount):
+- "Výše úvěru" / "Jistina úvěru" / "Poskytnutý úvěr" / "Úvěr ve výši"
+- Toto je kolik peněz klient SKUTEČNĚ DOSTAL
+
+❌ ŠPATNÉ částky (NEPOUŽÍVEJ jako extracted_amount):
+- "Celková částka splatná spotřebitelem" = jistina + úroky + poplatky (je VYŠŠÍ než jistina)
+- "RPSN" = roční procentní sazba nákladů (je to procento, ne částka)
+- "Poplatek za zpracování" = jen poplatek
+- "Pojistné" = cena pojištění (doplňkový produkt)
+
+OVĚŘENÍ: Najdi částku SLOVY (hledej "slovy:"). Převeď slovní zápis na číslo. Pokud se liší od číslic → použij SLOVNÍ verzi.
+Do source_quotes uveď obojí — číselný i slovní zápis.
+
+═══ KROK 4: EXTRAHUJ DALŠÍ ÚDAJE ═══
+
+- extracted_interest_rate: číslo u "úroková sazba", "p.a.", "fixní sazba". Vrať jako desetinné (5,49% → 5.49). POZOR: RPSN ≠ úroková sazba!
+- extracted_monthly_payment: číslo u "měsíční splátka", "anuitní splátka". NE "celková částka", NE roční platba.
+- extracted_signing_date: datum u podpisů nebo "sjednáno dne", "uzavřeno dne" (YYYY-MM-DD)
+- extracted_maturity_date: datum u "splatnost", "platnost do", "poslední splátka" (YYYY-MM-DD)
+- extracted_remaining_balance: POUZE pokud je explicitně "zůstatek"/"nesplaceno"
+- extracted_insurance_type: POUZE pokud je to pojistná smlouva (ne úvěr s pojištěním)
+- missing_fields: pole polí které v dokumentu NEJSOU: "interest_rate", "monthly_payment", "signing_date", "maturity_date", "amount", "remaining_balance"
+
+═══ KROK 5: KONTROLA PŘED ODESLÁNÍM ═══
+
+1. Je extracted_type správně? (úvěr na auto = "uver", NE "pojisteni")
+2. Je extracted_provider VĚŘITEL/BANKA, ne dlužník/klient?
+3. Je extracted_amount JISTINA úvěru, ne celková splatná částka?
+4. Ověřil jsi částku proti SLOVNÍMU zápisu?
+5. Má KAŽDÁ hodnota citaci v source_quotes? Pokud ne → null.
+6. Přečetl jsi VŠECHNY strany?`;
 
 async function classifyWithModel(
   model: string,
@@ -88,7 +100,12 @@ async function classifyWithModel(
     const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
     const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
-      { type: "text", text: "Přečti POZORNĚ celý dokument, VŠECHNY strany. POSTUP: 1) Najdi každou částku ČÍSLICEMI. 2) Najdi tu samou částku SLOVY. 3) Převeď slovní zápis na číslo. 4) Porovnej — pokud se liší, použij SLOVNÍ verzi. 5) Čti cifry ZLEVA DOPRAVA, jednu po druhé. NEVYMÝŠLEJ si — piš POUZE co doslova vidíš." },
+      { type: "text", text: `Analyzuj tento dokument. POSTUP:
+1) Přečti NADPIS — je to úvěrová smlouva nebo pojistná smlouva? (úvěr na auto = ÚVĚR, ne pojištění!)
+2) Najdi VĚŘITELE (banku) — to je provider. DLUŽNÍK/klient NENÍ provider!
+3) Najdi JISTINU úvěru (kolik klient dostal), NE celkovou splatnou částku (ta je vyšší — zahrnuje úroky).
+4) Ověř částku proti SLOVNÍMU zápisu ("slovy:").
+5) Ke každé hodnotě uveď přesnou citaci z dokumentu.` },
     ];
 
     if (mimeType === "application/pdf") {
