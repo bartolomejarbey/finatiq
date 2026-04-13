@@ -115,7 +115,12 @@ export default function OchranaPage() {
 
   return (
     <div className="space-y-8 p-6">
-      <h1 className="text-2xl font-bold">Pojistné krytí</h1>
+      <div>
+        <h1 className="text-2xl font-bold">Pojistné krytí</h1>
+        <p className="mt-1 text-sm text-[var(--card-text-muted)]">
+          Kontrola, zda jsou vaše pojistky dostatečné. Zelená znamená v pořádku, oranžová a červená upozorní na mezery v ochraně.
+        </p>
+      </div>
 
       {/* Coverage Score */}
       <div className="flex items-center gap-6">

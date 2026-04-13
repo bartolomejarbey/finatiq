@@ -98,7 +98,12 @@ export default function InvestmentsPage() {
 
   return (
     <div className="p-4 md:p-8 animate-fade-in">
-      <h1 className="mb-6 text-2xl font-bold text-[var(--card-text)]">Investice</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[var(--card-text)]">Investice</h1>
+        <p className="mt-1 text-sm text-[var(--card-text-muted)]">
+          Přehled vašeho investičního portfolia. Poradce sleduje výkonnost a navrhne úpravy podle vašich cílů.
+        </p>
+      </div>
 
       {/* Hero card */}
       <div className="rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 md:p-8 text-white mb-6">

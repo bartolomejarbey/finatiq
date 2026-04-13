@@ -215,9 +215,12 @@ export default function HealthScorePage() {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold text-center">
-        Vaše finanční zdraví
-      </h1>
+      <div className="text-center mb-2">
+        <h1 className="text-2xl font-bold">Vaše finanční zdraví</h1>
+        <p className="mt-1 text-sm text-[var(--card-text-muted)]">
+          Skóre ukazuje, jak dobře jsou nastavené vaše finance — od rezervy přes splátky až po pojištění.
+        </p>
+      </div>
 
       {/* Gauge card */}
       <Card className="rounded-xl shadow-sm">
