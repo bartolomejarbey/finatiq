@@ -49,6 +49,7 @@ interface ClassificationResult {
   extracted_remaining_balance: number | null;
   extracted_insurance_type: string | null;
   missing_fields?: string[];
+  source_quotes?: Record<string, string>;
   redirect_suggestion: "documents" | "receipts" | null;
   analysis_failed?: boolean;
 }
@@ -594,6 +595,16 @@ export default function ContractsPage() {
                             <p className="text-green-700">Splatnost: <strong>{new Date(classification.extracted_maturity_date).toLocaleDateString("cs-CZ")}</strong></p>
                           )}
                         </div>
+                        {classification.source_quotes && Object.keys(classification.source_quotes).length > 0 && (
+                          <details className="mt-2">
+                            <summary className="text-[11px] text-green-600 cursor-pointer hover:text-green-800">Zobrazit co AI přečetla z dokumentu</summary>
+                            <div className="mt-1 space-y-0.5">
+                              {Object.entries(classification.source_quotes).map(([key, quote]) => (
+                                <p key={key} className="text-[11px] text-green-700 italic">&quot;{quote}&quot;</p>
+                              ))}
+                            </div>
+                          </details>
+                        )}
                         {classification.missing_fields && classification.missing_fields.length > 0 && (
                           <p className="mt-2 text-[11px] text-amber-700">
                             Ve smlouvě nebylo nalezeno: {classification.missing_fields.map(f => {

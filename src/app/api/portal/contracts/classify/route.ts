@@ -6,17 +6,17 @@ import { NextResponse } from "next/server";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const MODEL_PRIMARY = "gpt-4o-mini";
-const MODEL_FALLBACK = "gpt-4o";
+const MODEL_PRIMARY = "gpt-4o";
+const MODEL_FALLBACK = "gpt-4o-mini";
 
-const CLASSIFY_PROMPT = `Jsi asistent pro klasifikaci finančních dokumentů. Podívej se na přiložený dokument a urči jeho typ. Přečti VŠECHNY strany a extrahuj co nejvíce informací.
+const CLASSIFY_PROMPT = `Jsi precizní OCR asistent pro finanční dokumenty. Tvůj úkol je PŘESNĚ přečíst a přepsat údaje z dokumentu. NIKDY si nevymýšlej ani neodhaduj hodnoty.
 
 Vrať JSON ve formátu:
 {
   "document_type": "contract" | "invoice" | "receipt" | "statement" | "other",
   "confidence": "high" | "medium" | "low",
   "description_cs": "Stručný popis dokumentu v češtině (1 věta)",
-  "extracted_provider": "Název poskytovatele/banky/pojišťovny (nebo null)",
+  "extracted_provider": string | null,
   "extracted_amount": number | null,
   "extracted_type": "uver" | "pojisteni" | null,
   "extracted_interest_rate": number | null,
@@ -25,35 +25,41 @@ Vrať JSON ve formátu:
   "extracted_maturity_date": "YYYY-MM-DD" | null,
   "extracted_remaining_balance": number | null,
   "extracted_insurance_type": "zivotni" | "majetek" | "auto" | "odpovednost" | "dalsi" | null,
-  "missing_fields": ["interest_rate", "monthly_payment", ...],
+  "missing_fields": string[],
+  "source_quotes": { [field: string]: string },
   "redirect_suggestion": "documents" | "receipts" | null
 }
 
-PRAVIDLA:
-- "contract" = úvěrová smlouva, pojistná smlouva, jakákoliv smlouva se smluvními stranami a podmínkami
-- "invoice" = faktura s IČO, číslem faktury, datem splatnosti → redirect_suggestion: "documents"
-- "receipt" = účtenka, paragon, pokladní bloček → redirect_suggestion: "receipts"
-- "statement" = bankovní výpis, výpis z účtu → redirect_suggestion: "documents"
+KLASIFIKACE:
+- "contract" = úvěrová smlouva, pojistná smlouva, jakákoliv smlouva
+- "invoice" = faktura → redirect_suggestion: "documents"
+- "receipt" = účtenka, paragon → redirect_suggestion: "receipts"
+- "statement" = bankovní výpis → redirect_suggestion: "documents"
 - "other" = cokoliv jiného → redirect_suggestion: "documents"
 
-EXTRAKCE — pokud je to smlouva, extrahuj CO NEJVÍC:
-- extracted_type: "uver" pokud je to úvěrová/hypoteční smlouva, "pojisteni" pokud pojistná smlouva
-- extracted_provider: název banky/pojišťovny (např. ČSOB, Česká spořitelna, Allianz, Kooperativa...)
-- extracted_amount: výše úvěru (celková částka), nebo roční pojistné
-- extracted_interest_rate: úroková sazba v % (roční, p.a.). Hledej "úroková sazba", "p.a.", "% ročně", "fixní sazba"
-- extracted_monthly_payment: měsíční splátka nebo měsíční pojistné v Kč
-- extracted_signing_date: datum podpisu/uzavření smlouvy ve formátu YYYY-MM-DD
-- extracted_maturity_date: datum splatnosti/konce smlouvy ve formátu YYYY-MM-DD
-- extracted_remaining_balance: zůstatek úvěru pokud je uveden
-- extracted_insurance_type: typ pojištění — "zivotni" (životní), "majetek" (nemovitost, domácnost), "auto" (povinné ručení, havarijní), "odpovednost", "dalsi"
-- missing_fields: pole názvů polí, která se v dokumentu NENACHÁZEJÍ. Např. pokud ve smlouvě není úroková sazba, přidej "interest_rate". Možné hodnoty: "interest_rate", "monthly_payment", "signing_date", "maturity_date", "amount", "remaining_balance"
+PRAVIDLA EXTRAKCE — KRITICKY DŮLEŽITÉ:
+1. Každou hodnotu MUSÍŠ přečíst DOSLOVA z dokumentu. Pokud tam číslo nevidíš napsané, vrať null.
+2. Pro každou extrahovanou hodnotu MUSÍŠ uvést v "source_quotes" přesnou citaci textu z dokumentu, odkud jsi hodnotu vzal. Například: { "interest_rate": "úroková sazba 5,49 % p.a.", "amount": "výše úvěru: 1 500 000 Kč" }
+3. NIKDY neodhaduj, nezaokrouhluj, nepočítej. Pokud je v dokumentu napsáno "1 523 400 Kč", vrať 1523400, ne 1500000.
+4. Pokud údaj v dokumentu NENÍ, vrať null a přidej do missing_fields. NEPOČÍTEJ ho z jiných hodnot.
+5. NEPLEŤ SI různá čísla — číslo smlouvy NENÍ částka, IČO NENÍ částka, PSČ NENÍ částka.
 
-DŮLEŽITÉ:
-- Dokument může mít více stran — přečti VŠECHNY strany než odpovíš.
-- Pokud dokument nedokážeš přečíst, nastav confidence na "low". Nehádej obsah.
-- Bankovní a finanční dokumenty od bank (ČSOB, KB, ČS, mBank, Raiffeisen, Moneta...) jsou typicky smlouvy nebo výpisy.
-- U starších smluv je datum podpisu důležité — hledej ho na konci dokumentu u podpisů.
-- Pokud pole ve smlouvě určitě není, přidej ho do missing_fields. Pokud si nejsi jistý, nastav hodnotu na null ale NEPŘIDÁVEJ do missing_fields.`;
+CO EXTRAHOVAT (pouze pokud je to smlouva):
+- extracted_provider: přesný název banky/pojišťovny jak je v dokumentu
+- extracted_amount: výše úvěru nebo celkové pojistné. Hledej u textu "výše úvěru", "jistina", "celková částka", "pojistná částka"
+- extracted_interest_rate: POUZE číslo u textu "úroková sazba", "p.a.", "% ročně", "fixní sazba". Vrať jako desetinné číslo (5,49% → 5.49)
+- extracted_monthly_payment: POUZE číslo u textu "měsíční splátka", "anuitní splátka", "měsíční pojistné". NE roční, NE jednorázové
+- extracted_signing_date: datum u podpisů nebo "datum uzavření", "sjednáno dne"
+- extracted_maturity_date: datum u textu "splatnost", "platnost do", "konec smlouvy"
+- extracted_remaining_balance: POUZE pokud dokument explicitně uvádí "zůstatek" nebo "nesplaceno"
+- extracted_insurance_type: typ pojištění
+- missing_fields: pole názvů polí které v dokumentu URČITĚ NEJSOU. Hodnoty: "interest_rate", "monthly_payment", "signing_date", "maturity_date", "amount", "remaining_balance"
+
+KONTROLA PŘED ODESLÁNÍM:
+- Má KAŽDÁ extrahovaná hodnota odpovídající citaci v source_quotes?
+- Je citace DOSLOVA z dokumentu, ne tvůj překlad/přeformulování?
+- Pokud nemáš citaci → nastav hodnotu na null
+- Přečetl jsi VŠECHNY strany dokumentu?`;
 
 async function classifyWithModel(
   model: string,
@@ -64,7 +70,7 @@ async function classifyWithModel(
     const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
     const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
-      { type: "text", text: "Klasifikuj tento dokument. Přečti všechny strany:" },
+      { type: "text", text: "Přečti POZORNĚ celý dokument, VŠECHNY strany. Pak přesně přepiš údaje. NEVYMÝŠLEJ si čísla — piš POUZE to co doslova vidíš v textu. Ke každému číslu uveď citaci." },
     ];
 
     if (mimeType === "application/pdf") {
@@ -86,7 +92,8 @@ async function classifyWithModel(
 
     const response = await openai.chat.completions.create({
       model,
-      max_tokens: 900,
+      max_tokens: 1200,
+      temperature: 0,
       messages: [
         { role: "system", content: CLASSIFY_PROMPT },
         { role: "user", content: userContent },
@@ -98,6 +105,45 @@ async function classifyWithModel(
     if (!content) return null;
 
     const classification = JSON.parse(content);
+
+    // Validate: strip extracted values that have no source quote (likely hallucinated)
+    const quotes = classification.source_quotes || {};
+    const numericFields = [
+      "extracted_amount",
+      "extracted_interest_rate",
+      "extracted_monthly_payment",
+      "extracted_remaining_balance",
+    ] as const;
+    const stringFields = [
+      "extracted_signing_date",
+      "extracted_maturity_date",
+    ] as const;
+    const fieldToQuoteKey: Record<string, string> = {
+      extracted_amount: "amount",
+      extracted_interest_rate: "interest_rate",
+      extracted_monthly_payment: "monthly_payment",
+      extracted_remaining_balance: "remaining_balance",
+      extracted_signing_date: "signing_date",
+      extracted_maturity_date: "maturity_date",
+    };
+
+    for (const field of [...numericFields, ...stringFields]) {
+      if (classification[field] != null) {
+        const quoteKey = fieldToQuoteKey[field] || field.replace("extracted_", "");
+        if (!quotes[quoteKey] && !quotes[field]) {
+          // No source quote = likely hallucinated, null it out
+          console.log(`Stripping ${field}=${classification[field]} — no source quote`);
+          classification[field] = null;
+          // Add to missing_fields if not there
+          const missingKey = field.replace("extracted_", "");
+          if (!classification.missing_fields) classification.missing_fields = [];
+          if (!classification.missing_fields.includes(missingKey)) {
+            classification.missing_fields.push(missingKey);
+          }
+        }
+      }
+    }
+
     return { classification, model };
   } catch (e) {
     console.error(`Classification failed with ${model}:`, e);
@@ -162,16 +208,19 @@ export async function POST(request: Request) {
     .upload(storagePath, Buffer.from(arrayBuffer), { contentType: mimeType })
     .catch(() => {}); // Non-critical, just for reference
 
-  // Try primary model first
+  // Use gpt-4o as primary for accuracy
   let result = await classifyWithModel(MODEL_PRIMARY, base64Data, mimeType);
 
-  // If primary failed or confidence is low, fallback to stronger model
-  if (!result || result.classification.confidence === "low") {
-    console.log(`Primary model ${result ? "returned low confidence" : "failed"}, trying fallback ${MODEL_FALLBACK}`);
-    const fallbackResult = await classifyWithModel(MODEL_FALLBACK, base64Data, mimeType);
-    if (fallbackResult) {
-      result = fallbackResult;
-    }
+  // If primary failed, retry once (same model — accuracy matters more than cost)
+  if (!result) {
+    console.log("Primary model failed, retrying...");
+    result = await classifyWithModel(MODEL_PRIMARY, base64Data, mimeType);
+  }
+
+  // If still failed, try fallback
+  if (!result) {
+    console.log("Primary retry failed, trying fallback model");
+    result = await classifyWithModel(MODEL_FALLBACK, base64Data, mimeType);
   }
 
   // Both models failed
