@@ -212,7 +212,7 @@ export function ClassicLayout({
     return logoUrl ? (
       <img src={logoUrl} alt={appName} style={style} />
     ) : (
-      <span className="text-xl font-bold" style={{ color: primaryColor }}>{appName}</span>
+      <span className="text-lg font-semibold tracking-tight" style={{ color: primaryColor }}>{appName}</span>
     );
   }
 

@@ -88,24 +88,32 @@ function InputField({
   suffix?: string;
   min?: number;
 }) {
+  const [focused, setFocused] = useState(false);
+  const displayValue = focused ? String(value) : formatNum(value);
+
   return (
     <div className="space-y-1.5">
       <Label className="text-sm font-medium text-[var(--card-text)]">
         {label}
+      </Label>
+      <div className="relative">
+        <Input
+          type={focused ? "number" : "text"}
+          step={step ?? 1}
+          min={min ?? 0}
+          value={displayValue}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="rounded-lg pr-12"
+          inputMode="decimal"
+        />
         {suffix && (
-          <span className="ml-1 text-xs font-normal text-[var(--card-text-dim)]">
-            ({suffix})
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[var(--card-text-dim)]">
+            {suffix}
           </span>
         )}
-      </Label>
-      <Input
-        type="number"
-        step={step ?? 1}
-        min={min ?? 0}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="rounded-lg"
-      />
+      </div>
     </div>
   );
 }
@@ -123,20 +131,22 @@ function StatCard({
   value: string;
   accent?: "blue" | "green" | "red" | "amber";
 }) {
-  const colors = {
-    blue: "border-blue-200 bg-blue-50 text-blue-700",
-    green: "border-green-200 bg-green-50 text-green-700",
-    red: "border-red-200 bg-red-50 text-red-700",
-    amber: "border-amber-200 bg-amber-50 text-amber-700",
+  const accentColors = {
+    blue: { bg: "rgba(37,99,235,0.08)", border: "rgba(37,99,235,0.2)", text: "#2563eb" },
+    green: { bg: "rgba(22,163,74,0.08)", border: "rgba(22,163,74,0.2)", text: "#16a34a" },
+    red: { bg: "rgba(220,38,38,0.08)", border: "rgba(220,38,38,0.2)", text: "#dc2626" },
+    amber: { bg: "rgba(217,119,6,0.08)", border: "rgba(217,119,6,0.2)", text: "#d97706" },
   };
+  const c = accentColors[accent];
   return (
     <div
-      className={`rounded-xl border p-4 shadow-sm ${colors[accent]}`}
+      className="rounded-xl border p-4"
+      style={{ backgroundColor: c.bg, borderColor: c.border }}
     >
-      <p className="text-xs font-medium uppercase tracking-wide opacity-70">
+      <p className="text-xs font-medium uppercase tracking-wide text-[var(--card-text-muted)]">
         {label}
       </p>
-      <p className="mt-1 text-xl font-bold">{value}</p>
+      <p className="mt-1 text-xl font-bold" style={{ color: c.text }}>{value}</p>
     </div>
   );
 }
@@ -158,7 +168,8 @@ function CTAButton({ calcType }: { calcType: string }) {
         setSent(true);
         setLoading(false);
       }}
-      className="mt-6 w-full rounded-xl bg-blue-600 py-3 text-white hover:bg-blue-700"
+      className="mt-6 w-full rounded-xl py-3 text-white hover:opacity-90 cursor-pointer"
+      style={{ backgroundColor: "var(--color-primary, #2563eb)" }}
     >
       <MessageSquare className="mr-2 h-4 w-4" />
       {sent ? "Odesláno poradci" : loading ? "Odesílám..." : "Chci to řešit s poradcem"}
@@ -290,7 +301,7 @@ function MortgageCalculator() {
             <XAxis
               dataKey="month"
               tick={{ fontSize: 11 }}
-              interval={11}
+              interval={59}
               tickFormatter={(v: number) => `${Math.ceil(v / 12)}. rok`}
             />
             <YAxis
@@ -319,7 +330,7 @@ function MortgageCalculator() {
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={calc.yearlyData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" tick={{ fontSize: 10 }} />
+              <XAxis dataKey="year" tick={{ fontSize: 10 }} interval={4} />
               <YAxis
                 tickFormatter={(v: number) => `${formatNum(v / 1000)} tis`}
                 tick={{ fontSize: 11 }}
@@ -369,7 +380,8 @@ function MortgageCalculator() {
         {calc.amortization.length > 12 && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex w-full items-center justify-center gap-1 border-t py-3 text-sm font-medium text-blue-600 hover:bg-blue-50"
+            className="flex w-full items-center justify-center gap-1 border-t py-3 text-sm font-medium hover:bg-[var(--table-hover)] cursor-pointer"
+            style={{ color: "var(--color-primary, #2563eb)" }}
           >
             {expanded ? (
               <>
@@ -480,7 +492,6 @@ function SavingsCalculator() {
               dataKey="month"
               tickFormatter={(v: number) => `${Math.round(v / 12)}. rok`}
               tick={{ fontSize: 11 }}
-              interval={0}
             />
             <YAxis
               tickFormatter={(v: number) => `${formatNum(v / 1000)} tis`}
