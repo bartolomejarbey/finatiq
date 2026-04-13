@@ -44,11 +44,27 @@ PRAVIDLA EXTRAKCE — KRITICKY DŮLEŽITÉ:
 4. Pokud údaj v dokumentu NENÍ, vrať null a přidej do missing_fields. NEPOČÍTEJ ho z jiných hodnot.
 5. NEPLEŤ SI různá čísla — číslo smlouvy NENÍ částka, IČO NENÍ částka, PSČ NENÍ částka.
 
+OVĚŘENÍ ČÁSTEK — POVINNÝ KROK:
+České finanční smlouvy VŽDY uvádějí částku DVAKRÁT: číslicí A slovy (např. "1 500 000 Kč (slovy: jedenmilionpětsettisíc korun českých)").
+1. Najdi částku napsanou ČÍSLICEMI.
+2. Najdi částku napsanou SLOVY (hledej "slovy:", "slovy", "(slovy", "словами").
+3. Přečti slovní zápis a převeď ho na číslo.
+4. POROVNEJ obě hodnoty — MUSÍ být STEJNÉ.
+5. Pokud se liší → použij SLOVNÍ verzi (ta je spolehlivější).
+6. Do source_quotes uveď OBOJÍ: číselný i slovní zápis.
+   Příklad: { "amount": "1 500 000,- Kč (slovy: jedenmilionpětsettisíc korun českých)" }
+
+ČTENÍ ČÍSLIC — POZOR NA POŘADÍ CIFER:
+- Čti číslo CIFRU PO CIFŘE zleva doprava: 1 523 400 = jedna-pět-dva-tři-čtyři-nula-nula
+- Mezerové oddělovače tisíců IGNORUJ, jen čti cifry v pořadí jak jsou
+- Po přečtení zkontroluj: odpovídá počet cifer? (statisíce = 6 cifer, miliony = 7 cifer)
+- Zkontroluj ŘÁDOVOU VELIKOST — je číslo realistické pro daný typ smlouvy?
+
 CO EXTRAHOVAT (pouze pokud je to smlouva):
 - extracted_provider: přesný název banky/pojišťovny jak je v dokumentu
-- extracted_amount: výše úvěru nebo celkové pojistné. Hledej u textu "výše úvěru", "jistina", "celková částka", "pojistná částka"
+- extracted_amount: výše úvěru nebo celkové pojistné. Hledej u textu "výše úvěru", "jistina", "celková částka", "pojistná částka". OVĚŘ PROTI SLOVNÍMU ZÁPISU.
 - extracted_interest_rate: POUZE číslo u textu "úroková sazba", "p.a.", "% ročně", "fixní sazba". Vrať jako desetinné číslo (5,49% → 5.49)
-- extracted_monthly_payment: POUZE číslo u textu "měsíční splátka", "anuitní splátka", "měsíční pojistné". NE roční, NE jednorázové
+- extracted_monthly_payment: POUZE číslo u textu "měsíční splátka", "anuitní splátka", "měsíční pojistné". NE roční, NE jednorázové. OVĚŘ PROTI SLOVNÍMU ZÁPISU pokud existuje.
 - extracted_signing_date: datum u podpisů nebo "datum uzavření", "sjednáno dne"
 - extracted_maturity_date: datum u textu "splatnost", "platnost do", "konec smlouvy"
 - extracted_remaining_balance: POUZE pokud dokument explicitně uvádí "zůstatek" nebo "nesplaceno"
@@ -56,10 +72,12 @@ CO EXTRAHOVAT (pouze pokud je to smlouva):
 - missing_fields: pole názvů polí které v dokumentu URČITĚ NEJSOU. Hodnoty: "interest_rate", "monthly_payment", "signing_date", "maturity_date", "amount", "remaining_balance"
 
 KONTROLA PŘED ODESLÁNÍM:
-- Má KAŽDÁ extrahovaná hodnota odpovídající citaci v source_quotes?
-- Je citace DOSLOVA z dokumentu, ne tvůj překlad/přeformulování?
-- Pokud nemáš citaci → nastav hodnotu na null
-- Přečetl jsi VŠECHNY strany dokumentu?`;
+1. Má KAŽDÁ extrahovaná hodnota odpovídající citaci v source_quotes?
+2. Je citace DOSLOVA z dokumentu, ne tvůj překlad/přeformulování?
+3. Pokud nemáš citaci → nastav hodnotu na null
+4. Přečetl jsi VŠECHNY strany dokumentu?
+5. OVĚŘIL jsi každou částku proti slovnímu zápisu?
+6. Přečetl jsi cifry v SPRÁVNÉM POŘADÍ zleva doprava?`;
 
 async function classifyWithModel(
   model: string,
@@ -70,7 +88,7 @@ async function classifyWithModel(
     const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
     const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
-      { type: "text", text: "Přečti POZORNĚ celý dokument, VŠECHNY strany. Pak přesně přepiš údaje. NEVYMÝŠLEJ si čísla — piš POUZE to co doslova vidíš v textu. Ke každému číslu uveď citaci." },
+      { type: "text", text: "Přečti POZORNĚ celý dokument, VŠECHNY strany. POSTUP: 1) Najdi každou částku ČÍSLICEMI. 2) Najdi tu samou částku SLOVY. 3) Převeď slovní zápis na číslo. 4) Porovnej — pokud se liší, použij SLOVNÍ verzi. 5) Čti cifry ZLEVA DOPRAVA, jednu po druhé. NEVYMÝŠLEJ si — piš POUZE co doslova vidíš." },
     ];
 
     if (mimeType === "application/pdf") {
