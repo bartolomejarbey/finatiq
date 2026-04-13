@@ -31,9 +31,19 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { FileText, CreditCard, Shield, Upload, Loader2, AlertTriangle } from "lucide-react";
+import { FileText, CreditCard, Shield, Upload, Loader2, AlertTriangle, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { usePortalForm } from "@/lib/forms/use-portal-form";
+
+interface ClassificationResult {
+  document_type: "contract" | "invoice" | "receipt" | "statement" | "other";
+  confidence: "high" | "medium" | "low";
+  description_cs: string;
+  extracted_provider: string | null;
+  extracted_amount: number | null;
+  extracted_type: "uver" | "pojisteni" | null;
+  redirect_suggestion: "documents" | "receipts" | null;
+}
 
 interface Contract {
   id: string;
@@ -86,6 +96,10 @@ export default function ContractsPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  // AI classification
+  const [classifying, setClassifying] = useState(false);
+  const [classification, setClassification] = useState<ClassificationResult | null>(null);
+
   async function fetchData() {
     setLoading(true);
     setError(null);
@@ -112,8 +126,52 @@ export default function ContractsPage() {
   function resetForm() {
     setProvider(""); setLoanAmount(""); setInterestRate(""); setMonthlyPayment("");
     setRemainingBalance(""); setValidFrom(""); setValidTo(""); setInsuranceType("zivotni");
-    setInsurancePremium(""); setUploadFile(null);
+    setInsurancePremium(""); setUploadFile(null); setClassification(null);
     contractForm.resetErrors();
+  }
+
+  async function classifyUploadedFile(file: File) {
+    if (!clientId) return;
+    setClassifying(true);
+    setClassification(null);
+
+    // Upload to temp storage for AI analysis
+    const filePath = `client-docs/${clientId}/classify_${Date.now()}_${file.name}`;
+    const { error: storageError } = await supabase.storage.from("deal-documents").upload(filePath, file);
+    if (storageError) {
+      toast.error("Chyba při nahrávání souboru pro analýzu.");
+      setClassifying(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/portal/contracts/classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storage_path: filePath }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClassification(data.classification);
+
+        // Auto-fill fields from AI extraction
+        if (data.classification.document_type === "contract") {
+          if (data.classification.extracted_provider && !provider) {
+            setProvider(data.classification.extracted_provider);
+          }
+          if (data.classification.extracted_amount) {
+            if (sheetType === "uver" && !loanAmount) {
+              setLoanAmount(String(data.classification.extracted_amount));
+            } else if (sheetType === "pojisteni" && !insurancePremium) {
+              setInsurancePremium(String(data.classification.extracted_amount));
+            }
+          }
+        }
+      }
+    } catch {
+      // Classification is optional, don't block the flow
+    }
+    setClassifying(false);
   }
 
   async function handleSaveContract() {
@@ -470,34 +528,99 @@ export default function ContractsPage() {
                 <div
                   className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] p-8 transition-colors hover:border-blue-300"
                   onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setUploadFile(f); }}
+                  onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { setUploadFile(f); setClassification(null); classifyUploadedFile(f); } }}
                 >
                   <Upload className="mb-3 h-8 w-8 text-[var(--card-text-dim)]" />
                   <p className="text-sm font-medium text-[var(--card-text)]">Přetáhněte soubor sem</p>
                   <p className="mt-1 text-xs text-[var(--card-text-muted)]">PDF, JPG, PNG — smlouvu nebo výpis</p>
                   <label className="mt-4 cursor-pointer rounded-lg bg-[var(--table-header)] px-4 py-2 text-xs font-medium text-[var(--card-text-muted)] hover:bg-[var(--table-hover)]">
                     Vybrat soubor
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setUploadFile(f); }} />
+                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setUploadFile(f); setClassification(null); classifyUploadedFile(f); } }} />
                   </label>
                 </div>
                 {uploadFile && (
                   <div className="mt-3 flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2">
                     <FileText className="h-4 w-4 text-blue-500" />
                     <span className="text-xs text-blue-700">{uploadFile.name}</span>
-                    <button onClick={() => setUploadFile(null)} className="ml-auto text-xs text-blue-400 hover:text-blue-600">Odebrat</button>
+                    <button onClick={() => { setUploadFile(null); setClassification(null); }} className="ml-auto text-xs text-blue-400 hover:text-blue-600">Odebrat</button>
                   </div>
                 )}
-                <p className="mt-3 text-xs text-[var(--card-text-muted)]">
-                  Nahrajte smlouvu a poradce ji zpracuje. Nemusíte vyplňovat formulář.
-                </p>
+
+                {/* AI Classification status */}
+                {classifying && (
+                  <div className="mt-3 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                    <span className="text-sm text-blue-700">AI analyzuje dokument...</span>
+                  </div>
+                )}
+
+                {classification && classification.document_type === "contract" && (
+                  <div className="mt-3 rounded-xl border border-green-200 bg-green-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-green-800">Smlouva rozpoznána</p>
+                        <p className="mt-1 text-xs text-green-700">{classification.description_cs}</p>
+                        {classification.extracted_provider && (
+                          <p className="mt-1 text-xs text-green-600">Poskytovatel: <strong>{classification.extracted_provider}</strong></p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {classification && classification.document_type !== "contract" && (
+                  <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <XCircle className="mt-0.5 h-5 w-5 text-amber-600 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-800">
+                          Toto nevypadá jako smlouva
+                        </p>
+                        <p className="mt-1 text-xs text-amber-700">{classification.description_cs}</p>
+                        <p className="mt-2 text-xs text-amber-700">
+                          {classification.document_type === "receipt"
+                            ? "Účtenky a paragony nahrajte v sekci Dokumenty → Skenovat doklad."
+                            : classification.document_type === "invoice"
+                              ? "Faktury nahrajte v sekci Dokumenty → Skenovat doklad."
+                              : "Tento typ dokumentu nahrajte v sekci Dokumenty nebo Trezor."
+                          }
+                        </p>
+                        <a
+                          href={classification.document_type === "receipt" || classification.document_type === "invoice" ? "/portal/documents" : "/portal/trezor"}
+                          className="mt-3 inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 transition-colors"
+                        >
+                          Přejít do {classification.document_type === "receipt" || classification.document_type === "invoice" ? "Dokumentů" : "Trezoru"}
+                          <ArrowRight className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!classification && !classifying && (
+                  <p className="mt-3 text-xs text-[var(--card-text-muted)]">
+                    Nahrajte smlouvu a AI ji automaticky rozpozná. Pokud to není smlouva, navede vás kam dokument patří.
+                  </p>
+                )}
               </TabsContent>
             </Tabs>
 
             <div className="mt-6">
-              <Button onClick={handleSaveContract} disabled={saving || uploading} className="w-full" size="lg">
+              <Button
+                onClick={handleSaveContract}
+                disabled={saving || uploading || classifying || (!!classification && classification.document_type !== "contract" && !!uploadFile)}
+                className="w-full"
+                size="lg"
+              >
                 {(saving || uploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Uložit smlouvu
               </Button>
+              {classification && classification.document_type !== "contract" && uploadFile && (
+                <p className="mt-2 text-center text-xs text-amber-600">
+                  AI rozpoznala, že nahraný dokument není smlouva. Odeberte ho nebo nahrajte správný dokument.
+                </p>
+              )}
             </div>
           </div>
         </SheetContent>

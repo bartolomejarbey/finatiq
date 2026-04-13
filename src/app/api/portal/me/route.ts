@@ -29,7 +29,23 @@ export async function GET() {
     .maybeSingle();
 
   if (existing) {
-    return NextResponse.json({ client: existing });
+    // Fetch advisor contact info
+    let advisorContact = null;
+    if (existing.advisor_id) {
+      const { data: advisor } = await admin
+        .from("advisors")
+        .select("company_name, email, phone")
+        .eq("id", existing.advisor_id)
+        .single();
+      if (advisor) {
+        advisorContact = {
+          name: advisor.company_name || null,
+          email: advisor.email || null,
+          phone: advisor.phone || null,
+        };
+      }
+    }
+    return NextResponse.json({ client: existing, advisorContact });
   }
 
   // 4. Auto-create minimal client record
