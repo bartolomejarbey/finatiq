@@ -136,23 +136,17 @@ export default function ContractsPage() {
     setClassifying(true);
     setClassification(null);
 
-    // Upload to temp storage for AI analysis
-    const filePath = `client-docs/${clientId}/classify_${Date.now()}_${file.name}`;
-    const { error: storageError } = await supabase.storage.from("deal-documents").upload(filePath, file);
-    if (storageError) {
-      toast.error("Chyba při nahrávání souboru pro analýzu.");
-      setClassifying(false);
-      return;
-    }
-
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+
       const res = await fetch("/api/portal/contracts/classify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storage_path: filePath, file_type: file.type }),
+        body: formData,
       });
-      if (res.ok) {
-        const data = await res.json();
+
+      const data = await res.json();
+      if (res.ok && data.classification) {
         setClassification(data.classification);
 
         // Auto-fill fields from AI extraction

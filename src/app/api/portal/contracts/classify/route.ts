@@ -110,29 +110,47 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Klient nenalezen" }, { status: 404 });
   }
 
-  const body = await request.json();
-  const { storage_path, file_type } = body;
+  // Accept FormData with file
+  const formData = await request.formData();
+  const file = formData.get("file") as File | null;
 
-  if (!storage_path) {
-    return NextResponse.json({ error: "Chybí cesta k souboru" }, { status: 400 });
+  if (!file) {
+    return NextResponse.json({ error: "Chybí soubor" }, { status: 400 });
   }
 
+  // Upload file to storage using service role (bypasses RLS)
+  const ext = file.name.split(".").pop() || "bin";
+  const storagePath = `client-docs/${client.id}/classify_${Date.now()}.${ext}`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from("deal-documents")
+    .upload(storagePath, Buffer.from(arrayBuffer), {
+      contentType: file.type,
+    });
+
+  if (uploadError) {
+    console.error("Storage upload error:", uploadError);
+    return NextResponse.json({ error: "Chyba při nahrávání souboru" }, { status: 500 });
+  }
+
+  // Get signed URL for AI analysis
   const { data: urlData, error: urlError } = await supabaseAdmin
     .storage
     .from("deal-documents")
-    .createSignedUrl(storage_path, 300);
+    .createSignedUrl(storagePath, 300);
 
   if (urlError || !urlData?.signedUrl) {
     return NextResponse.json({ error: "Nepodařilo se získat odkaz na soubor" }, { status: 500 });
   }
 
   // Try primary model first
-  let result = await classifyWithModel(MODEL_PRIMARY, urlData.signedUrl, file_type || "");
+  let result = await classifyWithModel(MODEL_PRIMARY, urlData.signedUrl, file.type);
 
   // If primary failed or confidence is low, fallback to stronger model
   if (!result || result.classification.confidence === "low") {
     console.log(`Primary model ${result ? "returned low confidence" : "failed"}, trying fallback ${MODEL_FALLBACK}`);
-    const fallbackResult = await classifyWithModel(MODEL_FALLBACK, urlData.signedUrl, file_type || "");
+    const fallbackResult = await classifyWithModel(MODEL_FALLBACK, urlData.signedUrl, file.type);
     if (fallbackResult) {
       result = fallbackResult;
     }
@@ -151,10 +169,12 @@ export async function POST(request: Request) {
         redirect_suggestion: null,
         analysis_failed: true,
       },
+      storage_path: storagePath,
     });
   }
 
   return NextResponse.json({
     classification: { ...result.classification, analyzed_by: result.model },
+    storage_path: storagePath,
   });
 }
