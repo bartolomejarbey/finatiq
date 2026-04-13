@@ -71,7 +71,8 @@ export default function ClientDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: client } = await supabase.from("clients").select("id, first_name, last_name, advisor_id, onboarding_completed").eq("user_id", user.id).single();
+      const meRes = await fetch("/api/portal/me");
+      const client = meRes.ok ? (await meRes.json()).client : null;
       if (!client) { setLoading(false); return; }
       if (!client.onboarding_completed) { router.push("/portal/vitejte"); return; }
 

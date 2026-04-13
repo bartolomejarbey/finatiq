@@ -77,7 +77,9 @@ function ClientLayoutInner({ children }: { children: React.ReactNode }) {
     async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id, is_osvc, advisor_id").eq("user_id", user.id).single();
+      const meRes = await fetch("/api/portal/me");
+      const meData = meRes.ok ? await meRes.json() : null;
+      const client = meData?.client;
       if (!client) return;
       setIsOsvc(client.is_osvc || false);
       const { data: adv } = await supabase.from("advisors").select("enabled_modules").eq("id", client.advisor_id).single();

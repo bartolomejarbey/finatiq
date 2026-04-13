@@ -11,6 +11,7 @@ const overrideSchema = z.object({
   currency: z.string().default("CZK"),
   vat_amount: z.number().optional(),
   override_reason: z.string().optional(),
+  document_type: z.enum(["receipt", "invoice", "contract", "statement", "other"]).optional(),
 });
 
 export async function POST(
@@ -81,6 +82,7 @@ export async function POST(
       total_amount: data.total_amount,
       currency: data.currency,
       vat_amount: data.vat_amount ?? null,
+      ...(data.document_type ? { document_type: data.document_type } : {}),
       quality_status: "manual_override",
       manually_overridden: true,
       original_rejection_reason: existing.rejection_reason,

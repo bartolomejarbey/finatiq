@@ -42,7 +42,8 @@ export default function NotificationsPage() {
     async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: client } = await supabase.from("clients").select("id").eq("user_id", user.id).single();
+      const meRes = await fetch("/api/portal/me");
+      const client = meRes.ok ? (await meRes.json()).client : null;
       if (!client) { setLoading(false); return; }
       setClientId(client.id);
 
