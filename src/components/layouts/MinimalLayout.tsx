@@ -54,6 +54,15 @@ export function MinimalLayout({
   }
 
   return (
+    <>
+    {/* Skip link */}
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:outline-none"
+      style={{ backgroundColor: primaryColor }}
+    >
+      Přeskočit na obsah
+    </a>
     <div className="flex h-screen">
       {/* Mobile top bar */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b px-4 md:hidden" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
@@ -64,7 +73,7 @@ export function MinimalLayout({
           className="cursor-pointer"
           style={{ color: "var(--card-text-muted, #475569)" }}
         >
-          <Menu className="h-6 w-6" />
+          <Menu className="h-6 w-6" aria-hidden="true" />
         </button>
         {logoUrl ? (
           <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto" }} />
@@ -75,9 +84,9 @@ export function MinimalLayout({
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 md:hidden" style={{ overscrollBehavior: "contain" }}>
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex h-full w-64 flex-col shadow-xl" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
+          <aside className="relative flex h-full w-64 flex-col shadow-xl" style={{ backgroundColor: "var(--card-bg, #fff)", overscrollBehavior: "contain" }}>
             <div className="flex h-14 items-center justify-between px-4 border-b">
               {logoUrl ? (
                 <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto", background: "transparent" }} />
@@ -91,7 +100,7 @@ export function MinimalLayout({
                 className="cursor-pointer"
                 style={{ color: "var(--card-text-dim, #94a3b8)" }}
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
             <nav aria-label="Hlavní navigace" className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
@@ -109,7 +118,7 @@ export function MinimalLayout({
                     )}
                     style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : { color: "var(--card-text-muted, #475569)" }}
                   >
-                    <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }}><item.icon className="h-5 w-5" /></span>
+                    <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }} aria-hidden="true"><item.icon className="h-5 w-5" /></span>
                     {item.label}
                   </Link>
                 );
@@ -169,7 +178,7 @@ export function MinimalLayout({
                 )}
                 style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : { color: "var(--card-text-muted, #475569)" }}
               >
-                <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }}><item.icon className="h-5 w-5 shrink-0" /></span>
+                <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }} aria-hidden="true"><item.icon className="h-5 w-5 shrink-0" /></span>
                 {expanded && (
                   <span className="text-sm font-medium truncate">{item.label}</span>
                 )}
@@ -207,9 +216,10 @@ export function MinimalLayout({
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto pt-14 md:pt-0 p-4 md:p-8" style={{ backgroundColor: "var(--color-background, #F8FAFC)" }}>
+      <main id="main-content" className="flex-1 overflow-auto pt-14 md:pt-0 p-4 md:p-8" style={{ backgroundColor: "var(--color-background, #F8FAFC)" }}>
         {children}
       </main>
     </div>
+    </>
   );
 }

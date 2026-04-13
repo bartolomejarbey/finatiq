@@ -58,6 +58,15 @@ export function ModernLayout({
   }));
 
   return (
+    <>
+    {/* Skip link */}
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:outline-none"
+      style={{ backgroundColor: primaryColor }}
+    >
+      Přeskočit na obsah
+    </a>
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--color-background, #F8FAFC)" }}>
       {/* Top bar */}
       <header className="sticky top-0 z-40 backdrop-blur-sm shadow-sm" style={{ backgroundColor: "color-mix(in srgb, var(--card-bg, #fff) 95%, transparent)", borderBottom: `2px solid ${primaryColor}` }}>
@@ -70,7 +79,7 @@ export function ModernLayout({
             className="md:hidden cursor-pointer"
             style={{ color: "var(--card-text-muted, #475569)" }}
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6" aria-hidden="true" />
           </button>
 
           {/* Logo */}
@@ -99,7 +108,7 @@ export function ModernLayout({
                   )}
                   style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : { color: "var(--card-text-muted, #475569)" }}
                 >
-                  <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }}><item.icon className="h-4 w-4" /></span>
+                  <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }} aria-hidden="true"><item.icon className="h-4 w-4" /></span>
                   {item.label}
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
@@ -123,9 +132,9 @@ export function ModernLayout({
 
       {/* Mobile nav overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 md:hidden" style={{ overscrollBehavior: "contain" }}>
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex h-full w-72 flex-col shadow-xl" style={{ backgroundColor: "var(--card-bg, #fff)" }}>
+          <aside className="relative flex h-full w-72 flex-col shadow-xl" style={{ backgroundColor: "var(--card-bg, #fff)", overscrollBehavior: "contain" }}>
             <div className="flex h-14 items-center justify-between px-4 border-b">
               {logoUrl ? (
                 <img src={logoUrl} alt={appName} style={{ height: `${Math.min(logoSize, 32)}px`, objectFit: logoShape !== "original" ? "cover" : "contain", borderRadius: logoShape === "circle" ? "50%" : logoShape === "square" ? "4px" : "0", aspectRatio: logoShape !== "original" ? "1/1" : "auto" }} />
@@ -139,7 +148,7 @@ export function ModernLayout({
                 className="cursor-pointer"
                 style={{ color: "var(--card-text-dim, #94a3b8)" }}
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
             <nav aria-label="Hlavní navigace" className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
@@ -159,7 +168,7 @@ export function ModernLayout({
                     )}
                     style={active ? { backgroundColor: hexToRgba(primaryColor, 0.12), color: primaryColor } : { color: "var(--card-text-muted, #475569)" }}
                   >
-                    <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }}><item.icon className="h-5 w-5" /></span>
+                    <span style={active ? { color: primaryColor } : { color: "var(--card-text-dim, #9ca3af)" }} aria-hidden="true"><item.icon className="h-5 w-5" /></span>
                     {item.label}
                     {item.badge !== undefined && item.badge > 0 && (
                       <span
@@ -193,9 +202,10 @@ export function ModernLayout({
         ))}
       </div>
 
-      <main className="flex-1 px-4 md:px-8 pb-8">
+      <main id="main-content" className="flex-1 px-4 md:px-8 pb-8">
         {children}
       </main>
     </div>
+    </>
   );
 }
