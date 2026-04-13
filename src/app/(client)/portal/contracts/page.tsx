@@ -43,6 +43,7 @@ interface ClassificationResult {
   extracted_amount: number | null;
   extracted_type: "uver" | "pojisteni" | null;
   redirect_suggestion: "documents" | "receipts" | null;
+  analysis_failed?: boolean;
 }
 
 interface Contract {
@@ -148,7 +149,7 @@ export default function ContractsPage() {
       const res = await fetch("/api/portal/contracts/classify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storage_path: filePath }),
+        body: JSON.stringify({ storage_path: filePath, file_type: file.type }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -569,7 +570,21 @@ export default function ContractsPage() {
                   </div>
                 )}
 
-                {classification && classification.document_type !== "contract" && (
+                {classification && classification.analysis_failed && (
+                  <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="mt-0.5 h-5 w-5 text-gray-500 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Nepodařilo se dokument analyzovat</p>
+                        <p className="mt-1 text-xs text-gray-600">
+                          AI nedokázala přečíst obsah dokumentu. Můžete smlouvu uložit i tak — poradce ji zkontroluje ručně.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {classification && !classification.analysis_failed && classification.document_type !== "contract" && (
                   <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                     <div className="flex items-start gap-3">
                       <XCircle className="mt-0.5 h-5 w-5 text-amber-600 shrink-0" />
@@ -609,14 +624,14 @@ export default function ContractsPage() {
             <div className="mt-6">
               <Button
                 onClick={handleSaveContract}
-                disabled={saving || uploading || classifying || (!!classification && classification.document_type !== "contract" && !!uploadFile)}
+                disabled={saving || uploading || classifying || (!!classification && !classification.analysis_failed && classification.document_type !== "contract" && !!uploadFile)}
                 className="w-full"
                 size="lg"
               >
                 {(saving || uploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Uložit smlouvu
               </Button>
-              {classification && classification.document_type !== "contract" && uploadFile && (
+              {classification && !classification.analysis_failed && classification.document_type !== "contract" && uploadFile && (
                 <p className="mt-2 text-center text-xs text-amber-600">
                   AI rozpoznala, že nahraný dokument není smlouva. Odeberte ho nebo nahrajte správný dokument.
                 </p>

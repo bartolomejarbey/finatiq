@@ -6,6 +6,9 @@ import { NextResponse } from "next/server";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const MODEL_PRIMARY = "gpt-4o-mini";
+const MODEL_FALLBACK = "gpt-4o";
+
 const CLASSIFY_PROMPT = `Jsi asistent pro klasifikaci finančních dokumentů. Podívej se na přiložený dokument a urči jeho typ.
 
 Vrať JSON ve formátu:
@@ -29,7 +32,52 @@ PRAVIDLA:
 Pokud je to smlouva, zkus rozpoznat:
 - extracted_type: "uver" pokud je to úvěrová/hypoteční smlouva, "pojisteni" pokud pojistná smlouva
 - extracted_provider: název banky/pojišťovny
-- extracted_amount: výše úvěru nebo pojistného pokud vidíš`;
+- extracted_amount: výše úvěru nebo pojistného pokud vidíš
+
+DŮLEŽITÉ: Pokud dokument nedokážeš přečíst nebo je nečitelný, nastav confidence na "low" a document_type na to co si MYSLÍŠ že to je. Nehádej obsah — raději vrať null pro extracted pole.`;
+
+async function classifyWithModel(
+  model: string,
+  signedUrl: string,
+  fileType: string,
+): Promise<{ classification: Record<string, unknown>; model: string } | null> {
+  try {
+    const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
+      { type: "text", text: "Klasifikuj tento dokument:" },
+    ];
+
+    if (fileType === "application/pdf") {
+      userContent.push({
+        type: "file",
+        file: { url: signedUrl },
+      } as unknown as OpenAI.Chat.Completions.ChatCompletionContentPart);
+    } else {
+      userContent.push({
+        type: "image_url",
+        image_url: { url: signedUrl, detail: "high" },
+      });
+    }
+
+    const response = await openai.chat.completions.create({
+      model,
+      max_tokens: 500,
+      messages: [
+        { role: "system", content: CLASSIFY_PROMPT },
+        { role: "user", content: userContent },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) return null;
+
+    const classification = JSON.parse(content);
+    return { classification, model };
+  } catch (e) {
+    console.error(`Classification failed with ${model}:`, e);
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
@@ -53,7 +101,6 @@ export async function POST(request: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Get client record
   const { data: client } = await supabaseAdmin
     .from("clients")
     .select("id")
@@ -64,13 +111,12 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { storage_path } = body;
+  const { storage_path, file_type } = body;
 
   if (!storage_path) {
     return NextResponse.json({ error: "Chybí cesta k souboru" }, { status: 400 });
   }
 
-  // Get signed URL for the file
   const { data: urlData, error: urlError } = await supabaseAdmin
     .storage
     .from("deal-documents")
@@ -80,32 +126,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nepodařilo se získat odkaz na soubor" }, { status: 500 });
   }
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_tokens: 500,
-      messages: [
-        { role: "system", content: CLASSIFY_PROMPT },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Klasifikuj tento dokument:" },
-            { type: "image_url", image_url: { url: urlData.signedUrl, detail: "low" } },
-          ],
-        },
-      ],
-      response_format: { type: "json_object" },
-    });
+  // Try primary model first
+  let result = await classifyWithModel(MODEL_PRIMARY, urlData.signedUrl, file_type || "");
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      return NextResponse.json({ error: "AI nevrátila odpověď" }, { status: 500 });
+  // If primary failed or confidence is low, fallback to stronger model
+  if (!result || result.classification.confidence === "low") {
+    console.log(`Primary model ${result ? "returned low confidence" : "failed"}, trying fallback ${MODEL_FALLBACK}`);
+    const fallbackResult = await classifyWithModel(MODEL_FALLBACK, urlData.signedUrl, file_type || "");
+    if (fallbackResult) {
+      result = fallbackResult;
     }
-
-    const classification = JSON.parse(content);
-    return NextResponse.json({ classification });
-  } catch (e: unknown) {
-    console.error("AI classification error:", e);
-    return NextResponse.json({ error: "Chyba při AI klasifikaci" }, { status: 500 });
   }
+
+  // Both models failed
+  if (!result) {
+    return NextResponse.json({
+      classification: {
+        document_type: "other",
+        confidence: "low",
+        description_cs: "Nepodařilo se dokument analyzovat. Zkuste nahrát čitelnější fotografii nebo sken.",
+        extracted_provider: null,
+        extracted_amount: null,
+        extracted_type: null,
+        redirect_suggestion: null,
+        analysis_failed: true,
+      },
+    });
+  }
+
+  return NextResponse.json({
+    classification: { ...result.classification, analyzed_by: result.model },
+  });
 }
