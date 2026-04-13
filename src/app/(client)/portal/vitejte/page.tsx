@@ -536,6 +536,7 @@ export default function ClientOnboardingPage() {
                   {INTEREST_OPTIONS.map((opt) => (
                     <label
                       key={opt.key}
+                      onClick={() => toggleInterest(opt.key)}
                       className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
                         interests[opt.key]
                           ? "border-blue-200 bg-blue-50"
