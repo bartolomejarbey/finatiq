@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileText, Download, Eye } from "lucide-react";
+import { FileText, Download, AlertTriangle } from "lucide-react";
 
 interface ClientContract {
   id: string;
@@ -24,6 +24,12 @@ interface ClientContract {
   created_at: string;
   client_name: string;
   client_id: string;
+  provider: string | null;
+  value: number | null;
+  interest_rate: number | null;
+  monthly_payment: number | null;
+  valid_from: string | null;
+  valid_to: string | null;
 }
 
 function formatCZK(v: number | null) {
@@ -41,7 +47,7 @@ export default function ClientContractsQueue() {
   useEffect(() => {
     async function fetchData() {
       const [contractsRes, clientsRes, docsRes] = await Promise.all([
-        supabase.from("contracts").select("id, title, type, status, processing_status, client_uploaded, created_at, client_id").eq("client_uploaded", true).order("created_at", { ascending: false }),
+        supabase.from("contracts").select("id, title, type, status, processing_status, client_uploaded, created_at, client_id, provider, value, interest_rate, monthly_payment, valid_from, valid_to").eq("client_uploaded", true).order("created_at", { ascending: false }),
         supabase.from("clients").select("id, first_name, last_name"),
         supabase.from("client_documents").select("id, name, file_path, client_id").eq("category", "contract"),
       ]);
@@ -118,17 +124,35 @@ export default function ClientContractsQueue() {
           <p className="text-lg font-medium text-[var(--card-text-dim)]">Žádné smlouvy</p>
         </div>
       ) : (
-        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm">
+        <div className="rounded-xl border bg-[var(--card-bg)] shadow-sm overflow-x-auto">
           <table className="w-full">
-            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-6 py-3">Klient</th><th className="px-6 py-3">Smlouva</th><th className="px-6 py-3">Typ</th><th className="px-6 py-3">Datum</th><th className="px-6 py-3">Dokument</th><th className="px-6 py-3">Stav</th></tr></thead>
+            <thead><tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-[var(--card-text)]"><th className="px-4 py-3">Klient</th><th className="px-4 py-3">Smlouva</th><th className="px-4 py-3">Typ</th><th className="px-4 py-3">Částka</th><th className="px-4 py-3">Úrok</th><th className="px-4 py-3">Splátka</th><th className="px-4 py-3">Datum</th><th className="px-4 py-3">Dokument</th><th className="px-4 py-3">Stav</th></tr></thead>
             <tbody>
-              {filtered.map((c) => (
-                <tr key={c.id} className="border-b last:border-0 hover:bg-[var(--table-hover)]">
-                  <td className="px-6 py-3 text-sm font-medium text-[var(--card-text)]">{c.client_name}</td>
-                  <td className="px-6 py-3 text-sm text-[var(--card-text)]">{c.title}</td>
-                  <td className="px-6 py-3"><Badge variant="secondary" className="text-[10px]">{c.type === "uver" ? "Úvěr" : c.type === "pojisteni" ? "Pojištění" : c.type}</Badge></td>
-                  <td className="px-6 py-3 text-sm text-[var(--card-text-muted)]">{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
-                  <td className="px-6 py-3">
+              {filtered.map((c) => {
+                const missingData = c.type === "uver" && (!c.interest_rate || !c.monthly_payment);
+                return (
+                <tr key={c.id} className={`border-b last:border-0 hover:bg-[var(--table-hover)] ${missingData ? "bg-amber-50/50" : ""}`}>
+                  <td className="px-4 py-3 text-sm font-medium text-[var(--card-text)]">{c.client_name}</td>
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-[var(--card-text)]">{c.title}</div>
+                    {c.provider && <div className="text-[11px] text-[var(--card-text-muted)]">{c.provider}</div>}
+                  </td>
+                  <td className="px-4 py-3"><Badge variant="secondary" className="text-[10px]">{c.type === "uver" ? "Úvěr" : c.type === "pojisteni" ? "Pojištění" : c.type}</Badge></td>
+                  <td className="px-4 py-3 text-sm font-medium text-[var(--card-text)]">{c.value ? formatCZK(c.value) : <span className="text-amber-500 text-xs">chybí</span>}</td>
+                  <td className="px-4 py-3 text-sm text-[var(--card-text)]">
+                    {c.interest_rate ? (
+                      <span>{c.interest_rate}%</span>
+                    ) : c.type === "uver" ? (
+                      <span className="inline-flex items-center gap-1 text-amber-500 text-xs"><AlertTriangle className="h-3 w-3" />chybí</span>
+                    ) : <span className="text-[var(--card-text-muted)]">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-[var(--card-text)]">
+                    {c.monthly_payment ? formatCZK(c.monthly_payment) : c.type === "uver" ? (
+                      <span className="text-amber-500 text-xs">chybí</span>
+                    ) : <span className="text-[var(--card-text-muted)]">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-[var(--card-text-muted)]">{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
+                  <td className="px-4 py-3">
                     {(docs[c.client_id] || []).length > 0 ? (
                       <Button size="sm" variant="outline" className="text-xs" onClick={async () => {
                         const d = docs[c.client_id][0];
@@ -139,7 +163,7 @@ export default function ClientContractsQueue() {
                       </Button>
                     ) : <span className="text-xs text-[var(--card-text-muted)]">—</span>}
                   </td>
-                  <td className="px-6 py-3">
+                  <td className="px-4 py-3">
                     <Select value={c.processing_status} onValueChange={(v) => updateStatus(c.id, v)}>
                       <SelectTrigger className="h-7 w-32 text-xs">{statusBadge(c.processing_status)}</SelectTrigger>
                       <SelectContent>
@@ -150,7 +174,8 @@ export default function ClientContractsQueue() {
                     </Select>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

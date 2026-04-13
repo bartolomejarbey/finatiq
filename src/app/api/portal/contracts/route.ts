@@ -105,6 +105,7 @@ export async function POST(request: Request) {
     client_id: client.id,
     advisor_id: client.advisor_id,
     client_uploaded: true,
+    processing_status: "new",
   };
 
   const { data: newContract, error: insertError } = await supabaseAdmin
@@ -120,8 +121,8 @@ export async function POST(request: Request) {
     );
   }
 
-  // Check interest rate for savings alert
-  if (body.type === "uver" && body.interest_rate && client.advisor_id) {
+  // Create alerts for the advisor
+  if (client.advisor_id) {
     const { data: advisor } = await supabaseAdmin
       .from("advisors")
       .select("interest_rate_threshold")
@@ -129,16 +130,38 @@ export async function POST(request: Request) {
       .single();
 
     const threshold = advisor?.interest_rate_threshold ?? 5.0;
-    if (body.interest_rate > threshold) {
-      const providerInfo = body.provider ? ` u ${body.provider}` : "";
-      const amountInfo = body.value ? ` (${new Intl.NumberFormat("cs-CZ").format(body.value)} Kč)` : "";
+    const providerInfo = body.provider ? ` u ${body.provider}` : "";
+    const amountInfo = body.value ? ` (${new Intl.NumberFormat("cs-CZ").format(body.value)} Kč)` : "";
+    const typeLabel = body.type === "uver" ? "úvěr" : "pojištění";
+
+    // High interest rate alert
+    if (body.type === "uver" && body.interest_rate && body.interest_rate > threshold) {
       await supabaseAdmin.from("upsell_alerts").insert({
         advisor_id: client.advisor_id,
         client_id: client.id,
-        title: `Vysoký úrok ${body.interest_rate}%${providerInfo}`,
-        description: `Klient nahrál úvěr${providerInfo}${amountInfo} s úrokem ${body.interest_rate}%, což překračuje váš práh ${threshold}%. Doporučujeme kontaktovat klienta ohledně možnosti refinancování.`,
+        title: `⚠️ Vysoký úrok ${body.interest_rate}%${providerInfo}`,
+        description: `Klient nahrál ${typeLabel}${providerInfo}${amountInfo} s úrokem ${body.interest_rate}%, což překračuje váš práh ${threshold}%. Doporučujeme kontaktovat klienta ohledně možnosti refinancování.`,
         category: "loans",
         priority: body.interest_rate > threshold * 1.5 ? "critical" : "high",
+        status: "new",
+      });
+    }
+
+    // Missing data alert — advisor should review and complete
+    const missingParts: string[] = [];
+    if (body.type === "uver") {
+      if (!body.interest_rate) missingParts.push("úroková sazba");
+      if (!body.monthly_payment) missingParts.push("měsíční splátka");
+      if (!body.valid_to) missingParts.push("datum splatnosti");
+    }
+    if (missingParts.length > 0) {
+      await supabaseAdmin.from("upsell_alerts").insert({
+        advisor_id: client.advisor_id,
+        client_id: client.id,
+        title: `Nová smlouva — chybí údaje`,
+        description: `Klient nahrál ${typeLabel}${providerInfo}${amountInfo}. Chybí: ${missingParts.join(", ")}. Zkontrolujte smlouvu a doplňte údaje.`,
+        category: "contracts",
+        priority: "medium",
         status: "new",
       });
     }
