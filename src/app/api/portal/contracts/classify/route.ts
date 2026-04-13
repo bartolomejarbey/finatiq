@@ -9,16 +9,23 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const MODEL_PRIMARY = "gpt-4o-mini";
 const MODEL_FALLBACK = "gpt-4o";
 
-const CLASSIFY_PROMPT = `Jsi asistent pro klasifikaci finančních dokumentů. Podívej se na přiložený dokument a urči jeho typ.
+const CLASSIFY_PROMPT = `Jsi asistent pro klasifikaci finančních dokumentů. Podívej se na přiložený dokument a urči jeho typ. Přečti VŠECHNY strany a extrahuj co nejvíce informací.
 
 Vrať JSON ve formátu:
 {
   "document_type": "contract" | "invoice" | "receipt" | "statement" | "other",
   "confidence": "high" | "medium" | "low",
   "description_cs": "Stručný popis dokumentu v češtině (1 věta)",
-  "extracted_provider": "Název poskytovatele/banky/pojišťovny pokud vidíš (nebo null)",
+  "extracted_provider": "Název poskytovatele/banky/pojišťovny (nebo null)",
   "extracted_amount": number | null,
   "extracted_type": "uver" | "pojisteni" | null,
+  "extracted_interest_rate": number | null,
+  "extracted_monthly_payment": number | null,
+  "extracted_signing_date": "YYYY-MM-DD" | null,
+  "extracted_maturity_date": "YYYY-MM-DD" | null,
+  "extracted_remaining_balance": number | null,
+  "extracted_insurance_type": "zivotni" | "majetek" | "auto" | "odpovednost" | "dalsi" | null,
+  "missing_fields": ["interest_rate", "monthly_payment", ...],
   "redirect_suggestion": "documents" | "receipts" | null
 }
 
@@ -29,15 +36,24 @@ PRAVIDLA:
 - "statement" = bankovní výpis, výpis z účtu → redirect_suggestion: "documents"
 - "other" = cokoliv jiného → redirect_suggestion: "documents"
 
-Pokud je to smlouva, zkus rozpoznat:
+EXTRAKCE — pokud je to smlouva, extrahuj CO NEJVÍC:
 - extracted_type: "uver" pokud je to úvěrová/hypoteční smlouva, "pojisteni" pokud pojistná smlouva
-- extracted_provider: název banky/pojišťovny (např. ČSOB, Česká spořitelna, Allianz...)
-- extracted_amount: výše úvěru nebo pojistného pokud vidíš
+- extracted_provider: název banky/pojišťovny (např. ČSOB, Česká spořitelna, Allianz, Kooperativa...)
+- extracted_amount: výše úvěru (celková částka), nebo roční pojistné
+- extracted_interest_rate: úroková sazba v % (roční, p.a.). Hledej "úroková sazba", "p.a.", "% ročně", "fixní sazba"
+- extracted_monthly_payment: měsíční splátka nebo měsíční pojistné v Kč
+- extracted_signing_date: datum podpisu/uzavření smlouvy ve formátu YYYY-MM-DD
+- extracted_maturity_date: datum splatnosti/konce smlouvy ve formátu YYYY-MM-DD
+- extracted_remaining_balance: zůstatek úvěru pokud je uveden
+- extracted_insurance_type: typ pojištění — "zivotni" (životní), "majetek" (nemovitost, domácnost), "auto" (povinné ručení, havarijní), "odpovednost", "dalsi"
+- missing_fields: pole názvů polí, která se v dokumentu NENACHÁZEJÍ. Např. pokud ve smlouvě není úroková sazba, přidej "interest_rate". Možné hodnoty: "interest_rate", "monthly_payment", "signing_date", "maturity_date", "amount", "remaining_balance"
 
 DŮLEŽITÉ:
-- Dokument může mít více stran — přečti VŠECHNY strany.
+- Dokument může mít více stran — přečti VŠECHNY strany než odpovíš.
 - Pokud dokument nedokážeš přečíst, nastav confidence na "low". Nehádej obsah.
-- Bankovní a finanční dokumenty od bank (ČSOB, KB, ČS, mBank, Raiffeisen, Moneta...) jsou typicky smlouvy nebo výpisy.`;
+- Bankovní a finanční dokumenty od bank (ČSOB, KB, ČS, mBank, Raiffeisen, Moneta...) jsou typicky smlouvy nebo výpisy.
+- U starších smluv je datum podpisu důležité — hledej ho na konci dokumentu u podpisů.
+- Pokud pole ve smlouvě určitě není, přidej ho do missing_fields. Pokud si nejsi jistý, nastav hodnotu na null ale NEPŘIDÁVEJ do missing_fields.`;
 
 async function classifyWithModel(
   model: string,
@@ -70,7 +86,7 @@ async function classifyWithModel(
 
     const response = await openai.chat.completions.create({
       model,
-      max_tokens: 600,
+      max_tokens: 900,
       messages: [
         { role: "system", content: CLASSIFY_PROMPT },
         { role: "user", content: userContent },

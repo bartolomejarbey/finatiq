@@ -190,38 +190,61 @@ export default function ContractDetailPage() {
       <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         {isLoan ? (
           <>
-            <ParamCard label="Výše úvěru" value={formatCZK(contract.value)} />
-            <ParamCard label="Úroková sazba" value={contract.interest_rate ? `${contract.interest_rate}%` : "—"} />
-            <ParamCard label="Měsíční splátka" value={formatCZK(contract.monthly_payment)} />
-            <ParamCard label="Aktuální zůstatek" value={formatCZK(contract.remaining_balance)} highlight />
+            <ParamCard label="Výše úvěru" value={formatCZK(contract.value)} missing={contract.value == null} />
+            <ParamCard label="Úroková sazba" value={contract.interest_rate ? `${contract.interest_rate}%` : undefined} missing={contract.interest_rate == null} />
+            <ParamCard label="Měsíční splátka" value={formatCZK(contract.monthly_payment)} missing={contract.monthly_payment == null} />
+            <ParamCard label="Aktuální zůstatek" value={formatCZK(contract.remaining_balance)} missing={contract.remaining_balance == null} highlight />
           </>
         ) : (
           <>
-            <ParamCard label="Typ pojištění" value={contract.insurance_type || "—"} />
-            <ParamCard label="Měsíční pojistné" value={formatCZK(contract.monthly_payment)} />
-            <ParamCard label="Platnost od" value={contract.valid_from ? new Date(contract.valid_from).toLocaleDateString("cs-CZ") : "—"} />
-            <ParamCard label="Platnost do" value={contract.valid_to ? new Date(contract.valid_to).toLocaleDateString("cs-CZ") : "—"} />
+            <ParamCard label="Typ pojištění" value={insuranceTypeLabel(contract.insurance_type)} missing={!contract.insurance_type} />
+            <ParamCard label="Měsíční pojistné" value={formatCZK(contract.monthly_payment)} missing={contract.monthly_payment == null} />
+            <ParamCard label="Platnost od" value={contract.valid_from ? new Date(contract.valid_from).toLocaleDateString("cs-CZ") : undefined} missing={!contract.valid_from} />
+            <ParamCard label="Platnost do" value={contract.valid_to ? new Date(contract.valid_to).toLocaleDateString("cs-CZ") : undefined} missing={!contract.valid_to} />
+          </>
+        )}
+      </div>
+      {/* Dates row */}
+      <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        {isLoan && (
+          <>
+            <ParamCard label="Datum sjednání" value={contract.valid_from ? new Date(contract.valid_from).toLocaleDateString("cs-CZ") : undefined} missing={!contract.valid_from} />
+            <ParamCard label="Datum splatnosti" value={contract.valid_to ? new Date(contract.valid_to).toLocaleDateString("cs-CZ") : undefined} missing={!contract.valid_to} />
           </>
         )}
       </div>
 
       {/* Loan-specific sections */}
-      {isLoan && contract.remaining_balance != null && (
+      {isLoan && (
         <>
           {/* Progress bar */}
           <div className="mb-6 rounded-2xl border bg-[var(--card-bg)] p-6 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-[var(--card-text)]">Vývoj vašeho dluhu</h2>
-              <span className="text-sm font-bold text-[var(--card-text)]">{progress}% splaceno</span>
+              {contract.value != null && contract.remaining_balance != null ? (
+                <span className="text-sm font-bold text-[var(--card-text)]">{progress}% splaceno</span>
+              ) : (
+                <span className="text-xs text-amber-500">Chybí údaje pro výpočet</span>
+              )}
             </div>
-            <div className="h-4 w-full rounded-full bg-[var(--table-header)]">
-              <div className="h-4 rounded-full bg-gradient-to-r from-blue-500 to-green-500 transition-all" style={{ width: `${progress}%` }} />
-            </div>
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-xs text-[var(--card-text-muted)]">
-              <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalPaid)}</p><p>Celkem splaceno</p></div>
-              <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalInterest)}</p><p>Zaplacené úroky</p></div>
-              <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalPrincipal)}</p><p>Splacená jistina</p></div>
-            </div>
+            {contract.value != null && contract.remaining_balance != null ? (
+              <div className="h-4 w-full rounded-full bg-[var(--table-header)]">
+                <div className="h-4 rounded-full bg-gradient-to-r from-blue-500 to-green-500 transition-all" style={{ width: `${progress}%` }} />
+              </div>
+            ) : (
+              <div className="h-4 w-full rounded-full bg-[var(--table-header)]" />
+            )}
+            {payments.length > 0 ? (
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-xs text-[var(--card-text-muted)]">
+                <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalPaid)}</p><p>Celkem splaceno</p></div>
+                <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalInterest)}</p><p>Zaplacené úroky</p></div>
+                <div><p className="font-medium text-[var(--card-text)]">{formatCZK(totalPrincipal)}</p><p>Splacená jistina</p></div>
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-[var(--card-text-muted)] text-center">
+                Zatím nebyla zaznamenána žádná splátka. Klikněte na &quot;Splátka zaplacena&quot; pro zaznamenání platby.
+              </p>
+            )}
           </div>
 
           {/* Last payment breakdown */}
@@ -249,11 +272,20 @@ export default function ContractDetailPage() {
 
           {/* Pay button */}
           <div className="mb-6">
-            <button onClick={handlePayment} disabled={paying || (contract.remaining_balance || 0) <= 0}
-              className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-6 py-3 text-white font-medium hover:bg-green-600 transition disabled:opacity-50">
-              {paying ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-              Splátka zaplacena
-            </button>
+            {contract.remaining_balance != null && contract.monthly_payment != null && contract.interest_rate != null ? (
+              <button onClick={handlePayment} disabled={paying || (contract.remaining_balance || 0) <= 0}
+                className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-6 py-3 text-white font-medium hover:bg-green-600 transition disabled:opacity-50">
+                {paying ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                Splátka zaplacena
+              </button>
+            ) : (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <p className="text-sm font-medium text-amber-800">Nelze sledovat splátky</p>
+                <p className="mt-1 text-xs text-amber-700">
+                  Pro sledování splátek je nutné vyplnit {!contract.remaining_balance ? "zůstatek, " : ""}{!contract.monthly_payment ? "měsíční splátku, " : ""}{!contract.interest_rate ? "úrokovou sazbu" : ""}. Kontaktujte poradce pro doplnění.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Balance chart */}
@@ -327,11 +359,21 @@ export default function ContractDetailPage() {
   );
 }
 
-function ParamCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function insuranceTypeLabel(type: string | null): string | undefined {
+  if (!type) return undefined;
+  const labels: Record<string, string> = { zivotni: "Životní", majetek: "Majetek", auto: "Auto", odpovednost: "Odpovědnost", dalsi: "Další" };
+  return labels[type] || type;
+}
+
+function ParamCard({ label, value, highlight, missing }: { label: string; value?: string; highlight?: boolean; missing?: boolean }) {
   return (
     <div className={`rounded-2xl border p-4 shadow-sm ${highlight ? "bg-blue-50 border-blue-200" : "bg-[var(--card-bg)]"}`}>
       <p className="text-xs text-[var(--card-text-muted)]">{label}</p>
-      <p className={`text-lg font-bold ${highlight ? "text-blue-700" : "text-[var(--card-text)]"}`}>{value}</p>
+      {missing ? (
+        <p className="text-sm text-amber-500 font-medium mt-0.5">Neuvedeno</p>
+      ) : (
+        <p className={`text-lg font-bold ${highlight ? "text-blue-700" : "text-[var(--card-text)]"}`}>{value || "—"}</p>
+      )}
     </div>
   );
 }

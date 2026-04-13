@@ -42,6 +42,13 @@ interface ClassificationResult {
   extracted_provider: string | null;
   extracted_amount: number | null;
   extracted_type: "uver" | "pojisteni" | null;
+  extracted_interest_rate: number | null;
+  extracted_monthly_payment: number | null;
+  extracted_signing_date: string | null;
+  extracted_maturity_date: string | null;
+  extracted_remaining_balance: number | null;
+  extracted_insurance_type: string | null;
+  missing_fields?: string[];
   redirect_suggestion: "documents" | "receipts" | null;
   analysis_failed?: boolean;
 }
@@ -151,16 +158,27 @@ export default function ContractsPage() {
 
         // Auto-fill fields from AI extraction
         if (data.classification.document_type === "contract") {
-          if (data.classification.extracted_provider && !provider) {
-            setProvider(data.classification.extracted_provider);
+          const c = data.classification;
+          if (c.extracted_provider && !provider) {
+            setProvider(c.extracted_provider);
           }
-          if (data.classification.extracted_amount) {
-            if (sheetType === "uver" && !loanAmount) {
-              setLoanAmount(String(data.classification.extracted_amount));
-            } else if (sheetType === "pojisteni" && !insurancePremium) {
-              setInsurancePremium(String(data.classification.extracted_amount));
-            }
+          // Switch sheet type if AI detected differently
+          if (c.extracted_type && c.extracted_type !== sheetType) {
+            setSheetType(c.extracted_type);
           }
+          const isLoan = (c.extracted_type || sheetType) === "uver";
+          if (isLoan) {
+            if (c.extracted_amount && !loanAmount) setLoanAmount(String(c.extracted_amount));
+            if (c.extracted_interest_rate != null && !interestRate) setInterestRate(String(c.extracted_interest_rate));
+            if (c.extracted_monthly_payment != null && !monthlyPayment) setMonthlyPayment(String(c.extracted_monthly_payment));
+            if (c.extracted_remaining_balance != null && !remainingBalance) setRemainingBalance(String(c.extracted_remaining_balance));
+          } else {
+            if (c.extracted_monthly_payment != null && !insurancePremium) setInsurancePremium(String(c.extracted_monthly_payment));
+            if (c.extracted_amount && !insurancePremium) setInsurancePremium(String(Math.round(c.extracted_amount / 12)));
+            if (c.extracted_insurance_type) setInsuranceType(c.extracted_insurance_type);
+          }
+          if (c.extracted_signing_date && !validFrom) setValidFrom(c.extracted_signing_date);
+          if (c.extracted_maturity_date && !validTo) setValidTo(c.extracted_maturity_date);
         }
       }
     } catch {
@@ -553,11 +571,36 @@ export default function ContractsPage() {
                   <div className="mt-3 rounded-xl border border-green-200 bg-green-50 p-4">
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600 shrink-0" />
-                      <div>
+                      <div className="flex-1">
                         <p className="text-sm font-medium text-green-800">Smlouva rozpoznána</p>
                         <p className="mt-1 text-xs text-green-700">{classification.description_cs}</p>
-                        {classification.extracted_provider && (
-                          <p className="mt-1 text-xs text-green-600">Poskytovatel: <strong>{classification.extracted_provider}</strong></p>
+                        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                          {classification.extracted_provider && (
+                            <p className="text-green-700">Poskytovatel: <strong>{classification.extracted_provider}</strong></p>
+                          )}
+                          {classification.extracted_amount != null && (
+                            <p className="text-green-700">Částka: <strong>{formatCZK(classification.extracted_amount)}</strong></p>
+                          )}
+                          {classification.extracted_interest_rate != null && (
+                            <p className="text-green-700">Úrok: <strong>{classification.extracted_interest_rate}%</strong></p>
+                          )}
+                          {classification.extracted_monthly_payment != null && (
+                            <p className="text-green-700">Splátka: <strong>{formatCZK(classification.extracted_monthly_payment)}</strong></p>
+                          )}
+                          {classification.extracted_signing_date && (
+                            <p className="text-green-700">Podpis: <strong>{new Date(classification.extracted_signing_date).toLocaleDateString("cs-CZ")}</strong></p>
+                          )}
+                          {classification.extracted_maturity_date && (
+                            <p className="text-green-700">Splatnost: <strong>{new Date(classification.extracted_maturity_date).toLocaleDateString("cs-CZ")}</strong></p>
+                          )}
+                        </div>
+                        {classification.missing_fields && classification.missing_fields.length > 0 && (
+                          <p className="mt-2 text-[11px] text-amber-700">
+                            Ve smlouvě nebylo nalezeno: {classification.missing_fields.map(f => {
+                              const labels: Record<string, string> = { interest_rate: "úroková sazba", monthly_payment: "měsíční splátka", signing_date: "datum podpisu", maturity_date: "datum splatnosti", amount: "výše úvěru", remaining_balance: "zůstatek" };
+                              return labels[f] || f;
+                            }).join(", ")}. Doplňte ručně nebo nechte poradce.
+                          </p>
                         )}
                       </div>
                     </div>

@@ -121,7 +121,7 @@ export async function POST(request: Request) {
   }
 
   // Check interest rate for savings alert
-  if (body.type === "uver" && body.interest_rate) {
+  if (body.type === "uver" && body.interest_rate && client.advisor_id) {
     const { data: advisor } = await supabaseAdmin
       .from("advisors")
       .select("interest_rate_threshold")
@@ -130,11 +130,16 @@ export async function POST(request: Request) {
 
     const threshold = advisor?.interest_rate_threshold ?? 5.0;
     if (body.interest_rate > threshold) {
+      const providerInfo = body.provider ? ` u ${body.provider}` : "";
+      const amountInfo = body.value ? ` (${new Intl.NumberFormat("cs-CZ").format(body.value)} Kč)` : "";
       await supabaseAdmin.from("upsell_alerts").insert({
         advisor_id: client.advisor_id,
         client_id: client.id,
-        title: `Klient nahrál úvěr s vysokým úrokem (${body.interest_rate}%)`,
-        description: `${body.title} — úrok ${body.interest_rate}% překračuje práh ${threshold}%. Možnost refinancování.`,
+        title: `Vysoký úrok ${body.interest_rate}%${providerInfo}`,
+        description: `Klient nahrál úvěr${providerInfo}${amountInfo} s úrokem ${body.interest_rate}%, což překračuje váš práh ${threshold}%. Doporučujeme kontaktovat klienta ohledně možnosti refinancování.`,
+        category: "loans",
+        priority: body.interest_rate > threshold * 1.5 ? "critical" : "high",
+        status: "new",
       });
     }
   }
