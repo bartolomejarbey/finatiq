@@ -31,36 +31,46 @@ PRAVIDLA:
 
 Pokud je to smlouva, zkus rozpoznat:
 - extracted_type: "uver" pokud je to úvěrová/hypoteční smlouva, "pojisteni" pokud pojistná smlouva
-- extracted_provider: název banky/pojišťovny
+- extracted_provider: název banky/pojišťovny (např. ČSOB, Česká spořitelna, Allianz...)
 - extracted_amount: výše úvěru nebo pojistného pokud vidíš
 
-DŮLEŽITÉ: Pokud dokument nedokážeš přečíst nebo je nečitelný, nastav confidence na "low" a document_type na to co si MYSLÍŠ že to je. Nehádej obsah — raději vrať null pro extracted pole.`;
+DŮLEŽITÉ:
+- Dokument může mít více stran — přečti VŠECHNY strany.
+- Pokud dokument nedokážeš přečíst, nastav confidence na "low". Nehádej obsah.
+- Bankovní a finanční dokumenty od bank (ČSOB, KB, ČS, mBank, Raiffeisen, Moneta...) jsou typicky smlouvy nebo výpisy.`;
 
 async function classifyWithModel(
   model: string,
-  signedUrl: string,
-  fileType: string,
+  base64Data: string,
+  mimeType: string,
 ): Promise<{ classification: Record<string, unknown>; model: string } | null> {
   try {
+    const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
     const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
-      { type: "text", text: "Klasifikuj tento dokument:" },
+      { type: "text", text: "Klasifikuj tento dokument. Přečti všechny strany:" },
     ];
 
-    if (fileType === "application/pdf") {
+    if (mimeType === "application/pdf") {
+      // For PDFs, use the file input type with inline base64
       userContent.push({
         type: "file",
-        file: { url: signedUrl },
+        file: {
+          filename: "document.pdf",
+          file_data: dataUrl,
+        },
       } as unknown as OpenAI.Chat.Completions.ChatCompletionContentPart);
     } else {
+      // For images, use image_url with base64 data URL
       userContent.push({
         type: "image_url",
-        image_url: { url: signedUrl, detail: "high" },
+        image_url: { url: dataUrl, detail: "high" },
       });
     }
 
     const response = await openai.chat.completions.create({
       model,
-      max_tokens: 500,
+      max_tokens: 600,
       messages: [
         { role: "system", content: CLASSIFY_PROMPT },
         { role: "user", content: userContent },
@@ -118,39 +128,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Chybí soubor" }, { status: 400 });
   }
 
-  // Upload file to storage using service role (bypasses RLS)
+  // Check file size (max 20MB for OpenAI)
+  if (file.size > 20 * 1024 * 1024) {
+    return NextResponse.json({ error: "Soubor je příliš velký (max 20 MB)" }, { status: 400 });
+  }
+
+  // Convert file to base64 for direct OpenAI submission
+  const arrayBuffer = await file.arrayBuffer();
+  const base64Data = Buffer.from(arrayBuffer).toString("base64");
+  const mimeType = file.type || "application/octet-stream";
+
+  // Also upload to storage for later use (using service role to bypass RLS)
   const ext = file.name.split(".").pop() || "bin";
   const storagePath = `client-docs/${client.id}/classify_${Date.now()}.${ext}`;
-
-  const arrayBuffer = await file.arrayBuffer();
-  const { error: uploadError } = await supabaseAdmin.storage
+  await supabaseAdmin.storage
     .from("deal-documents")
-    .upload(storagePath, Buffer.from(arrayBuffer), {
-      contentType: file.type,
-    });
-
-  if (uploadError) {
-    console.error("Storage upload error:", uploadError);
-    return NextResponse.json({ error: "Chyba při nahrávání souboru" }, { status: 500 });
-  }
-
-  // Get signed URL for AI analysis
-  const { data: urlData, error: urlError } = await supabaseAdmin
-    .storage
-    .from("deal-documents")
-    .createSignedUrl(storagePath, 300);
-
-  if (urlError || !urlData?.signedUrl) {
-    return NextResponse.json({ error: "Nepodařilo se získat odkaz na soubor" }, { status: 500 });
-  }
+    .upload(storagePath, Buffer.from(arrayBuffer), { contentType: mimeType })
+    .catch(() => {}); // Non-critical, just for reference
 
   // Try primary model first
-  let result = await classifyWithModel(MODEL_PRIMARY, urlData.signedUrl, file.type);
+  let result = await classifyWithModel(MODEL_PRIMARY, base64Data, mimeType);
 
   // If primary failed or confidence is low, fallback to stronger model
   if (!result || result.classification.confidence === "low") {
     console.log(`Primary model ${result ? "returned low confidence" : "failed"}, trying fallback ${MODEL_FALLBACK}`);
-    const fallbackResult = await classifyWithModel(MODEL_FALLBACK, urlData.signedUrl, file.type);
+    const fallbackResult = await classifyWithModel(MODEL_FALLBACK, base64Data, mimeType);
     if (fallbackResult) {
       result = fallbackResult;
     }
