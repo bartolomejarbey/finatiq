@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { requireClientAccess } from "@/lib/api/portal-auth";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,6 +11,11 @@ export async function GET(request: NextRequest) {
   const clientId = request.nextUrl.searchParams.get("client_id");
   if (!clientId) {
     return NextResponse.json({ error: "Missing client_id" }, { status: 400 });
+  }
+
+  const auth = await requireClientAccess(clientId);
+  if ("error" in auth) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   const { data: contracts } = await supabase

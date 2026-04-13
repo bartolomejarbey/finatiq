@@ -173,6 +173,7 @@ export default function ClientDashboard() {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-gray-400">Dobrý den, {clientName}</p>
+            <p className="mt-0.5 text-xs text-gray-500">Váš finanční přehled na jednom místě — vše pod kontrolou.</p>
             <p className="mt-2 text-3xl md:text-4xl font-bold">{formatCZK(netWorth)}</p>
             <p className={`mt-1 text-sm ${monthlyChange > 0 ? "text-green-400" : monthlyChange < 0 ? "text-red-400" : "text-gray-400"}`}>
               {monthlyChange > 0 ? "+" : ""}{formatCZK(monthlyChange)} tento měsíc

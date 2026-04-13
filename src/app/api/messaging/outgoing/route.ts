@@ -1,12 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { requireClientAccess } from "@/lib/api/portal-auth";
 
 export async function POST(request: NextRequest) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
   try {
     const body = await request.json();
     const { client_id, message_text, platform } = body;
@@ -18,8 +13,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const auth = await requireClientAccess(client_id);
+    if ("error" in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     // Look up client to get advisor_id
-    const { data: client, error: clientError } = await supabase
+    const { data: client, error: clientError } = await auth.admin
       .from("clients")
       .select("id, advisor_id")
       .eq("id", client_id)
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save message
-    const { data: message, error: messageError } = await supabase
+    const { data: message, error: messageError } = await auth.admin
       .from("messages")
       .insert({
         advisor_id: client.advisor_id,

@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { requireClientAccess } from "@/lib/api/portal-auth";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +13,11 @@ export async function GET(request: Request) {
 
   if (!clientId) {
     return NextResponse.json({ error: "client_id is required" }, { status: 400 });
+  }
+
+  const auth = await requireClientAccess(clientId);
+  if ("error" in auth) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   // Fetch client info

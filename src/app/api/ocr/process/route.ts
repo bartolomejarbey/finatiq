@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { canAccessClient, getPortalActor } from "@/lib/api/portal-auth";
 
 const AI_ANALYSIS_PROMPT = `Analyzuj tento text finanční smlouvy/dokumentu. Extrahuj a vrať JSON:
 {
@@ -67,6 +68,11 @@ export async function POST(request: Request) {
 
   if (!doc) {
     return NextResponse.json({ error: "Document not found" }, { status: 404 });
+  }
+
+  const actor = await getPortalActor(supabaseAdmin, user.id);
+  if (!doc.client_id || !(await canAccessClient(supabaseAdmin, actor, doc.client_id))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // Update status to processing

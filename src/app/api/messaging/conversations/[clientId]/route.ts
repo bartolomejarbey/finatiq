@@ -1,15 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { requireClientAccess } from "@/lib/api/portal-auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ clientId: string }> }
 ) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
   try {
     const { clientId } = await params;
 
@@ -20,7 +15,12 @@ export async function GET(
       );
     }
 
-    const { data: messages, error } = await supabase
+    const auth = await requireClientAccess(clientId);
+    if ("error" in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
+    const { data: messages, error } = await auth.admin
       .from("messages")
       .select("*")
       .eq("client_id", clientId)

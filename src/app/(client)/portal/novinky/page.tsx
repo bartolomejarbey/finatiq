@@ -84,7 +84,7 @@ export default function ClientNewsPage() {
           <div>
             <h1 className="text-2xl font-bold text-[var(--card-text)]">Novinky</h1>
             <p className="text-sm text-[var(--card-text-muted)]">
-              {filtered.length} článků
+              {filtered.length} článků — aktuality a doporučení od vašeho poradce
             </p>
           </div>
         </div>
@@ -108,6 +108,9 @@ export default function ClientNewsPage() {
           <Newspaper className="mb-4 h-12 w-12 text-[var(--card-text-dim)]" />
           <p className="text-lg font-medium text-[var(--card-text-dim)]">
             Žádné novinky
+          </p>
+          <p className="mt-2 max-w-md text-center text-sm text-[var(--card-text-muted)]">
+            Váš poradce sem bude přidávat důležité informace, tipy a novinky z finančního světa relevantní pro vaši situaci.
           </p>
         </div>
       ) : (

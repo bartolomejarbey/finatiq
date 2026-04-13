@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { requireClientAccess, requirePortalActor } from "@/lib/api/portal-auth";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,6 +35,25 @@ export async function GET(request: NextRequest) {
 
     const now = new Date();
     const deadlines: Deadline[] = [];
+
+    if (!clientId && !advisorId) {
+      return NextResponse.json({ error: "client_id nebo advisor_id je povinné" }, { status: 400 });
+    }
+
+    if (clientId) {
+      const auth = await requireClientAccess(clientId);
+      if ("error" in auth) {
+        return NextResponse.json({ error: auth.error }, { status: auth.status });
+      }
+    } else if (advisorId) {
+      const auth = await requirePortalActor();
+      if ("error" in auth) {
+        return NextResponse.json({ error: auth.error }, { status: auth.status });
+      }
+      if (auth.actor.advisorId !== advisorId) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
 
     // Fetch contracts with valid_to set
     let contractsQuery = supabase

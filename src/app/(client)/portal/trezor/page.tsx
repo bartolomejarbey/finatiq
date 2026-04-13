@@ -86,29 +86,21 @@ export default function TrezorPage() {
   async function fetchDocs() {
     setLoading(true);
     setError(null);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
-    const meRes = await fetch("/api/portal/me");
-    if (!meRes.ok) { setError("Nepodařilo se načíst klientský profil."); setLoading(false); return; }
-    const client = (await meRes.json()).client;
-    if (!client) { setLoading(false); return; }
-    setClientId(client.id);
-    setAdvisorId(client.advisor_id);
-
-    const { data, error: docsError } = await supabase
-      .from("documents")
-      .select("id, name, vault_category, valid_until, shared_with_advisor, file_url, created_at")
-      .eq("client_id", client.id)
-      .eq("is_vault", true)
-      .order("created_at", { ascending: false });
-    if (docsError) {
-      setError("Nepodařilo se načíst trezor.");
+    try {
+      const res = await fetch("/api/portal/trezor");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Nepodařilo se načíst trezor.");
+      }
+      const json = await res.json();
+      setDocs(json.docs || []);
+      setClientId(json.client_id || "");
+      setAdvisorId(json.advisor_id || null);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Nepodařilo se načíst trezor.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setDocs(data || []);
-    setLoading(false);
   }
 
   async function handleUpload() {
@@ -127,21 +119,24 @@ export default function TrezorPage() {
 
     const { data: urlData } = supabase.storage.from("deal-documents").getPublicUrl(path);
 
-    const { data: client } = await supabase.from("clients").select("advisor_id").eq("id", clientId).single();
-
-    const { error: insertError } = await supabase.from("documents").insert({
-      client_id: clientId,
-      advisor_id: client?.advisor_id,
-      name: docName,
-      file_url: urlData.publicUrl,
-      is_vault: true,
-      vault_category: docCategory,
-      valid_until: validUntil || null,
-      shared_with_advisor: shareWithAdvisor,
-    });
-
-    if (insertError) {
-      toast.error("Chyba při ukládání dokumentu: " + insertError.message);
+    try {
+      const res = await fetch("/api/portal/trezor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: docName,
+          file_url: urlData.publicUrl,
+          vault_category: docCategory,
+          valid_until: validUntil || null,
+          shared_with_advisor: shareWithAdvisor,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Chyba při ukládání dokumentu.");
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Chyba při ukládání dokumentu.");
       setUploading(false);
       return;
     }
@@ -156,12 +151,15 @@ export default function TrezorPage() {
   }
 
   async function toggleShare(doc: VaultDoc) {
-    const { error } = await supabase
-      .from("documents")
-      .update({ shared_with_advisor: !doc.shared_with_advisor })
-      .eq("id", doc.id);
-    if (error) {
-      toast.error("Chyba při změně sdílení: " + error.message);
+    try {
+      const res = await fetch("/api/portal/trezor", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: doc.id, shared_with_advisor: !doc.shared_with_advisor }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Chyba při změně sdílení.");
       return;
     }
     setDocs((prev) =>
@@ -172,9 +170,11 @@ export default function TrezorPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Opravdu smazat tento dokument?")) return;
-    const { error } = await supabase.from("documents").delete().eq("id", id);
-    if (error) {
-      toast.error("Chyba při mazání dokumentu: " + error.message);
+    try {
+      const res = await fetch(`/api/portal/trezor?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Chyba při mazání dokumentu.");
       return;
     }
     setDocs((prev) => prev.filter((d) => d.id !== id));

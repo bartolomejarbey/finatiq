@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { requireClientAccess } from "@/lib/api/portal-auth";
 
 export async function POST(request: Request) {
   // Rate limit: 20 per hour per IP
@@ -21,6 +22,11 @@ export async function POST(request: Request) {
         { error: "client_id a message jsou povinne" },
         { status: 400 }
       );
+    }
+
+    const auth = await requireClientAccess(client_id);
+    if ("error" in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     // Fetch client data
