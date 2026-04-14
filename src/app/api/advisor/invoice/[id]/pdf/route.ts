@@ -1,29 +1,53 @@
 import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { jsPDF } from "jspdf";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // AUTH: verify the requester is the invoice owner
+  const cookieStore = await cookies();
+  const authSupabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll() { return cookieStore.getAll(); }, setAll() {} } }
+  );
+  const { data: { user } } = await authSupabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: advisor } = await authSupabase
+    .from("advisors")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+  if (!advisor) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { id } = await params;
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   const { data: invoice } = await supabase
     .from("invoices")
     .select("*, advisors(company_name, email, billing_name, billing_ico, billing_dic, billing_address)")
     .eq("id", id)
+    .eq("advisor_id", advisor.id)
     .single();
 
   if (!invoice) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const advisor = invoice.advisors as Record<string, string> | null;
+  const advisorBilling = invoice.advisors as Record<string, string> | null;
   const doc = new jsPDF();
 
   // Header
@@ -46,10 +70,10 @@ export async function GET(
   doc.setFontSize(11);
   doc.text("Odberatel:", 120, 65);
   doc.setFontSize(9);
-  doc.text(advisor?.billing_name || advisor?.company_name || "—", 120, 72);
-  if (advisor?.billing_ico) doc.text(`ICO: ${advisor.billing_ico}`, 120, 78);
-  if (advisor?.billing_dic) doc.text(`DIC: ${advisor.billing_dic}`, 120, 84);
-  if (advisor?.billing_address) doc.text(advisor.billing_address, 120, 90);
+  doc.text(advisorBilling?.billing_name || advisorBilling?.company_name || "—", 120, 72);
+  if (advisorBilling?.billing_ico) doc.text(`ICO: ${advisorBilling.billing_ico}`, 120, 78);
+  if (advisorBilling?.billing_dic) doc.text(`DIC: ${advisorBilling.billing_dic}`, 120, 84);
+  if (advisorBilling?.billing_address) doc.text(advisorBilling.billing_address, 120, 90);
 
   // Table header
   let y = 110;

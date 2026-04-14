@@ -66,6 +66,9 @@ export async function GET(request: Request) {
 
   const results: { label: string; href: string; type: string; subtitle?: string }[] = [];
 
+  // Sanitize query for PostgREST ilike — escape special chars
+  const sanitizedQ = q.replace(/[%_\\]/g, (ch) => `\\${ch}`);
+
   // 1. Search static pages
   const pageMatches = STATIC_PAGES.filter((p) =>
     p.label.toLowerCase().includes(q)
@@ -78,7 +81,7 @@ export async function GET(request: Request) {
     .select("id, first_name, last_name, email")
     .eq("advisor_id", adv.id)
     .or(
-      `first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`
+      `first_name.ilike.%${sanitizedQ}%,last_name.ilike.%${sanitizedQ}%,email.ilike.%${sanitizedQ}%`
     )
     .limit(5);
 
@@ -98,7 +101,7 @@ export async function GET(request: Request) {
     .from("deals")
     .select("id, name, client_id")
     .eq("advisor_id", adv.id)
-    .ilike("name", `%${q}%`)
+    .ilike("name", `%${sanitizedQ}%`)
     .limit(3);
 
   if (deals) {

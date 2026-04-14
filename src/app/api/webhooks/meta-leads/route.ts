@@ -21,14 +21,18 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const body = await request.text();
 
-  // Verify webhook signature
+  // Verify webhook signature — REQUIRE signature when app secret is configured
   const signature = request.headers.get("x-hub-signature-256");
   const appSecret = process.env.META_APP_SECRET;
-  if (appSecret && signature) {
-    const expectedSignature = "sha256=" + crypto.createHmac("sha256", appSecret).update(body).digest("hex");
-    if (signature !== expectedSignature) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
-    }
+  if (!appSecret) {
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
+  }
+  if (!signature) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 403 });
+  }
+  const expectedSignature = "sha256=" + crypto.createHmac("sha256", appSecret).update(body).digest("hex");
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
   }
 
   const data = JSON.parse(body);

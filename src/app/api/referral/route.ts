@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 function getSupabase() {
   return createClient(
@@ -55,6 +56,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 10 referrals per hour per IP
+  const ip = getClientIp(req);
+  const limited = checkRateLimit(`${ip}:referral`, 10, 60 * 60 * 1000);
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const { code, name, email, phone, message } = body;
